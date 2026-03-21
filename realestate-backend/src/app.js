@@ -11,6 +11,7 @@ import logger from './utils/logger.js';
 import { errorMiddleware } from './middlewares/error.middleware.js';
 import { mongoSanitizeCompatible } from './middlewares/mongo-sanitize.middleware.js';
 import authRoutes from './routes/auth.routes.js';
+import propertyRoutes from './routes/property.routes.js';
 
 const app = express();
 
@@ -74,6 +75,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/properties', propertyRoutes);
 
 app.use((req, res, next) => {
   res.status(404).json({ success: false, message: 'Not found' });
