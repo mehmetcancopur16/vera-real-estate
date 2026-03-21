@@ -14,6 +14,12 @@ import authRoutes from './routes/auth.routes.js';
 import propertyRoutes from './routes/property.routes.js';
 
 const app = express();
+const allowedOrigins = [
+  'http://localhost:3000',
+  ...(process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
+    : [])
+];
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -28,7 +34,12 @@ app.set('trust proxy', 1);
 app.use(helmet());
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || true,
+    origin(origin, cb) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return cb(null, true);
+      }
+      return cb(null, false);
+    },
     credentials: true
   })
 );

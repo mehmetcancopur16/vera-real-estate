@@ -77,3 +77,15 @@ export async function login(req, res, next) {
     next(err);
   }
 }
+
+export async function getMe(req, res, next) {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      throw new ApiError(404, 'Kullanıcı bulunamadı');
+    }
+    res.status(200).json({ success: true, user: user.toJSON() });
+  } catch (err) {
+    next(err);
+  }
+}

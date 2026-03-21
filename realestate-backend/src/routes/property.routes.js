@@ -22,6 +22,27 @@ router.get('/featured', propertyController.featuredProperties);
 
 /**
  * @openapi
+ * /api/properties/my:
+ *   get:
+ *     tags: [Properties]
+ *     summary: Giriş yapan kullanıcının ilanları
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, default: 1 }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 10 }
+ *     responses:
+ *       200:
+ *         description: Kullanıcının ilan listesi
+ */
+router.get('/my', protect, propertyController.getMyProperties);
+
+/**
+ * @openapi
  * /api/properties:
  *   get:
  *     tags: [Properties]
@@ -190,5 +211,30 @@ router.delete('/:id', protect, isOwner(Property), propertyController.deletePrope
  *         description: Yüklendi
  */
 router.post('/:id/images', protect, isOwner(Property), upload.array('images', 5), propertyController.uploadPropertyImages);
+
+/**
+ * @openapi
+ * /api/properties/{id}/images/{imgId}:
+ *   delete:
+ *     tags: [Properties]
+ *     summary: İlandaki görseli Cloudinary ve DB'den sil
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *       - in: path
+ *         name: imgId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Görsel silindi
+ *       404:
+ *         description: Görsel veya ilan bulunamadı
+ */
+router.delete('/:id/images/:imgId', protect, isOwner(Property), propertyController.deletePropertyImage);
 
 export default router;

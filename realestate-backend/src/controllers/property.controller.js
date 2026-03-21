@@ -70,6 +70,22 @@ function uploadBuffer(buffer) {
   });
 }
 
+function parseCloudinaryPublicIdFromUrl(url) {
+  try {
+    const parsed = new URL(url);
+    const marker = '/upload/';
+    const uploadIndex = parsed.pathname.indexOf(marker);
+    if (uploadIndex === -1) return null;
+
+    let rest = parsed.pathname.slice(uploadIndex + marker.length);
+    rest = rest.replace(/^v\d+\//, '');
+    const withoutExtension = rest.replace(/\.[^/.]+$/, '');
+    return withoutExtension || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function createProperty(req, res, next) {
   try {
     const { title, description, type, listingType, price, currency, size, features, location } = req.body;
@@ -126,6 +142,37 @@ export async function getProperties(req, res, next) {
     const [items, total] = await Promise.all([query.lean(), Property.countDocuments(filter)]);
 
     res.json({
+      success: true,
+      data: items,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit) || 0
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getMyProperties(req, res, next) {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 10));
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      Property.find({ owner: req.user.id, isActive: true })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('owner', 'name email')
+        .lean(),
+      Property.countDocuments({ owner: req.user.id, isActive: true })
+    ]);
+
+    res.status(200).json({
       success: true,
       data: items,
       pagination: {
@@ -220,6 +267,42 @@ export async function uploadPropertyImages(req, res, next) {
     await property.populate('owner', 'name email');
 
     res.status(200).json({ success: true, data: property, uploaded: urls });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function deletePropertyImage(req, res, next) {
+  try {
+    assertCloudinary();
+    const { id, imgId } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      throw new ApiError(400, 'Geçersiz ilan kimliği');
+    }
+
+    const property = await Property.findById(id);
+    if (!property) {
+      throw new ApiError(404, 'İlan bulunamadı');
+    }
+
+    const decodedImgId = decodeURIComponent(imgId);
+    const imageUrl = property.images.find(
+      (url) => url === decodedImgId || url.includes(`/${decodedImgId}.`) || url.includes(`/${decodedImgId}/`)
+    );
+    if (!imageUrl) {
+      throw new ApiError(404, 'Görsel bulunamadı');
+    }
+
+    const publicId = decodedImgId.includes('/') ? decodedImgId : parseCloudinaryPublicIdFromUrl(imageUrl);
+    if (!publicId) {
+      throw new ApiError(400, 'Cloudinary public_id çözümlenemedi');
+    }
+
+    await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+    property.images = property.images.filter((url) => url !== imageUrl);
+    await property.save();
+
+    res.status(200).json({ success: true, message: 'Görsel silindi', data: property });
   } catch (err) {
     next(err);
   }
