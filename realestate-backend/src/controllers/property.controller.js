@@ -147,7 +147,11 @@ export async function getPropertyById(req, res, next) {
       throw new ApiError(400, 'Geçersiz ilan kimliği');
     }
 
-    const property = await Property.findById(id).populate('owner', 'name email');
+    const property = await Property.findOneAndUpdate(
+      { _id: id, isActive: true },
+      { $inc: { viewCount: 1 } },
+      { new: true }
+    ).populate('owner', 'name email');
     if (!property) {
       throw new ApiError(404, 'İlan bulunamadı');
     }
@@ -160,19 +164,8 @@ export async function getPropertyById(req, res, next) {
 
 export async function updateProperty(req, res, next) {
   try {
-    const { id } = req.params;
-    if (!mongoose.isValidObjectId(id)) {
-      throw new ApiError(400, 'Geçersiz ilan kimliği');
-    }
-
-    const property = await Property.findById(id);
-    if (!property) {
-      throw new ApiError(404, 'İlan bulunamadı');
-    }
-
-    if (property.owner.toString() !== req.user.id) {
-      throw new ApiError(403, 'Bu ilanı güncelleme yetkiniz yok');
-    }
+    const property = await Property.findById(req.params.id);
+    if (!property) throw new ApiError(404, 'İlan bulunamadı');
 
     const allowed = ['title', 'description', 'type', 'listingType', 'price', 'currency', 'size', 'features', 'location', 'isActive', 'images'];
     for (const key of allowed) {
@@ -197,22 +190,13 @@ export async function updateProperty(req, res, next) {
 
 export async function deleteProperty(req, res, next) {
   try {
-    const { id } = req.params;
-    if (!mongoose.isValidObjectId(id)) {
-      throw new ApiError(400, 'Geçersiz ilan kimliği');
-    }
-
-    const property = await Property.findById(id);
-    if (!property) {
-      throw new ApiError(404, 'İlan bulunamadı');
-    }
-
-    if (property.owner.toString() !== req.user.id) {
-      throw new ApiError(403, 'Bu ilanı silme yetkiniz yok');
-    }
-
-    await property.deleteOne();
-    res.status(200).json({ success: true, message: 'İlan silindi' });
+    const property = await Property.findByIdAndUpdate(
+      req.params.id,
+      { isActive: false },
+      { new: true }
+    );
+    if (!property) throw new ApiError(404, 'İlan bulunamadı');
+    res.status(200).json({ success: true, message: 'İlan pasife alındı' });
   } catch (err) {
     next(err);
   }
@@ -222,19 +206,8 @@ export async function uploadPropertyImages(req, res, next) {
   try {
     assertCloudinary();
 
-    const { id } = req.params;
-    if (!mongoose.isValidObjectId(id)) {
-      throw new ApiError(400, 'Geçersiz ilan kimliği');
-    }
-
-    const property = await Property.findById(id);
-    if (!property) {
-      throw new ApiError(404, 'İlan bulunamadı');
-    }
-
-    if (property.owner.toString() !== req.user.id) {
-      throw new ApiError(403, 'Bu ilana görsel yükleme yetkiniz yok');
-    }
+    const property = await Property.findById(req.params.id);
+    if (!property) throw new ApiError(404, 'İlan bulunamadı');
 
     const files = req.files;
     if (!files?.length) {
@@ -247,6 +220,20 @@ export async function uploadPropertyImages(req, res, next) {
     await property.populate('owner', 'name email');
 
     res.status(200).json({ success: true, data: property, uploaded: urls });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function featuredProperties(req, res, next) {
+  try {
+    const items = await Property.find({ isActive: true })
+      .sort({ viewCount: -1, createdAt: -1 })
+      .limit(6)
+      .populate('owner', 'name email')
+      .lean();
+
+    res.status(200).json({ success: true, data: items });
   } catch (err) {
     next(err);
   }

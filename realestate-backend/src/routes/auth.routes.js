@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import * as authController from '../controllers/auth.controller.js';
+import { validate } from '../middlewares/validate.middleware.js';
+import { loginSchema, registerSchema } from '../validations/auth.validation.js';
 
 const router = Router();
 
@@ -31,7 +33,7 @@ const router = Router();
  *       400:
  *         description: Geçersiz istek veya e-posta kullanımda
  */
-router.post('/register', authController.register);
+router.post('/register', validate(registerSchema), authController.register);
 
 /**
  * @openapi
@@ -60,6 +62,6 @@ router.post('/register', authController.register);
  *       401:
  *         description: Geçersiz kimlik bilgileri
  */
-router.post('/login', authController.login);
+router.post('/login', validate(loginSchema), authController.login);
 
 export default router;

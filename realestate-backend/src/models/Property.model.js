@@ -33,6 +33,7 @@ const propertySchema = new mongoose.Schema(
       district: { type: String, trim: true },
       address: { type: String, trim: true }
     },
+    viewCount: { type: Number, default: 0, min: 0 },
     images: [{ type: String }],
     isActive: { type: Boolean, default: true }
   },

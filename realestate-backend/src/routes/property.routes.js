@@ -1,9 +1,24 @@
 import { Router } from 'express';
-import { protect } from '../middlewares/auth.middleware.js';
+import { isOwner, protect } from '../middlewares/auth.middleware.js';
 import { upload } from '../middlewares/upload.middleware.js';
 import * as propertyController from '../controllers/property.controller.js';
+import Property from '../models/Property.model.js';
+import { validate } from '../middlewares/validate.middleware.js';
+import { createPropertySchema, updatePropertySchema } from '../validations/property.validation.js';
 
 const router = Router();
+
+/**
+ * @openapi
+ * /api/properties/featured:
+ *   get:
+ *     tags: [Properties]
+ *     summary: Öne çıkan 6 ilan
+ *     responses:
+ *       200:
+ *         description: Başarılı
+ */
+router.get('/featured', propertyController.featuredProperties);
 
 /**
  * @openapi
@@ -99,7 +114,7 @@ router.get('/:id', propertyController.getPropertyById);
  *       201:
  *         description: Oluşturuldu
  */
-router.post('/', protect, propertyController.createProperty);
+router.post('/', protect, validate(createPropertySchema), propertyController.createProperty);
 
 /**
  * @openapi
@@ -124,7 +139,7 @@ router.post('/', protect, propertyController.createProperty);
  *       403:
  *         description: Yetkisiz
  */
-router.put('/:id', protect, propertyController.updateProperty);
+router.put('/:id', protect, isOwner(Property), validate(updatePropertySchema), propertyController.updateProperty);
 
 /**
  * @openapi
@@ -143,7 +158,7 @@ router.put('/:id', protect, propertyController.updateProperty);
  *       200:
  *         description: Silindi
  */
-router.delete('/:id', protect, propertyController.deleteProperty);
+router.delete('/:id', protect, isOwner(Property), propertyController.deleteProperty);
 
 /**
  * @openapi
@@ -174,6 +189,6 @@ router.delete('/:id', protect, propertyController.deleteProperty);
  *       200:
  *         description: Yüklendi
  */
-router.post('/:id/images', protect, upload.array('images', 5), propertyController.uploadPropertyImages);
+router.post('/:id/images', protect, isOwner(Property), upload.array('images', 5), propertyController.uploadPropertyImages);
 
 export default router;
