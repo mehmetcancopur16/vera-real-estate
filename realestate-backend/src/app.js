@@ -10,6 +10,7 @@ import { swaggerOptions } from './config/swagger.config.js';
 import logger from './utils/logger.js';
 import { errorMiddleware } from './middlewares/error.middleware.js';
 import { mongoSanitizeCompatible } from './middlewares/mongo-sanitize.middleware.js';
+import authRoutes from './routes/auth.routes.js';
 
 const app = express();
 
@@ -51,11 +52,11 @@ app.use(
 );
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));
 
 /**
  * @openapi
- * /health:
+ * /api/health:
  *   get:
  *     summary: Health check
  *     tags: [System]
@@ -71,6 +72,8 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+app.use('/api/auth', authRoutes);
 
 app.use((req, res, next) => {
   res.status(404).json({ success: false, message: 'Not found' });

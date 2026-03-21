@@ -1,5 +1,5 @@
 /**
- * Swagger JSDoc options — extend as routes are documented.
+ * OpenAPI 3.0 — Vera Real Estate API + JWT Bearer
  */
 export const swaggerOptions = {
   definition: {
@@ -7,9 +7,20 @@ export const swaggerOptions = {
     info: {
       title: 'Vera Real Estate API',
       version: '1.0.0',
-      description: 'Emlak portalı backend API'
+      description: 'Emlak portalı backend API dökümantasyonu'
     },
-    servers: [{ url: '/api' }]
+    servers: [{ url: '/' }],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Header: Authorization: Bearer <access_token>'
+        }
+      }
+    },
+    security: []
   },
   apis: ['./src/routes/**/*.js', './src/app.js']
 };
