@@ -1,7 +1,11 @@
 import api from "@/lib/axios";
 
-export async function login(payload) {
-  const { data } = await api.post("/auth/login", payload);
+export async function login(payload = {}) {
+  const requestBody = {
+    ...payload,
+    rememberMe: Boolean(payload.rememberMe),
+  };
+  const { data } = await api.post("/auth/login", requestBody);
   return data;
 }
 

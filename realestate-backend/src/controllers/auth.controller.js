@@ -2,13 +2,13 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.model.js';
 import { ApiError } from '../utils/ApiError.js';
 
-function signToken(userId) {
+function signToken(userId, expiresIn = process.env.JWT_EXPIRES_IN || '1d') {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
     throw new ApiError(500, 'JWT_SECRET yapılandırılmamış');
   }
   return jwt.sign({ id: userId.toString() }, secret, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '1d'
+    expiresIn
   });
 }
 
@@ -56,7 +56,7 @@ export async function login(req, res, next) {
   try {
     assertBodyFields(req.body, ['email', 'password']);
 
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
       throw new ApiError(401, 'Geçersiz e-posta veya şifre');
@@ -67,7 +67,8 @@ export async function login(req, res, next) {
       throw new ApiError(401, 'Geçersiz e-posta veya şifre');
     }
 
-    const token = signToken(user._id);
+    const expiresIn = rememberMe ? '30d' : '1d';
+    const token = signToken(user._id, expiresIn);
     res.status(200).json({
       success: true,
       user: user.toJSON(),

@@ -8,5 +8,6 @@ export const registerSchema = z.object({
 
 export const loginSchema = z.object({
   email: z.string().email('Geçerli bir e-posta girin').transform((v) => v.toLowerCase().trim()),
-  password: z.string().min(6, 'password en az 6 karakter olmalı')
+  password: z.string().min(6, 'password en az 6 karakter olmalı'),
+  rememberMe: z.boolean().optional()
 });
