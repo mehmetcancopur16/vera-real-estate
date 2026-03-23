@@ -94,9 +94,13 @@ export default function DashboardLayout({ children }) {
           <p className="font-medium">Dashboard</p>
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="icon" variant="outline" aria-label="menu">
+              <button
+                type="button"
+                aria-label="menu"
+                className="inline-flex size-8 items-center justify-center rounded-lg border border-border bg-background hover:bg-muted/20"
+              >
                 <Menu className="h-5 w-5" />
-              </Button>
+              </button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[290px]">
               <SheetHeader>

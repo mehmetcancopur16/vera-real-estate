@@ -36,6 +36,7 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
   --color-gold: var(--gold);
+  --color-gold-hover: var(--gold-hover);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -65,6 +66,7 @@
   --accent: #d4af37;
   --accent-foreground: #0f172a;
   --gold: #d4af37;
+  --gold-hover: #b4942f;
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
@@ -101,6 +103,7 @@
   --accent: #d4af37;
   --accent-foreground: #0f172a;
   --gold: #d4af37;
+  --gold-hover: #b4942f;
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);

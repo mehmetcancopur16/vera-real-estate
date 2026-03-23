@@ -26,9 +26,13 @@ export default function Map({ properties }) {
         />
         {properties?.map((property) => {
           if (!property.coordinates) return null;
+          const markerKey =
+            property._id ||
+            property.id ||
+            `${property.location?.city || "city"}-${property.location?.district || "district"}-${property.title || "property"}`;
           return (
             <Marker
-              key={property.id}
+              key={markerKey}
               icon={defaultIcon}
               position={[property.coordinates.lat, property.coordinates.lng]}
             >

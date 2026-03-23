@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
 import { Loader2, Search } from "lucide-react";
 import PropertyGrid from "@/components/property/PropertyGrid";
 import MapView from "@/components/map/MapView";
@@ -48,9 +49,16 @@ export default function HomePage() {
 
   return (
     <div className="space-y-12">
-      <section className="relative overflow-hidden rounded-2xl bg-[#0f172a] px-6 py-16 text-white md:px-12">
-        <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(circle_at_top_right,#d4af37_0,transparent_38%)]" />
-        <div className="relative space-y-4">
+      <section className="relative min-h-[80vh] overflow-hidden rounded-2xl text-white">
+        <Image
+          src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=2000&auto=format&fit=crop"
+          alt="Luxury estate"
+          fill
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-primary/70" />
+        <div className="relative flex min-h-[80vh] items-center justify-center px-6 py-16 text-center md:px-12">
+          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <p className="text-sm uppercase tracking-[0.24em] text-white/80">Vera Real Estate</p>
           <h1 className="max-w-3xl text-3xl font-semibold leading-tight md:text-5xl">
             Modern Yasamin Yeni Koordinati
@@ -59,26 +67,29 @@ export default function HomePage() {
             Guzel lokasyonlar, akilli filtreler ve premium deneyim ile emlak yolculugunu yeniden
             tanimlayin.
           </p>
+          </div>
+        </div>
+        <div className="absolute inset-x-0 -bottom-10 px-4">
+          <form
+            className="mx-auto flex w-full max-w-5xl flex-col gap-3 rounded-xl border border-border/70 bg-white p-4 shadow-2xl md:flex-row md:items-center"
+            onSubmit={handleSearch}
+          >
+            <Input value={filters.city} onChange={(e) => setFilters({ city: e.target.value })} placeholder="Sehir secimi" className="md:flex-1" />
+            <Input value={filters.type} onChange={(e) => setFilters({ type: e.target.value })} placeholder="Konut tipi" className="md:flex-1" />
+            <Input value={filters.maxPrice} onChange={(e) => setFilters({ maxPrice: e.target.value })} placeholder="Fiyat araligi" className="md:flex-1" />
+            <Button type="submit" className="gap-2 bg-accent text-primary hover:bg-[var(--gold-hover)]" disabled={isLoading}>
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+              {isLoading ? "Araniyor" : "Ara"}
+            </Button>
+          </form>
         </div>
       </section>
 
-      <section className="rounded-xl border border-border bg-card p-4">
-        <form className="flex flex-col gap-3 md:flex-row" onSubmit={handleSearch}>
-          <Input
-            value={filters.city}
-            onChange={(e) => setFilters({ city: e.target.value })}
-            placeholder="Sehir ara (ornek: Istanbul)"
-            className="md:max-w-sm"
-          />
-          <Button type="submit" className="gap-2" disabled={isLoading}>
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-            {isLoading ? "Araniyor" : "Ara"}
-          </Button>
-        </form>
-      </section>
-
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">One Cikan Ilanlar</h2>
+      <section className="space-y-4 pt-10">
+        <div className="flex items-center gap-3">
+          <span className="h-px w-12 bg-accent" />
+          <h2 className="text-2xl font-semibold">Seckin Portfoyumuz</h2>
+        </div>
         {isError ? (
           <div className="rounded-lg border border-dashed border-destructive/40 bg-destructive/5 p-5 text-sm text-destructive">
             Ilanlar su an yuklenemedi. Lutfen birazdan tekrar deneyin.
