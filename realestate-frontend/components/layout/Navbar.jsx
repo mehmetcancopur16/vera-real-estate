@@ -1,7 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+
+const navItems = [
+  { href: "/", label: "Ana Sayfa" },
+  { href: "/properties", label: "Ilanlar" },
+];
 
 export default function Navbar() {
   return (
@@ -12,21 +25,56 @@ export default function Navbar() {
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
-          <Link href="/" className="text-sm font-medium text-white/90 hover:text-white">
-            Ana Sayfa
-          </Link>
-          <Link href="/properties" className="text-sm font-medium text-white/90 hover:text-white">
-            Ilanlar
-          </Link>
+          {navItems.map((item) => (
+            <Link key={item.href} href={item.href} className="text-sm font-medium text-white/90 hover:text-white">
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="hidden items-center gap-2 md:flex">
           <Button asChild variant="secondary" size="sm">
             <Link href="/login">Login</Link>
           </Button>
           <Button asChild size="sm" className="bg-white text-primary hover:bg-white/90">
             <Link href="/register">Register</Link>
           </Button>
+        </div>
+
+        <div className="md:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button size="icon" variant="secondary" aria-label="menu">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[280px]">
+              <SheetHeader>
+                <SheetTitle>Vera Real Estate</SheetTitle>
+              </SheetHeader>
+              <div className="mt-6 space-y-4">
+                <nav className="grid gap-2">
+                  {navItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="rounded-md px-3 py-2 text-sm hover:bg-muted/30"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </nav>
+                <div className="grid gap-2 pt-4">
+                  <Button asChild variant="secondary">
+                    <Link href="/login">Login</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link href="/register">Register</Link>
+                  </Button>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>

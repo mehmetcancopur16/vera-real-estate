@@ -16,6 +16,7 @@ import propertyRoutes from './routes/property.routes.js';
 const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
+  // Production: add Vercel frontend domains via CORS_ORIGINS env (comma-separated).
   ...(process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
     : [])

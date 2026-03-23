@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import PropertyGrid from "@/components/property/PropertyGrid";
 import MapView from "@/components/map/MapView";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getProperties } from "@/services/property.service";
 import { usePropertyStore } from "@/store/usePropertyStore";
 
@@ -22,7 +23,7 @@ const cityCoords = {
 export default function HomePage() {
   const { filters, setFilters, setProperties, setLoading } = usePropertyStore();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["properties", filters],
     queryFn: async () => getProperties({ ...filters, limit: 6 }),
   });
@@ -69,17 +70,25 @@ export default function HomePage() {
             placeholder="Sehir ara (ornek: Istanbul)"
             className="md:max-w-sm"
           />
-          <Button type="submit" className="gap-2">
-            <Search className="h-4 w-4" />
-            Ara
+          <Button type="submit" className="gap-2" disabled={isLoading}>
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+            {isLoading ? "Araniyor" : "Ara"}
           </Button>
         </form>
       </section>
 
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">One Cikan Ilanlar</h2>
-        {isLoading ? (
-          <p className="text-sm text-muted-foreground">Ilanlar yukleniyor...</p>
+        {isError ? (
+          <div className="rounded-lg border border-dashed border-destructive/40 bg-destructive/5 p-5 text-sm text-destructive">
+            Ilanlar su an yuklenemedi. Lutfen birazdan tekrar deneyin.
+          </div>
+        ) : isLoading ? (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <Skeleton className="h-[340px] w-full" />
+            <Skeleton className="h-[340px] w-full" />
+            <Skeleton className="h-[340px] w-full" />
+          </div>
         ) : (
           <PropertyGrid properties={properties} />
         )}

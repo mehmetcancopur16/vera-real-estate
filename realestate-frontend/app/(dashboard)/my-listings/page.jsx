@@ -1,9 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -45,7 +48,30 @@ export default function MyListingsPage() {
   const items = data?.data || [];
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Ilanlar yukleniyor...</p>;
+    return (
+      <section className="space-y-4">
+        <Skeleton className="h-8 w-40" />
+        <div className="space-y-3 rounded-xl border border-border p-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-16 w-full" />
+        </div>
+      </section>
+    );
+  }
+
+  if (!items.length) {
+    return (
+      <section className="flex min-h-[55vh] flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border bg-card p-6 text-center">
+        <h1 className="text-2xl font-semibold">Henüz hic ilan eklemediniz.</h1>
+        <p className="max-w-md text-sm text-muted-foreground">
+          Yeni bir ilan olusturarak panelinizi doldurmaya hemen baslayabilirsiniz.
+        </p>
+        <Button asChild>
+          <Link href="/add-listing">Yeni Ilan Ekle</Link>
+        </Button>
+      </section>
+    );
   }
 
   return (
@@ -89,18 +115,18 @@ export default function MyListingsPage() {
                     onClick={() => deleteMutation.mutate(property._id)}
                     disabled={deleteMutation.isPending}
                   >
-                    Sil
+                    {deleteMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                        Siliniyor
+                      </>
+                    ) : (
+                      "Sil"
+                    )}
                   </Button>
                 </TableCell>
               </TableRow>
             ))}
-            {!items.length && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
-                  Henuz ilaniniz yok.
-                </TableCell>
-              </TableRow>
-            )}
           </TableBody>
         </Table>
       </div>

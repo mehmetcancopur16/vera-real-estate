@@ -7,6 +7,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -295,7 +296,14 @@ export default function PropertyForm() {
 
         <div className="md:col-span-2">
           <Button type="submit" disabled={submitMutation.isPending}>
-            {submitMutation.isPending ? "Kaydediliyor..." : "Ilani Kaydet"}
+            {submitMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Kaydediliyor...
+              </>
+            ) : (
+              "Ilani Kaydet"
+            )}
           </Button>
         </div>
       </form>
