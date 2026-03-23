@@ -43,15 +43,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="grid min-h-screen grid-cols-1 md:grid-cols-2">
-      <section className="relative hidden md:block">
+    <div className="grid w-full grid-cols-1 md:grid-cols-2">
+      <section className="relative hidden md:block md:w-1/2">
         <Image
           src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1600&auto=format&fit=crop"
           alt="Luxury residence"
           fill
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/60 to-transparent" />
+        <div className="absolute inset-0 bg-black/40" />
         <div className="absolute inset-x-10 bottom-14 animate-in fade-in duration-700">
           <p className="text-sm uppercase tracking-[0.25em] text-accent">Vera Real Estate</p>
           <h2 className="mt-4 max-w-sm text-3xl font-semibold leading-tight text-white">
@@ -61,9 +61,9 @@ export default function LoginPage() {
         </div>
       </section>
       <section className="flex flex-col justify-center bg-slate-50 px-6 py-10">
-        <div className="mx-auto w-full max-w-md rounded-2xl border border-border/70 bg-white p-8 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <h1 className="text-3xl font-semibold text-primary">Giris Yap</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Premium panelinize erisin ve ilanlarinizi yonetin.</p>
+        <div className="mx-auto w-full max-w-md animate-in fade-in slide-in-from-bottom-4 rounded-2xl border border-slate-200 bg-white p-8 shadow-2xl duration-700">
+          <h1 className="text-3xl font-semibold text-slate-900">Giris Yap</h1>
+          <p className="mt-1 text-sm text-slate-500">Hesabiniza erismek icin bilgilerinizi girin.</p>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-5">
               <FormField
@@ -71,14 +71,14 @@ export default function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>E-posta</FormLabel>
+                    <FormLabel className="font-semibold text-slate-700">E-posta</FormLabel>
                     <FormControl>
                       <div className="group relative">
-                        <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-accent" />
+                        <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-accent" />
                         <Input
                           type="email"
                           placeholder="ornek@vera.com"
-                          className="h-11 pl-10 focus-visible:ring-accent"
+                          className="h-11 border-slate-200 bg-slate-50 pl-10 text-slate-900 placeholder:text-slate-400 focus-visible:border-accent focus-visible:ring-accent"
                           {...field}
                         />
                       </div>
@@ -92,20 +92,20 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Sifre</FormLabel>
+                    <FormLabel className="font-semibold text-slate-700">Sifre</FormLabel>
                     <FormControl>
                       <div className="group relative">
-                        <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-accent" />
+                        <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-accent" />
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="******"
-                          className="h-11 pl-10 pr-10 focus-visible:ring-accent"
+                          className="h-11 border-slate-200 bg-slate-50 pl-10 pr-10 text-slate-900 placeholder:text-slate-400 focus-visible:border-accent focus-visible:ring-accent"
                           {...field}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword((prev) => !prev)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-accent"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-700"
                           aria-label={showPassword ? "Sifreyi gizle" : "Sifreyi goster"}
                         >
                           {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -125,11 +125,11 @@ export default function LoginPage() {
                       <FormControl>
                         <Checkbox checked={field.value} onCheckedChange={(checked) => field.onChange(Boolean(checked))} />
                       </FormControl>
-                      <Label className="text-sm text-muted-foreground">Beni Hatirla</Label>
+                      <Label className="text-sm text-slate-600">Beni Hatirla</Label>
                     </FormItem>
                   )}
                 />
-                <Link href="#" className="text-sm text-muted-foreground transition-colors hover:text-accent">
+                <Link href="#" className="text-sm text-slate-600 transition-colors hover:text-accent">
                   Sifremi Unuttum?
                 </Link>
               </div>
@@ -149,7 +149,7 @@ export default function LoginPage() {
               </Button>
             </form>
           </Form>
-          <p className="mt-4 text-sm text-muted-foreground">
+          <p className="mt-4 text-sm text-slate-600">
             Hesabin yok mu? <Link href="/register" className="text-accent hover:underline">Kayit ol</Link>
           </p>
         </div>
