@@ -66,12 +66,13 @@ export default function Navbar() {
         {isAuthenticated ? (
           <div className="hidden md:block">
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button type="button" className="rounded-full ring-2 ring-accent/40 transition hover:ring-accent" aria-label="user-menu">
-                  <Avatar className="size-9 bg-accent text-primary">
-                    <AvatarFallback>{initials}</AvatarFallback>
-                  </Avatar>
-                </button>
+              <DropdownMenuTrigger
+                className="rounded-full ring-2 ring-accent/40 transition hover:ring-accent"
+                aria-label="user-menu"
+              >
+                <Avatar className="size-9 bg-accent text-primary">
+                  <AvatarFallback>{initials}</AvatarFallback>
+                </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">
                 <div className="px-2 py-1.5 text-xs text-muted-foreground">{user?.email || "Hesap"}</div>
@@ -115,14 +116,11 @@ export default function Navbar() {
 
         <div className="md:hidden">
           <Sheet>
-            <SheetTrigger asChild>
-              <button
-                type="button"
-                aria-label="menu"
-                className="inline-flex size-8 items-center justify-center rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
+            <SheetTrigger
+              aria-label="menu"
+              className="inline-flex size-8 items-center justify-center rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            >
+              <Menu className="h-5 w-5" />
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] bg-slate-950 text-white">
               <SheetHeader>

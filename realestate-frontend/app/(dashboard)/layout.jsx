@@ -93,14 +93,11 @@ export default function DashboardLayout({ children }) {
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3">
           <p className="font-medium">Dashboard</p>
           <Sheet>
-            <SheetTrigger asChild>
-              <button
-                type="button"
-                aria-label="menu"
-                className="inline-flex size-8 items-center justify-center rounded-lg border border-border bg-background hover:bg-muted/20"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
+            <SheetTrigger
+              aria-label="menu"
+              className="inline-flex size-8 items-center justify-center rounded-lg border border-border bg-background hover:bg-muted/20"
+            >
+              <Menu className="h-5 w-5" />
             </SheetTrigger>
             <SheetContent side="left" className="w-[290px]">
               <SheetHeader>

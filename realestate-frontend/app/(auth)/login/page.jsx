@@ -51,13 +51,18 @@ export default function LoginPage() {
           fill
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute inset-x-10 bottom-14 animate-in fade-in duration-700">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-primary/65 to-black/70" />
+        <div className="absolute inset-x-10 bottom-14 space-y-4 animate-in fade-in duration-700">
+          <span className="inline-flex rounded-full border border-accent/40 bg-white/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-accent backdrop-blur">
+            Premium Access
+          </span>
           <p className="text-sm uppercase tracking-[0.25em] text-accent">Vera Real Estate</p>
           <h2 className="mt-4 max-w-sm text-3xl font-semibold leading-tight text-white">
             Her Anahtar, Ozel Bir Yasama Acilir
           </h2>
-          <p className="mt-3 text-sm text-white/80">Guvenilir yatirim, secici portfoy ve premium deneyim.</p>
+          <p className="max-w-sm text-sm text-white/80">
+            Guvenilir yatirim, secici portfoy ve lüks deneyimle emlak yolculugunuzu yonetin.
+          </p>
         </div>
       </section>
       <section className="flex flex-col justify-center bg-slate-50 px-6 py-10">

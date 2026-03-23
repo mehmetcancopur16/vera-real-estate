@@ -57,18 +57,24 @@ export default function RegisterPage() {
     <div className="grid w-full grid-cols-1 md:grid-cols-2">
       <section className="relative hidden md:flex">
         <Image
-          src="https://images.unsplash.com/photo-1613977257592-487ecd136cc3?q=80&w=1600&auto=format&fit=crop"
+          src="https://images.unsplash.com/photo-1600573472550-8090b5e0745e?q=80&w=1600&auto=format&fit=crop"
           alt="Luxury residence"
           fill
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="absolute inset-x-10 bottom-14 animate-in fade-in duration-700">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-primary/65 to-black/70" />
+        <div className="absolute inset-x-10 bottom-14 space-y-4 animate-in fade-in duration-700">
+          <span className="inline-flex rounded-full border border-accent/40 bg-white/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-accent backdrop-blur">
+            Vera Signature
+          </span>
           <p className="text-sm uppercase tracking-[0.24em] text-accent">Vera Real Estate</p>
           <h2 className="mt-4 max-w-md text-3xl font-semibold leading-tight text-white">
             Geleceginize Deger Katan Guvenli Bir Baslangic
           </h2>
-          <p className="mt-3 text-sm text-white/80">Seckin portfoyumuz ve profesyonel danismanlikla yaninizdayiz.</p>
+          <p className="max-w-sm text-sm text-white/80">
+            Seckin portfoyumuz ve profesyonel danismanlikla, yeni yasam alaniniza guvenle
+            ulasmanizi sagliyoruz.
+          </p>
         </div>
       </section>
       <section className="flex items-center justify-center bg-slate-50 p-6">
