@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { BedDouble, Bath } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -14,6 +15,7 @@ function formatTry(price) {
 
 export default function PropertyCard({ property }) {
   const imageUrl = property.images?.[0] || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1400&auto=format&fit=crop";
+  const propertyId = property._id || property.id;
 
   return (
     <Card className="overflow-hidden border border-border/80 shadow-sm">
@@ -21,7 +23,11 @@ export default function PropertyCard({ property }) {
         <Image src={imageUrl} alt={property.title} fill className="object-cover" />
       </div>
       <CardHeader className="space-y-1">
-        <CardTitle className="line-clamp-1 text-lg">{property.title}</CardTitle>
+        <CardTitle className="line-clamp-1 text-lg">
+          <Link href={`/properties/${propertyId}`} className="hover:underline">
+            {property.title}
+          </Link>
+        </CardTitle>
         <p className="text-sm text-muted-foreground">
           {property.location?.city} / {property.location?.district}
         </p>

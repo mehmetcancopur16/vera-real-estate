@@ -8,7 +8,7 @@ export default function PropertyGrid({ properties }) {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
       {properties.map((property) => (
-        <PropertyCard key={property.id} property={property} />
+        <PropertyCard key={property._id || property.id} property={property} />
       ))}
     </div>
   );

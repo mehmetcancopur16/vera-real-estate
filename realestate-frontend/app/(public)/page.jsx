@@ -1,40 +1,50 @@
+"use client";
+
+import { useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import PropertyGrid from "@/components/property/PropertyGrid";
 import MapView from "@/components/map/MapView";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { getProperties } from "@/services/property.service";
+import { usePropertyStore } from "@/store/usePropertyStore";
 
-const mockProperties = [
-  {
-    id: "p1",
-    title: "Merkezde Luks 3+1 Daire",
-    price: 7250000,
-    location: { city: "Istanbul", district: "Besiktas" },
-    features: { rooms: 3, bathrooms: 2 },
-    coordinates: { lat: 41.0422, lng: 29.0083 },
-    images: ["https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=1400&auto=format&fit=crop"],
-  },
-  {
-    id: "p2",
-    title: "Deniz Manzarali Modern Villa",
-    price: 18300000,
-    location: { city: "Izmir", district: "Cesme" },
-    features: { rooms: 5, bathrooms: 3 },
-    coordinates: { lat: 38.3261, lng: 26.3058 },
-    images: ["https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?q=80&w=1400&auto=format&fit=crop"],
-  },
-  {
-    id: "p3",
-    title: "Yatirimlik Kiralik Ofis",
-    price: 85000,
-    location: { city: "Ankara", district: "Cankaya" },
-    features: { rooms: 2, bathrooms: 1 },
-    coordinates: { lat: 39.9042, lng: 32.8605 },
-    images: ["https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=1400&auto=format&fit=crop"],
-  },
-];
+const cityCoords = {
+  istanbul: { lat: 41.0082, lng: 28.9784 },
+  ankara: { lat: 39.9334, lng: 32.8597 },
+  izmir: { lat: 38.4192, lng: 27.1287 },
+  konya: { lat: 37.8746, lng: 32.4932 },
+  antalya: { lat: 36.8969, lng: 30.7133 },
+  bursa: { lat: 40.1885, lng: 29.061 },
+};
 
 export default function HomePage() {
+  const { filters, setFilters, setProperties, setLoading } = usePropertyStore();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["properties", filters],
+    queryFn: async () => getProperties({ ...filters, limit: 6 }),
+  });
+
+  const properties = useMemo(() => data?.data || [], [data]);
+
+  useEffect(() => {
+    setProperties(properties);
+    setLoading(isLoading);
+  }, [isLoading, properties, setLoading, setProperties]);
+
+  const mapReadyProperties = properties.map((property) => {
+    const city = (property.location?.city || "").toLowerCase();
+    const fallback = cityCoords[city];
+    const coordinates = property.coordinates || fallback || null;
+    return { ...property, coordinates };
+  });
+
+  function handleSearch(e) {
+    e.preventDefault();
+  }
+
   return (
     <div className="space-y-12">
       <section className="relative overflow-hidden rounded-2xl bg-[#0f172a] px-6 py-16 text-white md:px-12">
@@ -52,8 +62,13 @@ export default function HomePage() {
       </section>
 
       <section className="rounded-xl border border-border bg-card p-4">
-        <form className="flex flex-col gap-3 md:flex-row">
-          <Input placeholder="Sehir ara (ornek: Istanbul)" className="md:max-w-sm" />
+        <form className="flex flex-col gap-3 md:flex-row" onSubmit={handleSearch}>
+          <Input
+            value={filters.city}
+            onChange={(e) => setFilters({ city: e.target.value })}
+            placeholder="Sehir ara (ornek: Istanbul)"
+            className="md:max-w-sm"
+          />
           <Button type="submit" className="gap-2">
             <Search className="h-4 w-4" />
             Ara
@@ -63,12 +78,16 @@ export default function HomePage() {
 
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">One Cikan Ilanlar</h2>
-        <PropertyGrid properties={mockProperties} />
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">Ilanlar yukleniyor...</p>
+        ) : (
+          <PropertyGrid properties={properties} />
+        )}
       </section>
 
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">Haritada Kesfet</h2>
-        <MapView properties={mockProperties} />
+        <MapView properties={mapReadyProperties} />
       </section>
     </div>
   );
