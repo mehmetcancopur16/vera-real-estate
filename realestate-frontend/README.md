@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vera Real Estate Frontend
 
-## Getting Started
+Next.js 15 App Router tabanlı kullanıcı arayüzü.  
+Landing sayfaları, ilan kartları, harita görünümü, dashboard paneli, form validasyonu, auth state yönetimi ve SEO metadata akışını içerir.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Next.js 15 (App Router)
+- React 19
+- Tailwind CSS v4
+- shadcn/ui
+- TanStack Query
+- Zustand
+- React Hook Form + Zod
+- Leaflet / React Leaflet
+- Axios (interceptor ile token yönetimi)
+
+## Klasör Yapısı (Özet)
+
+```text
+realestate-frontend/
+├── app/
+│   ├── (public)/              # Landing ve public sayfalar
+│   ├── (dashboard)/           # Korumalı kullanıcı paneli
+│   ├── providers.jsx          # QueryClientProvider
+│   └── layout.tsx             # Root layout + toaster
+├── components/
+│   ├── forms/                 # Property formu
+│   ├── layout/                # Navbar/Footer
+│   ├── map/                   # Map + dynamic wrapper
+│   ├── property/              # Card/Grid
+│   └── ui/                    # shadcn bileşenleri
+├── lib/
+│   └── axios.js               # API client + request interceptor
+├── services/                  # Auth/Property API servisleri
+└── store/                     # Zustand store'lar
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Kurulum
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cd realestate-frontend
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`realestate-frontend/.env.local` oluştur:
 
-## Learn More
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5050/api
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Scriptler
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `npm run dev` → development server (`http://localhost:3000`)
+- `npm run build` → production build
+- `npm run start` → production serve
+- `npm run lint` → lint kontrolü
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## API Entegrasyonu
 
-## Deploy on Vercel
+- Axios instance: `lib/axios.js`
+- Tüm istekler `NEXT_PUBLIC_API_URL` üzerinden yapılır.
+- Request interceptor localStorage’daki `token` değerini otomatik olarak `Authorization: Bearer <token>` header’ına ekler.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## State ve Data Akışı
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Auth state: `store/useAuthStore.js`
+  - `user`, `isAuthenticated`, `isLoading`
+  - `login`, `logout`, `checkAuth`
+- Property state/filter: `store/usePropertyStore.js`
+- Server state: TanStack Query (`app/providers.jsx`)
+
+## Önemli Özellikler
+
+- Korumalı dashboard layout (`(dashboard)` route grubu)
+- İlan oluşturma formu:
+  - 1. adım: ilan verisi oluşturma
+  - 2. adım: varsa görselleri ilgili ilana upload etme
+- İlanlarım tablosu + silme aksiyonu + empty/loading states
+- Public ana sayfada canlı veri çekimi + error/loading fallback
+- İlan detay sayfasında dinamik metadata (`generateMetadata`)
+- Harita için SSR-safe dynamic import (`MapView`)
+
+## Backend Bağımlılığı
+
+Frontend bu backend endpointlerine bağlıdır:
+
+- Auth: `/api/auth/*`
+- Properties: `/api/properties/*`
+
+Backend’in aktif ve erişilebilir olması gerekir:
+- API: `http://localhost:5050`
+- Docs: `http://localhost:5050/api-docs`
+
+## Deployment (Vercel)
+
+- Root directory: `realestate-frontend`
+- Environment variables:
+  - `NEXT_PUBLIC_API_URL=https://<your-backend-domain>/api`
+- Build command: `npm run build`
+- Start command: `npm run start`
+
+## Troubleshooting
+
+- API çağrıları başarısız:
+  - `.env.local` içindeki `NEXT_PUBLIC_API_URL` değerini doğrula.
+- 401 auth hataları:
+  - LocalStorage token var mı kontrol et.
+  - Backend JWT secret/environment doğru mu kontrol et.
+- CORS hatası:
+  - Backend `CORS_ORIGINS` env içine frontend originini ekle.
+- Harita SSR hatası:
+  - Sadece `MapView` bileşenini kullan; direkt `Map` import etme.

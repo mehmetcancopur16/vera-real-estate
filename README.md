@@ -1,124 +1,108 @@
-# 🏠 Vera Real Estate — Modern Yaşamın Yeni Koordinatı
+# Vera Real Estate
 
-Modern, güvenli ve ölçeklenebilir bir full-stack emlak portalı.  
-Kullanıcılar ilan oluşturabilir, görsel yükleyebilir, filtreleyebilir, haritada keşfedebilir ve kendi dashboard alanından ilanlarını yönetebilir.
+Modern, güvenli ve SEO odaklı bir full-stack emlak portalı.
 
-## 🚀 Teknoloji Yığını
+Bu monorepo; backend (Node.js + Express + MongoDB) ve frontend (Next.js + Tailwind + shadcn/ui) katmanlarını tek projede birleştirir. Kullanıcılar JWT ile giriş yapabilir, ilan oluşturabilir, görsel yükleyebilir, ilanlarını yönetebilir, gelişmiş filtreleme yapabilir ve ilanları harita üzerinde görüntüleyebilir.
 
-### Frontend
-- ![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
-- ![React](https://img.shields.io/badge/React-19-20232A?logo=react)
-- ![TailwindCSS](https://img.shields.io/badge/Tailwind-v4-38B2AC?logo=tailwind-css)
-- ![shadcn/ui](https://img.shields.io/badge/UI-shadcn-111111)
-- ![Zustand](https://img.shields.io/badge/State-Zustand-7A4E1D)
-- ![React Query](https://img.shields.io/badge/Data-TanStack%20Query-FF4154)
-- ![Leaflet](https://img.shields.io/badge/Map-Leaflet-199900?logo=leaflet)
+## Monorepo Yapısı
 
-### Backend
-- ![Node.js](https://img.shields.io/badge/Node.js-22-339933?logo=node.js)
-- ![Express](https://img.shields.io/badge/Express-5-000000?logo=express)
-- ![MongoDB](https://img.shields.io/badge/Database-MongoDB-47A248?logo=mongodb)
-- ![Mongoose](https://img.shields.io/badge/ODM-Mongoose-880000)
-- ![JWT](https://img.shields.io/badge/Auth-JWT-000000?logo=jsonwebtokens)
-- ![Cloudinary](https://img.shields.io/badge/Media-Cloudinary-3448C5?logo=cloudinary)
-- ![Swagger](https://img.shields.io/badge/API-Swagger-85EA2D?logo=swagger)
-- ![Zod](https://img.shields.io/badge/Validation-Zod-3E67B1)
+```text
+vera-real-estate/
+├── realestate-backend/    # Express API, MongoDB, Cloudinary, Swagger
+├── realestate-frontend/   # Next.js 15 App Router, Zustand, React Query
+└── README.md              # Bu dosya
+```
 
-## ✨ Öne Çıkan Özellikler
+## Teknoloji Özeti
 
-- JWT tabanlı kimlik doğrulama ve korumalı endpointler
-- Kullanıcı yetkilendirme (owner/admin) ve güvenli route akışı
-- Gelişmiş dinamik ilan filtreleme (şehir, fiyat, oda, metin arama)
-- Cloudinary ile çoklu görsel yükleme ve görsel silme
-- Leaflet ile harita gösterimi (SSR-safe dynamic import)
-- Dashboard: ilan ekleme, ilan listeleme, soft delete yönetimi
-- Zod doğrulama katmanı (frontend + backend)
-- Swagger üzerinden API dokümantasyonu
-- Next.js dinamik metadata ile SEO uyumlu ilan detay sayfaları
+- Frontend: Next.js 15, React 19, Tailwind CSS v4, shadcn/ui, Zustand, TanStack Query, Leaflet
+- Backend: Node.js 22, Express 5, MongoDB + Mongoose, JWT, Cloudinary, Zod, Winston, Swagger
 
-## 🛠️ Kurulum
+## Öne Çıkan Özellikler
 
-### 1) Reponun klonlanması
+- JWT authentication + protected routes
+- Role/owner authorization (admin/sahip kontrolü)
+- Dinamik ilan filtreleme (şehir, fiyat, oda, metin arama, sayfalama)
+- Cloudinary çoklu görsel yükleme ve görsel silme
+- Dashboard: ilan ekleme, ilan listeleme, soft delete
+- Harita entegrasyonu (Leaflet + SSR-safe dynamic import)
+- Next.js dinamik metadata ile ilan detay SEO
+- Merkezi hata yakalama, rate-limit, mongo sanitize, hpp güvenlik katmanı
+
+## Hızlı Başlangıç
+
+### 1) Repo klonla
 
 ```bash
 git clone https://github.com/mehmetcancopur16/vera-real-estate.git
 cd vera-real-estate
 ```
 
-### 2) Backend kurulumu
+### 2) Tüm bağımlılıkları tek komutla kur
 
 ```bash
-cd realestate-backend
-npm install
-cp .env.example .env
+npm run install:all
 ```
 
-`realestate-backend/.env` örneği:
+### 3) Ortam değişkenlerini ayarla
 
-```env
-PORT=5050
-NODE_ENV=development
-MONGO_URI=mongodb://localhost:27017/vera_real_estate
-JWT_SECRET=super_secret_jwt_key_degistirilecek
-JWT_EXPIRES_IN=1d
-CLOUDINARY_CLOUD_NAME=...
-CLOUDINARY_API_KEY=...
-CLOUDINARY_API_SECRET=...
-```
-
-### 3) Frontend kurulumu
-
-```bash
-cd ../realestate-frontend
-npm install
-```
-
-`realestate-frontend/.env.local`:
+- Backend: `realestate-backend/.env.example` dosyasını `realestate-backend/.env` olarak kopyala ve doldur.
+- Frontend: `realestate-frontend/.env.local` oluştur:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5050/api
 ```
 
-## 📦 Örnek Veri Yükleme (Seeding)
+### 4) Tek komutla backend + frontend başlat
 
-Backend için tek komutla hazır veri:
+```bash
+npm run dev
+```
+
+## Kullanılan Root Scriptler
+
+- `npm run dev:backend` → backend dev server
+- `npm run dev:frontend` → frontend dev server
+- `npm run dev` → concurrently ile ikisini birden çalıştırır
+- `npm run install:all` → root + backend + frontend bağımlılıklarını kurar
+
+## Yerel Erişim Adresleri
+
+- Frontend: [http://localhost:3000](http://localhost:3000)
+- Backend API: [http://localhost:5050](http://localhost:5050)
+- Swagger: [http://localhost:5050/api-docs](http://localhost:5050/api-docs)
+
+## Seed (Örnek Veri) Kullanımı
 
 ```bash
 cd realestate-backend
 npm run seed
 ```
 
-Bu komut:
-- Veritabanındaki `User` ve `Property` kayıtlarını temizler
-- 1 admin kullanıcı oluşturur
-- Konya/İstanbul lokasyonlu örnek ilanları ekler
+Bu komut veritabanını temizler, 1 admin kullanıcı ve örnek ilanlar oluşturur.
 
-Seed admin giriş bilgileri:
-- **Email:** `admin@vera.com`
-- **Şifre:** `123456`
+- Admin email: `admin@vera.com`
+- Admin şifre: `123456`
 
-## 🏃‍♂️ Çalıştırma
+## Deployment Özeti
 
-İki terminal açın:
+- Backend (Render/Railway): `realestate-backend` dizinini servis root olarak kullan.
+- Frontend (Vercel): `realestate-frontend` dizinini root directory seç.
+- MongoDB: Atlas kullan ve `MONGO_URI` değerini production ortam değişkenlerinde tanımla.
+- Frontend production env: `NEXT_PUBLIC_API_URL=https://<backend-domain>/api`
 
-```bash
-# Terminal 1
-cd realestate-backend
-npm run dev
-```
+## Dokümantasyon
 
-```bash
-# Terminal 2
-cd realestate-frontend
-npm run dev
-```
+- Backend detayları: `realestate-backend/README.md`
+- Frontend detayları: `realestate-frontend/README.md`
 
-Erişim adresleri:
-- Frontend: [http://localhost:3000](http://localhost:3000)
-- Backend API: [http://localhost:5050](http://localhost:5050)
-- Swagger: [http://localhost:5050/api-docs](http://localhost:5050/api-docs)
+## Sık Karşılaşılan Sorunlar
 
-## 📌 Notlar
-
-- Deployment için backend ortam değişkenlerini Render/Railway tarafında tanımlayın.
-- Frontend deployment (Vercel) için `NEXT_PUBLIC_API_URL` değerini canlı backend URL'i ile güncelleyin.
+- Frontend API çağrıları başarısız:
+  - `realestate-frontend/.env.local` içindeki `NEXT_PUBLIC_API_URL` değerini kontrol et.
+- CORS hatası:
+  - Backend `CORS_ORIGINS` ortam değişkenine frontend originini ekle.
+- Cloudinary yükleme çalışmıyor:
+  - Backend `.env` içindeki `CLOUDINARY_*` değerlerini kontrol et.
+- Swagger açılmıyor:
+  - Backend’in gerçekten `5050` portunda çalıştığını doğrula.
