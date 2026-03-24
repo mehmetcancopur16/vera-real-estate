@@ -10,6 +10,7 @@ export const usePropertyStore = create((set) => ({
     maxPrice: "",
     rooms: "",
     search: "",
+    sortBy: "newest",
   },
   isLoading: false,
   setProperties: (properties) => set({ properties }),
@@ -21,4 +22,17 @@ export const usePropertyStore = create((set) => ({
       },
     })),
   setLoading: (isLoading) => set({ isLoading }),
+  resetFilters: () =>
+    set({
+      filters: {
+        city: "",
+        type: "",
+        listingType: "",
+        minPrice: "",
+        maxPrice: "",
+        rooms: "",
+        search: "",
+        sortBy: "newest",
+      },
+    }),
 }));

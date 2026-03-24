@@ -88,7 +88,27 @@ function parseCloudinaryPublicIdFromUrl(url) {
 
 export async function createProperty(req, res, next) {
   try {
-    const { title, description, type, listingType, price, currency, size, features, location } = req.body;
+    const {
+      title,
+      description,
+      type,
+      listingType,
+      price,
+      currency,
+      size,
+      amenities,
+      yearBuilt,
+      status,
+      deedStatus,
+      maintenanceFee,
+      totalFloors,
+      parking,
+      furnished,
+      virtualTourUrl,
+      isFeatured,
+      features,
+      location
+    } = req.body;
 
     if (!title || !description || !type || !listingType || price === undefined || price === '') {
       throw new ApiError(400, 'title, description, type, listingType ve price zorunludur');
@@ -112,6 +132,16 @@ export async function createProperty(req, res, next) {
       price: Number(price),
       currency: currency || 'TRY',
       size: size !== undefined && size !== '' ? Number(size) : undefined,
+      amenities: Array.isArray(amenities) ? amenities : [],
+      yearBuilt: yearBuilt !== undefined ? Number(yearBuilt) : undefined,
+      status: status || 'ready',
+      deedStatus: deedStatus || undefined,
+      maintenanceFee: maintenanceFee !== undefined && maintenanceFee !== '' ? Number(maintenanceFee) : undefined,
+      totalFloors: totalFloors !== undefined && totalFloors !== '' ? Number(totalFloors) : undefined,
+      parking: Boolean(parking),
+      furnished: Boolean(furnished),
+      virtualTourUrl: virtualTourUrl || undefined,
+      isFeatured: Boolean(isFeatured),
       features: features || {},
       location,
       images: Array.isArray(req.body.images) ? req.body.images : []
@@ -132,8 +162,15 @@ export async function getProperties(req, res, next) {
     const skip = (page - 1) * limit;
 
     let query = Property.find(filter).skip(skip).limit(limit).populate('owner', 'name email');
+    const sortBy = String(req.query.sortBy || '').trim();
 
-    if (filter.$text) {
+    if (sortBy === 'price_asc') {
+      query = query.sort({ price: 1, createdAt: -1 });
+    } else if (sortBy === 'price_desc') {
+      query = query.sort({ price: -1, createdAt: -1 });
+    } else if (sortBy === 'featured') {
+      query = query.sort({ isFeatured: -1, viewCount: -1, createdAt: -1 });
+    } else if (filter.$text) {
       query = query.select({ score: { $meta: 'textScore' } }).sort({ score: { $meta: 'textScore' } });
     } else {
       query = query.sort({ createdAt: -1 });
@@ -214,7 +251,29 @@ export async function updateProperty(req, res, next) {
     const property = await Property.findById(req.params.id);
     if (!property) throw new ApiError(404, 'İlan bulunamadı');
 
-    const allowed = ['title', 'description', 'type', 'listingType', 'price', 'currency', 'size', 'features', 'location', 'isActive', 'images'];
+    const allowed = [
+      'title',
+      'description',
+      'type',
+      'listingType',
+      'price',
+      'currency',
+      'size',
+      'amenities',
+      'yearBuilt',
+      'status',
+      'deedStatus',
+      'maintenanceFee',
+      'totalFloors',
+      'parking',
+      'furnished',
+      'virtualTourUrl',
+      'isFeatured',
+      'features',
+      'location',
+      'isActive',
+      'images'
+    ];
     for (const key of allowed) {
       if (req.body[key] !== undefined) {
         if (key === 'type' && !PROPERTY_TYPES.has(req.body.type)) {

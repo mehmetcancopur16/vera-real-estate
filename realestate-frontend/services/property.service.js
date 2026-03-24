@@ -1,7 +1,10 @@
 import api from "@/lib/axios";
 
 export async function getProperties(filters = {}) {
-  const { data } = await api.get("/properties", { params: filters });
+  const params = Object.fromEntries(
+    Object.entries(filters).filter(([, value]) => value !== "" && value !== undefined && value !== null)
+  );
+  const { data } = await api.get("/properties", { params });
   return data;
 }
 

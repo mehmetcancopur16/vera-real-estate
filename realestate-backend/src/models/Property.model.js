@@ -22,6 +22,20 @@ const propertySchema = new mongoose.Schema(
     price: { type: Number, required: true, min: 0 },
     currency: { type: String, default: 'TRY' },
     size: { type: Number, min: 0 },
+    amenities: [{ type: String, trim: true }],
+    yearBuilt: { type: Number, min: 1800 },
+    status: {
+      type: String,
+      enum: ['ready', 'under-construction'],
+      default: 'ready'
+    },
+    deedStatus: { type: String, trim: true },
+    maintenanceFee: { type: Number, min: 0 },
+    totalFloors: { type: Number, min: 0 },
+    parking: { type: Boolean, default: false },
+    furnished: { type: Boolean, default: false },
+    virtualTourUrl: { type: String, trim: true },
+    isFeatured: { type: Boolean, default: false },
     features: {
       rooms: { type: Number, min: 0 },
       bathrooms: { type: Number, min: 0 },
