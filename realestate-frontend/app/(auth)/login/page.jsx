@@ -44,7 +44,7 @@ export default function LoginPage() {
 
   return (
     <div className="grid w-full grid-cols-1 md:grid-cols-2">
-      <section className="relative hidden md:block md:w-1/2">
+      <section className="relative hidden h-full min-h-screen md:block md:w-1/2">
         <Image
           src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1600&auto=format&fit=crop"
           alt="Luxury residence"

@@ -14,6 +14,16 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useAuthStore } from "@/store/useAuthStore";
 
 const schema = z
@@ -196,7 +206,89 @@ export default function RegisterPage() {
                         />
                       </FormControl>
                       <Label className="text-sm text-slate-600">
-                        Kullanim sartlarini ve Gizlilik politikasini okudum, kabul ediyorum.
+                        <Dialog>
+                          <DialogTrigger className="text-accent hover:underline cursor-pointer">
+                            Kullanim Sartlari ve Gizlilik Politikasi
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle>Vera Emlak Kullanim Sozlesmesi</DialogTitle>
+                              <DialogDescription>
+                                Lutfen kayit islemini tamamlamadan once bu metni dikkatlice inceleyiniz.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-2 text-sm text-slate-600">
+                              <p>
+                                Bu sozlesme, Vera Real Estate platformunu kullanan tum uye ve ziyaretciler icin
+                                gecerlidir. Platforma kayit oldugunuz andan itibaren bu metinde yer alan tum
+                                sartlari kabul etmis sayilirsiniz.
+                              </p>
+                              <div className="space-y-2">
+                                <h3 className="font-semibold text-slate-900">1. Hizmet Kapsami</h3>
+                                <p>
+                                  Vera Emlak; satilik, kiralik ve yatirim amacli gayrimenkul ilanlarini
+                                  listeleme, danismanlarla iletisim kurma ve teklif sureclerini dijital olarak
+                                  takip etme hizmeti sunar.
+                                </p>
+                              </div>
+                              <div className="space-y-2">
+                                <h3 className="font-semibold text-slate-900">2. Uyelik ve Hesap Guvenligi</h3>
+                                <p>
+                                  Uyeler, hesap bilgilerini dogru ve guncel tutmakla sorumludur. Sifre
+                                  guvenliginin saglanmasi kullanicinin sorumlulugundadir; yetkisiz kullanimdan
+                                  kaynakli durumlarda Vera Emlak gecikmeksizin bilgilendirilmelidir.
+                                </p>
+                              </div>
+                              <div className="space-y-2">
+                                <h3 className="font-semibold text-slate-900">3. Icerik ve Ilan Sorumlulugu</h3>
+                                <p>
+                                  Platforma eklenen ilan, fiyat, gorsel ve metin iceriklerinin hukuka uygunlugundan
+                                  ilan sahibi sorumludur. Yaniltici, eksik veya gercege aykiri beyanlar tespit
+                                  edildiginde ilanlar kaldirilabilir.
+                                </p>
+                              </div>
+                              <div className="space-y-2">
+                                <h3 className="font-semibold text-slate-900">4. Danismanlik ve Iptal Sartlari</h3>
+                                <p>
+                                  Platform uzerinden baslatilan gorusme ve rezervasyon talepleri, ilgili emlak
+                                  danismani ile mutabakat dogrultusunda sonuclanir. Planlanan randevularin iptali
+                                  en gec 24 saat once bildirilmelidir. Gec bildirimlerde operasyonel masraflar
+                                  yansitilabilir.
+                                </p>
+                              </div>
+                              <div className="space-y-2">
+                                <h3 className="font-semibold text-slate-900">5. Gizlilik ve Veri Isleme</h3>
+                                <p>
+                                  Kisisel veriler, yalnizca hizmetin sunulmasi, guvenligin saglanmasi ve yasal
+                                  yukumluluklerin yerine getirilmesi amaciyla islenir. Vera Emlak, verileri KVKK
+                                  kapsamindaki yukumluluklere uygun sekilde korumayi taahhut eder.
+                                </p>
+                              </div>
+                              <div className="space-y-2">
+                                <h3 className="font-semibold text-slate-900">6. Sorumlulugun Sinirlandirilmasi</h3>
+                                <p>
+                                  Vera Emlak, platformun kesintisiz calisacagini garanti etmez. Teknik aksaklik,
+                                  ucuncu taraf hizmet kesintisi veya kullanici kaynakli hatalardan dogan dolayli
+                                  zararlardan sorumlu tutulamaz.
+                                </p>
+                              </div>
+                              <div className="space-y-2">
+                                <h3 className="font-semibold text-slate-900">7. Yururluk</h3>
+                                <p>
+                                  Bu sozlesme, kullanicinin platforma kayit olmasi ile yururluge girer. Vera Emlak,
+                                  gerekli gordugu durumlarda metni guncelleyebilir; degisiklikler yayinlandigi
+                                  tarihten itibaren gecerlidir.
+                                </p>
+                              </div>
+                            </div>
+                            <DialogFooter>
+                              <DialogClose className="rounded-md border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
+                                Kapat
+                              </DialogClose>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                        <span> metnini okudum, kabul ediyorum.</span>
                       </Label>
                     </div>
                     <FormMessage />

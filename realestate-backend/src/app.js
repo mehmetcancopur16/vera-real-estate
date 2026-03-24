@@ -12,6 +12,7 @@ import { errorMiddleware } from './middlewares/error.middleware.js';
 import { mongoSanitizeCompatible } from './middlewares/mongo-sanitize.middleware.js';
 import authRoutes from './routes/auth.routes.js';
 import propertyRoutes from './routes/property.routes.js';
+import contactRoutes from './routes/contact.routes.js';
 
 const app = express();
 const allowedOrigins = [
@@ -88,6 +89,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/properties', propertyRoutes);
+app.use('/api/contact', contactRoutes);
 
 app.use((req, res, next) => {
   res.status(404).json({ success: false, message: 'Not found' });
