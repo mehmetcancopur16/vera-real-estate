@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import * as authController from '../controllers/auth.controller.js';
 import { validate } from '../middlewares/validate.middleware.js';
-import { loginSchema, registerSchema } from '../validations/auth.validation.js';
+import { changePasswordSchema, loginSchema, registerSchema, updateMeSchema } from '../validations/auth.validation.js';
 import { protect } from '../middlewares/auth.middleware.js';
+import { upload } from '../middlewares/upload.middleware.js';
 
 const router = Router();
 
@@ -80,5 +81,47 @@ router.post('/login', validate(loginSchema), authController.login);
  *         description: Yetkisiz
  */
 router.get('/me', protect, authController.getMe);
+
+/**
+ * @openapi
+ * /api/auth/me:
+ *   patch:
+ *     tags: [Auth]
+ *     summary: Profil güncelle (name/email)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Güncellendi
+ */
+router.patch('/me', protect, validate(updateMeSchema), authController.updateMe);
+
+/**
+ * @openapi
+ * /api/auth/password:
+ *   patch:
+ *     tags: [Auth]
+ *     summary: Şifre değiştir
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Güncellendi
+ */
+router.patch('/password', protect, validate(changePasswordSchema), authController.changePassword);
+
+/**
+ * @openapi
+ * /api/auth/avatar:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Avatar yükle (Cloudinary)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Yüklendi
+ */
+router.post('/avatar', protect, upload.single('avatar'), authController.uploadAvatar);
 
 export default router;

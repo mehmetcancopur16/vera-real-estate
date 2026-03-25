@@ -73,4 +73,13 @@ export const useAuthStore = create((set) => ({
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
+
+  refreshMe: async () => {
+    const data = await authService.getMe();
+    set({
+      user: data?.user || null,
+      isAuthenticated: Boolean(data?.user),
+    });
+    return data;
+  },
 }));

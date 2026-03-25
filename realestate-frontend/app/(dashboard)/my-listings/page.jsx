@@ -75,7 +75,15 @@ export default function MyListingsPage() {
   if (isLoading) {
     return (
       <section className="space-y-6">
-        <Skeleton className="h-9 w-56" />
+        <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-950 to-slate-900 p-5 text-white shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <Skeleton className="h-4 w-40 bg-white/10" />
+              <Skeleton className="mt-3 h-8 w-56 bg-white/10" />
+            </div>
+            <Skeleton className="h-10 w-28 rounded-xl bg-white/10" />
+          </div>
+        </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <Skeleton className="h-24 w-full rounded-xl" />
           <Skeleton className="h-24 w-full rounded-xl" />
@@ -103,7 +111,7 @@ export default function MyListingsPage() {
 
   if (!items.length) {
     return (
-      <section className="flex min-h-[55vh] flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
+      <section className="flex min-h-[55vh] flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
         <Building className="h-12 w-12 text-slate-300" />
         <h1 className="text-2xl font-semibold text-slate-900">Henüz hiç ilan eklemediniz.</h1>
         <p className="max-w-md text-sm text-slate-600">
@@ -121,18 +129,32 @@ export default function MyListingsPage() {
 
   return (
     <section className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold text-slate-900">İlanlarım</h1>
-        <Button asChild className="bg-accent text-primary hover:bg-[var(--gold-hover)]">
-          <Link href="/add-listing">
-            <Plus className="mr-2 h-4 w-4" />
-            Yeni İlan
-          </Link>
-        </Button>
+      <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-950 to-slate-900 p-5 pb-14 text-white shadow-sm animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
+        <div className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-accent/15 blur-3xl" />
+        <div className="pointer-events-none absolute -left-24 -bottom-24 size-72 rounded-full bg-white/10 blur-3xl" />
+
+        <div className="relative flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.22em] text-white/70">Portföy Yönetimi</p>
+            <h1 className="mt-2 text-2xl font-semibold">İlanlarım</h1>
+            <p className="mt-1 text-sm text-white/70">
+              Toplam <span className="font-semibold text-white">{totalListings}</span> ilan,{" "}
+              <span className="font-semibold text-white">{activeListings}</span> aktif —{" "}
+              <span className="font-semibold text-white">{totalViews.toLocaleString("tr-TR")}</span> görüntülenme.
+            </p>
+          </div>
+
+          <Button asChild className="bg-accent text-primary hover:bg-[var(--gold-hover)]">
+            <Link href="/add-listing">
+              <Plus className="mr-2 h-4 w-4" />
+              Yeni İlan
+            </Link>
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+      <div className="relative z-10 -mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm text-slate-500">Toplam İlan</p>
@@ -141,7 +163,7 @@ export default function MyListingsPage() {
             <Building className="h-6 w-6 text-accent" />
           </div>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm text-slate-500">Aktif İlanlar</p>
@@ -153,7 +175,7 @@ export default function MyListingsPage() {
             </span>
           </div>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm text-slate-500">Toplam Görüntülenme</p>
@@ -164,7 +186,7 @@ export default function MyListingsPage() {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-700">
         {items.map((property) => {
           const imageUrl =
             property.images?.[0] ||

@@ -18,3 +18,22 @@ export async function getMe() {
   const { data } = await api.get("/auth/me");
   return data;
 }
+
+export async function updateMe(payload) {
+  const { data } = await api.patch("/auth/me", payload);
+  return data;
+}
+
+export async function changePassword(payload) {
+  const { data } = await api.patch("/auth/password", payload);
+  return data;
+}
+
+export async function uploadAvatar(file) {
+  const fd = new FormData();
+  fd.append("avatar", file);
+  const { data } = await api.post("/auth/avatar", fd, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return data;
+}

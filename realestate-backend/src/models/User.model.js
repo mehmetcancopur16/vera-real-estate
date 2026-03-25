@@ -15,6 +15,10 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true
     },
+    avatarUrl: {
+      type: String,
+      trim: true
+    },
     password: {
       type: String,
       required: [true, 'Şifre gerekli'],
