@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -13,12 +14,15 @@ import {
   Loader2,
   MapPin,
   Plus,
+  Search,
   Trash2,
   TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,10 +54,12 @@ function formatDate(dateString) {
 
 export default function MyListingsPage() {
   const queryClient = useQueryClient();
+  const [tab, setTab] = useState("all");
+  const [q, setQ] = useState("");
 
   const { data, isLoading } = useQuery({
-    queryKey: ["my-properties"],
-    queryFn: () => getMyProperties({ page: 1, limit: 50 }),
+    queryKey: ["my-properties", { includeInactive: 1 }],
+    queryFn: () => getMyProperties({ page: 1, limit: 50, includeInactive: 1 }),
   });
 
   const deleteMutation = useMutation({
@@ -67,10 +73,33 @@ export default function MyListingsPage() {
     },
   });
 
-  const items = data?.data || [];
+  const items = useMemo(() => data?.data || [], [data]);
   const totalListings = items.length;
   const activeListings = items.filter((p) => p.isActive).length;
+  const inactiveListings = Math.max(0, totalListings - activeListings);
   const totalViews = items.reduce((sum, p) => sum + (p.viewCount || 0), 0);
+  const avgViews = totalListings ? Math.round(totalViews / totalListings) : 0;
+  const topViewed = useMemo(() => {
+    const sorted = [...items].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
+    return sorted[0] || null;
+  }, [items]);
+
+  const filteredItems = useMemo(() => {
+    const query = (q || "").trim().toLowerCase();
+    return items
+      .filter((p) => {
+        if (tab === "active") return Boolean(p.isActive);
+        if (tab === "inactive") return !p.isActive;
+        return true;
+      })
+      .filter((p) => {
+        if (!query) return true;
+        const title = String(p.title || "").toLowerCase();
+        const city = String(p.location?.city || "").toLowerCase();
+        const district = String(p.location?.district || "").toLowerCase();
+        return title.includes(query) || city.includes(query) || district.includes(query);
+      });
+  }, [items, q, tab]);
 
   if (isLoading) {
     return (
@@ -132,6 +161,8 @@ export default function MyListingsPage() {
       <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-950 to-slate-900 p-5 pb-14 text-white shadow-sm animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
         <div className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-accent/15 blur-3xl" />
         <div className="pointer-events-none absolute -left-24 -bottom-24 size-72 rounded-full bg-white/10 blur-3xl" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
 
         <div className="relative flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -144,16 +175,21 @@ export default function MyListingsPage() {
             </p>
           </div>
 
-          <Button asChild className="bg-accent text-primary hover:bg-[var(--gold-hover)]">
-            <Link href="/add-listing">
-              <Plus className="mr-2 h-4 w-4" />
-              Yeni İlan
-            </Link>
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white">
+              <Link href="/profile">Profil</Link>
+            </Button>
+            <Button asChild className="bg-accent text-primary hover:bg-[var(--gold-hover)]">
+              <Link href="/add-listing">
+                <Plus className="mr-2 h-4 w-4" />
+                Yeni İlan
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="relative z-10 -mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="relative z-10 -mt-10 grid grid-cols-1 gap-6 md:grid-cols-4">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
           <div className="flex items-start justify-between">
             <div>
@@ -178,16 +214,46 @@ export default function MyListingsPage() {
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
           <div className="flex items-start justify-between">
             <div>
+              <p className="text-sm text-slate-500">Pasif İlanlar</p>
+              <p className="mt-2 text-3xl font-semibold text-slate-900">{inactiveListings}</p>
+            </div>
+            <span className="inline-flex items-center gap-2 text-sm text-slate-600">
+              <span className="h-2 w-2 rounded-full bg-slate-400" />
+              Pasif
+            </span>
+          </div>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="flex items-start justify-between">
+            <div>
               <p className="text-sm text-slate-500">Toplam Görüntülenme</p>
               <p className="mt-2 text-3xl font-semibold text-slate-900">{totalViews.toLocaleString("tr-TR")}</p>
+              <p className="mt-1 text-xs text-slate-500">Ortalama: {avgViews.toLocaleString("tr-TR")}/ilan</p>
             </div>
             <TrendingUp className="h-6 w-6 text-accent" />
           </div>
         </div>
       </div>
 
-      <div className="space-y-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-700">
-        {items.map((property) => {
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+            <Tabs value={tab} onValueChange={setTab}>
+              <TabsList className="w-fit">
+                <TabsTrigger value="all">Tümü</TabsTrigger>
+                <TabsTrigger value="active">Aktif</TabsTrigger>
+                <TabsTrigger value="inactive">Pasif</TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            <div className="relative w-full md:max-w-xs">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Başlık, şehir, ilçe ara..." className="pl-9" />
+            </div>
+          </div>
+
+          <div className="space-y-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-700">
+            {filteredItems.map((property) => {
           const imageUrl =
             property.images?.[0] ||
             "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1400&auto=format&fit=crop";
@@ -283,7 +349,68 @@ export default function MyListingsPage() {
               </div>
             </div>
           );
-        })}
+            })}
+            {!filteredItems.length ? (
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
+                <p className="text-sm font-semibold text-slate-900">Filtrenize uygun ilan bulunamadı.</p>
+                <p className="mt-1 text-sm text-slate-600">Aramayı temizleyin veya sekmeyi değiştirin.</p>
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        <aside className="space-y-4">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-semibold text-slate-900">Hızlı Aksiyonlar</p>
+            <p className="mt-1 text-sm text-slate-600">Panelde en sık yaptığınız işlemler.</p>
+            <div className="mt-4 grid gap-2">
+              <Button asChild className="justify-start bg-accent text-primary hover:bg-[var(--gold-hover)]">
+                <Link href="/add-listing">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Yeni İlan Oluştur
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="justify-start">
+                <Link href="/profile">
+                  <Edit className="mr-2 h-4 w-4" />
+                  Profil Ayarları
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-semibold text-slate-900">En Çok Görüntülenen</p>
+            <p className="mt-1 text-sm text-slate-600">Portföyünüzün yıldızı.</p>
+
+            {topViewed ? (
+              <div className="mt-4 flex gap-3">
+                <div className="relative size-16 overflow-hidden rounded-xl border border-slate-200">
+                  <Image
+                    src={
+                      topViewed.images?.[0] ||
+                      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=600&auto=format&fit=crop"
+                    }
+                    alt={topViewed.title}
+                    fill
+                    sizes="64px"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-slate-900">{topViewed.title}</p>
+                  <p className="mt-1 inline-flex items-center gap-1 text-sm text-slate-600">
+                    <Eye className="h-4 w-4 text-accent" />
+                    {(topViewed.viewCount || 0).toLocaleString("tr-TR")}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-slate-900">{formatTry(topViewed.price)}</p>
+                </div>
+              </div>
+            ) : (
+              <p className="mt-4 text-sm text-slate-500">Henüz veri yok.</p>
+            )}
+          </div>
+        </aside>
       </div>
     </section>
   );

@@ -3,7 +3,8 @@
 import { useMemo, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, Upload, User } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Loader2, Upload, User } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +12,19 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { changePassword, updateMe, uploadAvatar } from "@/services/auth.service";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { changePassword, deleteAccount, updateMe, uploadAvatar } from "@/services/auth.service";
 import { useAuthStore } from "@/store/useAuthStore";
 
 function initialsFromName(name) {
@@ -26,8 +39,9 @@ function initialsFromName(name) {
 }
 
 export default function ProfilePage() {
+  const router = useRouter();
   const fileRef = useRef(null);
-  const { user, refreshMe } = useAuthStore();
+  const { user, refreshMe, logout } = useAuthStore();
   const initials = useMemo(() => initialsFromName(user?.name), [user?.name]);
 
   const [name, setName] = useState(user?.name || "");
@@ -36,6 +50,7 @@ export default function ProfilePage() {
   const [showNew, setShowNew] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [deletePassword, setDeletePassword] = useState("");
   const [prefEmails, setPrefEmails] = useState(true);
   const [prefMarketing, setPrefMarketing] = useState(false);
 
@@ -70,6 +85,18 @@ export default function ProfilePage() {
     },
     onError: (err) => {
       toast.error(err?.response?.data?.message || "Şifre güncellenemedi");
+    },
+  });
+
+  const deleteAccountMutation = useMutation({
+    mutationFn: async () => deleteAccount({ currentPassword: deletePassword }),
+    onSuccess: () => {
+      toast.success("Hesabınız silindi");
+      logout();
+      router.replace("/");
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || "Hesap silinemedi");
     },
   });
 
@@ -246,6 +273,71 @@ export default function ProfilePage() {
                   "Şifreyi Güncelle"
                 )}
               </Button>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-red-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-semibold text-slate-900">Hesabı Sil</p>
+            <p className="mt-1 text-sm text-slate-600">
+              Bu işlem geri alınamaz. Hesabınız ve tüm ilanlarınız kalıcı olarak silinecektir.
+            </p>
+
+            <Separator className="my-5" />
+
+            <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+              <div className="grid gap-2">
+                <Label>Şifreniz</Label>
+                <Input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  placeholder="Onay için şifrenizi girin"
+                />
+              </div>
+
+              <AlertDialog>
+                <AlertDialogTrigger
+                  render={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 md:w-auto"
+                      disabled={!deletePassword || deleteAccountMutation.isPending}
+                    />
+                  }
+                >
+                  Hesabı Sil
+                </AlertDialogTrigger>
+
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogMedia className="text-red-600">
+                      <AlertCircle />
+                    </AlertDialogMedia>
+                    <AlertDialogTitle>Hesabınızı Silmek İstediğinize Emin Misiniz?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Bu işlem geri alınamaz. Hesabınız ve tüm ilanlarınız veritabanından kalıcı olarak silinecektir.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>İptal</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive/10 text-destructive hover:bg-destructive/20"
+                      onClick={() => deleteAccountMutation.mutate()}
+                      disabled={deleteAccountMutation.isPending}
+                    >
+                      {deleteAccountMutation.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Siliniyor...
+                        </>
+                      ) : (
+                        "Evet, Hesabı Sil"
+                      )}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         </TabsContent>

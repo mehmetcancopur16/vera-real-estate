@@ -199,14 +199,20 @@ export async function getMyProperties(req, res, next) {
     const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 10));
     const skip = (page - 1) * limit;
 
+    const filter = { owner: req.user.id };
+    const includeInactive = String(req.query.includeInactive || '').trim() === '1';
+    if (!includeInactive) {
+      filter.isActive = true;
+    }
+
     const [items, total] = await Promise.all([
-      Property.find({ owner: req.user.id, isActive: true })
+      Property.find(filter)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .populate('owner', 'name email')
         .lean(),
-      Property.countDocuments({ owner: req.user.id, isActive: true })
+      Property.countDocuments(filter)
     ]);
 
     res.status(200).json({

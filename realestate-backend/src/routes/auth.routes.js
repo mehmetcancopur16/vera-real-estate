@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as authController from '../controllers/auth.controller.js';
 import { validate } from '../middlewares/validate.middleware.js';
-import { changePasswordSchema, loginSchema, registerSchema, updateMeSchema } from '../validations/auth.validation.js';
+import { changePasswordSchema, deleteMeSchema, loginSchema, registerSchema, updateMeSchema } from '../validations/auth.validation.js';
 import { protect } from '../middlewares/auth.middleware.js';
 import { upload } from '../middlewares/upload.middleware.js';
 
@@ -123,5 +123,19 @@ router.patch('/password', protect, validate(changePasswordSchema), authControlle
  *         description: Yüklendi
  */
 router.post('/avatar', protect, upload.single('avatar'), authController.uploadAvatar);
+
+/**
+ * @openapi
+ * /api/auth/me:
+ *   delete:
+ *     tags: [Auth]
+ *     summary: Hesabı sil (şifre onaylı)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Silindi
+ */
+router.delete('/me', protect, validate(deleteMeSchema), authController.deleteMe);
 
 export default router;

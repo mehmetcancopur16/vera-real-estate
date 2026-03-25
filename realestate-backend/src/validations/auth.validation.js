@@ -27,3 +27,7 @@ export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'currentPassword zorunlu'),
   newPassword: z.string().min(6, 'newPassword en az 6 karakter olmalı')
 });
+
+export const deleteMeSchema = z.object({
+  currentPassword: z.string().min(1, 'currentPassword zorunlu')
+});

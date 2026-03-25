@@ -8,7 +8,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
-import { CheckCircle2, CloudUpload, Loader2 } from "lucide-react";
+import { CheckCircle2, CloudUpload, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -166,9 +166,11 @@ export default function PropertyForm() {
 
   const goBack = () => setStep((s) => Math.max(1, s - 1));
 
+  const MAX_IMAGES = 12;
+
   const onDropFiles = (incoming) => {
     if (!incoming?.length) return;
-    setFiles((prev) => [...prev, ...incoming]);
+    setFiles((prev) => [...prev, ...incoming].slice(0, MAX_IMAGES));
   };
 
   const onDrop = (e) => {
@@ -176,6 +178,12 @@ export default function PropertyForm() {
     const incoming = Array.from(e.dataTransfer?.files || []).filter((f) => f.type?.startsWith("image/"));
     onDropFiles(incoming);
   };
+
+  const removeFileAt = (idx) => {
+    setFiles((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const clearAllFiles = () => setFiles([]);
 
   return (
     <Form {...form}>
@@ -429,6 +437,10 @@ export default function PropertyForm() {
                   </div>
                   <p className="mt-3 text-sm font-semibold text-slate-900">Görselleri sürükle-bırak</p>
                   <p className="mt-1 text-sm text-slate-600">veya tıklayıp seç. (JPEG/PNG/WebP)</p>
+                  <p className="mt-2 text-xs text-slate-500">
+                    En fazla <span className="font-semibold text-slate-700">{MAX_IMAGES}</span> görsel. Şu an{" "}
+                    <span className="font-semibold text-slate-700">{files.length}</span> seçili.
+                  </p>
 
                   <Input
                     ref={fileInputRef}
@@ -441,12 +453,39 @@ export default function PropertyForm() {
                 </div>
 
                 {previews.length ? (
-                  <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                    {previews.map((p) => (
-                      <div key={p.url} className="relative aspect-square overflow-hidden rounded-xl border border-slate-200 bg-white">
-                        <Image src={p.url} alt={p.name} fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover" />
-                      </div>
-                    ))}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-slate-900">Önizleme</p>
+                      <button
+                        type="button"
+                        onClick={clearAllFiles}
+                        className="text-sm font-medium text-red-600 transition hover:text-red-700"
+                      >
+                        Tümünü kaldır
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                      {previews.map((p, idx) => (
+                        <div key={p.url} className="group relative aspect-square overflow-hidden rounded-xl border border-slate-200 bg-white">
+                          <Image
+                            src={p.url}
+                            alt={p.name}
+                            fill
+                            sizes="(max-width: 768px) 50vw, 25vw"
+                            className="object-cover transition duration-300 group-hover:scale-[1.03]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeFileAt(idx)}
+                            className="absolute right-2 top-2 inline-flex size-8 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-700 shadow-sm opacity-0 transition hover:bg-red-50 hover:text-red-700 group-hover:opacity-100"
+                            aria-label="remove-image"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <p className="text-sm text-slate-500">Henüz görsel eklemediniz (opsiyonel).</p>

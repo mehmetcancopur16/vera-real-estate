@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.model.js';
 import { ApiError } from '../utils/ApiError.js';
 import cloudinary from '../config/cloudinary.js';
+import Property from '../models/Property.model.js';
 
 function signToken(userId, expiresIn = process.env.JWT_EXPIRES_IN || '1d') {
   const secret = process.env.JWT_SECRET;
@@ -176,6 +177,23 @@ export async function uploadAvatar(req, res, next) {
     if (!updated) throw new ApiError(404, 'Kullanıcı bulunamadı');
 
     res.status(200).json({ success: true, user: updated.toJSON(), avatarUrl: url });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function deleteMe(req, res, next) {
+  try {
+    const { currentPassword } = req.body;
+    const user = await User.findById(req.user.id).select('+password');
+    if (!user) throw new ApiError(404, 'Kullanıcı bulunamadı');
+
+    const ok = await user.matchPassword(currentPassword);
+    if (!ok) throw new ApiError(400, 'Mevcut şifre hatalı');
+
+    await Promise.all([Property.deleteMany({ owner: req.user.id }), User.deleteOne({ _id: req.user.id })]);
+
+    res.status(200).json({ success: true, message: 'Hesap kalıcı olarak silindi' });
   } catch (err) {
     next(err);
   }

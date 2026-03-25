@@ -37,3 +37,8 @@ export async function uploadAvatar(file) {
   });
   return data;
 }
+
+export async function deleteAccount(payload) {
+  const { data } = await api.delete("/auth/me", { data: payload });
+  return data;
+}
