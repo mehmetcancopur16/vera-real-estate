@@ -1,76 +1,83 @@
-import Image from "next/image";
-
 export default function PrivacyPolicyPage() {
   return (
-    <div className="space-y-10">
-      <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white px-6 py-14 md:px-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(2,132,199,0.18),transparent_50%)]" />
-        <div className="relative max-w-4xl">
-          <p className="text-xs uppercase tracking-[0.2em] text-accent">Gizlilik Politikası</p>
-          <h1 className="mt-3 text-4xl font-semibold text-slate-900 md:text-5xl">
-            Veri Toplama ve İşleme Yaklaşımımız
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm text-slate-600 md:text-base">
-            Vera Real Estate olarak kişisel verilerinizi güvenle yönetmeyi ve şeffaf biçimde işlemeyi hedefleriz.
-          </p>
-        </div>
+    <div>
+      <section className="rounded-3xl bg-slate-50 px-6 py-14 text-center">
+        <h1 className="text-4xl font-semibold text-slate-900 md:text-5xl">Gizlilik Politikası</h1>
+        <p className="mt-3 text-sm text-slate-600">Son Güncelleme: Mart 2026</p>
       </section>
 
-      <section className="mx-auto max-w-4xl rounded-3xl border border-slate-200 bg-white p-6 md:p-10">
-        <div className="space-y-6 text-slate-700">
+      <section className="mx-auto max-w-4xl py-12 px-4">
+        <div className="space-y-8 text-slate-700 leading-relaxed">
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">1. Kapsam</h2>
-            <p className="mt-2 text-sm leading-relaxed">
-              Bu politika; Vera Real Estate web sitesi üzerinden toplanan bilgilerin nasıl işlendiğini,
-              hangi amaçlarla kullanıldığını ve kullanıcı haklarını açıklar.
+            <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">1. Amaç ve Kapsam</h2>
+            <p className="mt-3 text-sm">
+              Bu Gizlilik Politikası; Vera Real Estate web sitesi ve ilgili dijital kanallar üzerinden elde edilen
+              kişisel verilerin işlenmesine ilişkin esasları açıklar. Bu metin, kullanıcıların veri işleme süreçlerini
+              şeffaf biçimde anlamasına yardımcı olmak amacıyla hazırlanmıştır.
             </p>
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">2. Toplanan Veriler</h2>
-            <p className="mt-2 text-sm leading-relaxed">
-              İletişim formu ve bülten aboneliği gibi işlemleriniz sırasında; ad-soyad, e-posta adresiniz,
-              mesaj içerikleriniz ve talep detayları toplanabilir. Ayrıca site kullanımına ilişkin teknik bilgiler
-              (ör. IP adresi, tarayıcı türü, erişim zamanı) otomatik olarak kaydedilebilir.
+            <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">2. Veri Sorumlusu</h2>
+            <p className="mt-3 text-sm">
+              Bu politika kapsamında veri sorumlusu, Vera Real Estate’tir. İletişim için{" "}
+              <span className="font-semibold">info@vera.com</span> adresi üzerinden bize ulaşabilirsiniz.
             </p>
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">3. Verilerin Kullanım Amaçları</h2>
-            <p className="mt-2 text-sm leading-relaxed">
-              Toplanan veriler, taleplerinizi yanıtlamak, bülten aboneliğinizi yönetmek, güvenliği sağlamak,
-              dolandırıcılık girişimlerini önlemek ve yasal yükümlülükleri yerine getirmek için kullanılabilir.
+            <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">3. Toplanan Veriler</h2>
+            <h3 className="mt-4 text-lg font-semibold text-slate-800">3.1. Doğrudan sağlanan veriler</h3>
+            <p className="mt-2 text-sm">
+              İletişim formu, bülten aboneliği ve hesap işlemleri sırasında; ad-soyad, e-posta, telefon, mesaj içeriği
+              gibi bilgiler tarafınızca sağlanabilir.
+            </p>
+            <h3 className="mt-4 text-lg font-semibold text-slate-800">3.2. Otomatik toplanan veriler</h3>
+            <p className="mt-2 text-sm">
+              Site kullanımınıza ilişkin; IP adresi, tarayıcı türü, cihaz bilgisi, sayfa görüntüleme kayıtları ve benzeri
+              teknik veriler güvenlik ve performans amaçlarıyla otomatik olarak kaydedilebilir.
             </p>
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">4. Hukuki Dayanak</h2>
-            <p className="mt-2 text-sm leading-relaxed">
-              6698 sayılı KVKK kapsamında veriler, ilgili yasal dayanaklar ve açık rıza şartlarına uygun şekilde işlenir.
+            <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">4. Çerezler (Cookies)</h2>
+            <p className="mt-3 text-sm">
+              Sitemiz; kullanıcı deneyimini geliştirmek ve güvenliği sağlamak için çerezleri kullanabilir. Çerez tercihleri
+              tarayıcı ayarlarınız üzerinden yönetilebilir. Zorunlu çerezler kapatıldığında bazı özellikler sınırlı çalışabilir.
             </p>
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">5. Saklama Süresi</h2>
-            <p className="mt-2 text-sm leading-relaxed">
-              Veriler, işleme amaçlarının gerektirdiği süre boyunca saklanır. Sonrasında mevzuata uygun şekilde silinir,
-              yok edilir veya anonim hale getirilir.
+            <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">5. İşleme Amaçları</h2>
+            <p className="mt-3 text-sm">
+              Kişisel veriler; taleplerinizi yanıtlamak, bülten aboneliğinizi yönetmek, hizmet kalitesini artırmak,
+              dolandırıcılık girişimlerini önlemek, yasal yükümlülükleri yerine getirmek ve meşru menfaatlerimizi korumak
+              amaçlarıyla işlenebilir.
             </p>
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">6. Kullanıcı Hakları</h2>
-            <p className="mt-2 text-sm leading-relaxed">
-              KVKK uyarınca kullanıcılar; verilerine erişim, düzeltme, silme/yok etme, işleme itirazı ve
-              verilerin üçüncü kişilerle paylaşımının durdurulması gibi haklara sahiptir.
-              Haklarınızı kullanmak için bizimle iletişime geçebilirsiniz.
+            <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">6. Üçüncü Taraf Paylaşımları</h2>
+            <p className="mt-3 text-sm">
+              Verileriniz, hizmetin sağlanması için gerekli olması halinde; altyapı sağlayıcıları, barındırma hizmetleri,
+              ölçümleme/analitik servisleri gibi üçüncü taraflarla, mevzuata uygun olarak sınırlı ölçüde paylaşılabilir.
             </p>
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">7. İletişim</h2>
-            <p className="mt-2 text-sm leading-relaxed">
-              Bu politikayla ilgili sorularınız için info@vera.com adresinden bize ulaşabilirsiniz.
+            <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">7. Saklama Süresi</h2>
+            <p className="mt-3 text-sm">
+              Veriler, işleme amaçlarının gerektirdiği süre boyunca saklanır; amaç ortadan kalktığında yasal zorunluluklar
+              çerçevesinde silinir, yok edilir veya anonim hale getirilir.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">8. Kullanıcı Hakları</h2>
+            <p className="mt-3 text-sm">
+              KVKK kapsamında; verilerinize erişim, düzeltme, silme/yok etme, işlemeye itiraz ve aktarımın sınırlandırılması gibi
+              haklara sahipsiniz. Başvurularınızı{" "}
+              <span className="font-semibold">info@vera.com</span> adresi üzerinden iletebilirsiniz.
             </p>
           </div>
         </div>

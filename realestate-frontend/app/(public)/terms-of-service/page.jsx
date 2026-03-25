@@ -1,70 +1,72 @@
-import { ArrowRight } from "lucide-react";
-
 export default function TermsOfServicePage() {
   return (
-    <div className="space-y-10">
-      <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white px-6 py-14 md:px-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(245,158,11,0.22),transparent_55%)]" />
-        <div className="relative max-w-4xl">
-          <p className="text-xs uppercase tracking-[0.2em] text-accent">Kullanım Şartları</p>
-          <h1 className="mt-3 text-4xl font-semibold text-slate-900 md:text-5xl">
-            Vera Real Estate Kullanım Koşulları
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm text-slate-600 md:text-base">
-            Bu sayfa; web sitemizi kullanan ziyaretçilerin ve üyelerin uyması gereken şartları özetler.
-          </p>
-        </div>
+    <div>
+      <section className="rounded-3xl bg-slate-50 px-6 py-14 text-center">
+        <h1 className="text-4xl font-semibold text-slate-900 md:text-5xl">Kullanım Şartları</h1>
+        <p className="mt-3 text-sm text-slate-600">Son Güncelleme: Mart 2026</p>
       </section>
 
-      <section className="mx-auto max-w-4xl rounded-3xl border border-slate-200 bg-white p-6 md:p-10">
-        <div className="space-y-8 text-slate-700">
+      <section className="mx-auto max-w-4xl py-12 px-4">
+        <div className="space-y-8 text-slate-700 leading-relaxed">
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">1. Hizmetin Kapsamı</h2>
-            <p className="mt-2 text-sm leading-relaxed">
-              Vera Real Estate; emlak ilanlarının görüntülenmesi, kullanıcıların iletişim taleplerinin alınması ve
-              bülten aboneliği gibi hizmetler sunar.
+            <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">1. Genel Hükümler</h2>
+            <p className="mt-3 text-sm">
+              Bu Kullanım Şartları, Vera Real Estate web sitesini ziyaret eden ve/veya hizmetlerinden yararlanan tüm
+              kullanıcılar için geçerlidir. Siteyi kullanmanız, bu şartları kabul ettiğiniz anlamına gelir.
             </p>
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">2. Hesap ve Sorumluluklar</h2>
-            <p className="mt-2 text-sm leading-relaxed">
-              Üye olan kullanıcıların doğru ve güncel bilgi vermesi esastır. Kullanıcılar, üçüncü kişilerin haklarını
-              ihlal edecek şekilde içerik paylaştıklarında doğabilecek sonuçlardan sorumludur.
+            <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">2. Hizmet Tanımı</h2>
+            <p className="mt-3 text-sm">
+              Vera Real Estate; gayrimenkul ilanlarının görüntülenmesi, filtreleme, iletişim taleplerinin alınması ve
+              bülten aboneliği gibi özellikler sunar. Hizmet kapsamı zaman içinde güncellenebilir.
             </p>
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">3. İptal ve Sonlandırma</h2>
-            <p className="mt-2 text-sm leading-relaxed">
-              Kullanıcı talepleri, yasal gereklilikler ve hizmet güvenliği dikkate alınarak değerlendirilebilir.
-              Şüpheli kullanım hallerinde hesaplar geçici veya kalıcı olarak kısıtlanabilir.
+            <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">3. Fikri Mülkiyet</h2>
+            <p className="mt-3 text-sm">
+              Site içeriği, tasarım unsurları, metinler ve arayüz bileşenleri dahil olmak üzere; ilgili mevzuat kapsamında
+              korunur. İzinsiz kopyalama, çoğaltma, yeniden yayınlama ve ticari kullanım yasaktır.
             </p>
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">4. Sorumluluk Sınırları</h2>
-            <p className="mt-2 text-sm leading-relaxed">
-              Kullanıcı içeriklerinin ve ilan metinlerinin doğruluğuna ilişkin sorumluluk ilgili kullanıcıya/ilan sahibine aittir.
-              Vera Real Estate, hizmetin kesintisiz olacağını garanti etmez.
+            <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">4. İlan Kuralları</h2>
+            <h3 className="mt-4 text-lg font-semibold text-slate-800">4.1. Doğruluk ve güncellik</h3>
+            <p className="mt-2 text-sm">
+              İlan içeriklerinin doğruluğu, güncelliği ve mevzuata uygunluğu ilan sahibi/kullanıcı sorumluluğundadır.
+              Yanıltıcı veya eksik içerikler tespit edildiğinde ilanlar kısıtlanabilir veya kaldırılabilir.
+            </p>
+            <h3 className="mt-4 text-lg font-semibold text-slate-800">4.2. Yasaklı içerikler</h3>
+            <p className="mt-2 text-sm">
+              Hukuka aykırı, yanıltıcı, hak ihlali içeren veya üçüncü kişilerin kişisel verilerini izinsiz paylaşan içerikler
+              yayınlanamaz.
             </p>
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">5. Gizlilik Politikası ile Bağlantı</h2>
-            <p className="mt-2 text-sm leading-relaxed">
-              Bu şartlar; Gizlilik Politikası ile birlikte değerlendirilir. Kişisel verilerinizin işlenmesi Gizlilik Politikası
-              hükümlerine göre yapılır.
+            <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">5. Yasaklı Kullanım</h2>
+            <p className="mt-3 text-sm">
+              Sisteme yetkisiz erişim girişimleri, otomasyon/bot ile veri toplama, hizmeti engellemeye yönelik eylemler,
+              kullanıcıları yanıltma ve benzeri kötüye kullanım davranışları kesinlikle yasaktır.
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-            <div className="flex items-center gap-2 text-accent">
-              <ArrowRight className="h-4 w-4" />
-              <p className="text-sm font-semibold">Not</p>
-            </div>
-            <p className="mt-2 text-sm leading-relaxed">
-              Bu metinler örnek/prototip amaçlı hazırlanmıştır. Yasal danışman onayıyla son halinize getirilebilir.
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">6. Sorumluluk Reddi</h2>
+            <p className="mt-3 text-sm">
+              Vera Real Estate, ilan içeriklerinin doğruluğunu garanti etmez. Hizmetin kesintisiz veya hatasız olacağına
+              dair taahhüt verilmez. Dolaylı zararlar ve üçüncü taraf kaynaklı kesintiler için sorumluluk kabul edilmez.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">7. Sonlandırma</h2>
+            <p className="mt-3 text-sm">
+              Şartların ihlali, güvenlik riski veya yasal gereklilik durumunda; hesaplar geçici veya kalıcı olarak
+              sınırlandırılabilir. Bu durum, hizmet güvenliğini sağlamak için uygulanabilir.
             </p>
           </div>
         </div>

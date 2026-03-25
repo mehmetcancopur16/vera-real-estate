@@ -27,10 +27,10 @@ const categories = [
 ];
 
 const socials = [
-  { href: "#", icon: Facebook, label: "Facebook" },
-  { href: "#", icon: Instagram, label: "Instagram" },
-  { href: "#", icon: Linkedin, label: "LinkedIn" },
-  { href: "#", icon: Twitter, label: "X" },
+  { href: "https://facebook.com", icon: Facebook, label: "Facebook" },
+  { href: "https://instagram.com", icon: Instagram, label: "Instagram" },
+  { href: "https://linkedin.com", icon: Linkedin, label: "LinkedIn" },
+  { href: "https://twitter.com", icon: Twitter, label: "X" },
 ];
 
 const linkClass =
@@ -122,8 +122,8 @@ export default function Footer() {
                 key={label}
                 href={href}
                 target="_blank"
-                rel="noreferrer"
-                className="inline-flex size-9 items-center justify-center rounded-full border border-slate-700 text-slate-300 transition hover:border-accent hover:text-accent"
+                rel="noopener noreferrer"
+                className="inline-flex size-9 items-center justify-center rounded-full border border-slate-700 text-slate-300 transition-transform hover:border-accent hover:text-accent hover:scale-110"
                 aria-label={label}
               >
                 <Icon className="h-4 w-4" />
