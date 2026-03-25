@@ -296,13 +296,9 @@ export async function updateProperty(req, res, next) {
 
 export async function deleteProperty(req, res, next) {
   try {
-    const property = await Property.findByIdAndUpdate(
-      req.params.id,
-      { isActive: false },
-      { new: true }
-    );
-    if (!property) throw new ApiError(404, 'İlan bulunamadı');
-    res.status(200).json({ success: true, message: 'İlan pasife alındı' });
+    const deleted = await Property.findByIdAndDelete(req.params.id);
+    if (!deleted) throw new ApiError(404, 'İlan bulunamadı');
+    res.status(200).json({ success: true, message: 'İlan kalıcı olarak silindi' });
   } catch (err) {
     next(err);
   }

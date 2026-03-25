@@ -4,18 +4,33 @@ import Image from "next/image";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import {
+  AlertCircle,
+  Building,
+  Calendar,
+  Edit,
+  Eye,
+  Loader2,
+  MapPin,
+  Plus,
+  Trash2,
+  TrendingUp,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { deleteMyProperty, getMyProperties } from "@/services/property.service";
 
 function formatTry(price) {
@@ -24,6 +39,13 @@ function formatTry(price) {
     currency: "TRY",
     maximumFractionDigits: 0,
   }).format(price || 0);
+}
+
+function formatDate(dateString) {
+  if (!dateString) return "-";
+  const d = new Date(dateString);
+  if (Number.isNaN(d.getTime())) return "-";
+  return d.toLocaleDateString("tr-TR", { year: "numeric", month: "long", day: "2-digit" });
 }
 
 export default function MyListingsPage() {
@@ -37,7 +59,7 @@ export default function MyListingsPage() {
   const deleteMutation = useMutation({
     mutationFn: (id) => deleteMyProperty(id),
     onSuccess: () => {
-      toast.success("Ilan pasife alindi");
+      toast.success("Ilan kalici olarak silindi");
       queryClient.invalidateQueries({ queryKey: ["my-properties"] });
     },
     onError: (error) => {
@@ -46,15 +68,34 @@ export default function MyListingsPage() {
   });
 
   const items = data?.data || [];
+  const totalListings = items.length;
+  const activeListings = items.filter((p) => p.isActive).length;
+  const totalViews = items.reduce((sum, p) => sum + (p.viewCount || 0), 0);
 
   if (isLoading) {
     return (
-      <section className="space-y-4">
-        <Skeleton className="h-8 w-40" />
-        <div className="space-y-3 rounded-xl border border-border p-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-16 w-full" />
+      <section className="space-y-6">
+        <Skeleton className="h-9 w-56" />
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <Skeleton className="h-24 w-full rounded-xl" />
+          <Skeleton className="h-24 w-full rounded-xl" />
+          <Skeleton className="h-24 w-full rounded-xl" />
+        </div>
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 md:flex-row md:items-center">
+              <Skeleton className="h-24 w-full rounded-lg md:w-24" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-5 w-2/3" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-1/3" />
+              </div>
+              <div className="flex w-full flex-col gap-2 md:w-40">
+                <Skeleton className="h-9 w-full" />
+                <Skeleton className="h-9 w-full" />
+              </div>
+            </div>
+          ))}
         </div>
       </section>
     );
@@ -62,73 +103,165 @@ export default function MyListingsPage() {
 
   if (!items.length) {
     return (
-      <section className="flex min-h-[55vh] flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border bg-card p-6 text-center">
-        <h1 className="text-2xl font-semibold">Henüz hic ilan eklemediniz.</h1>
-        <p className="max-w-md text-sm text-muted-foreground">
-          Yeni bir ilan olusturarak panelinizi doldurmaya hemen baslayabilirsiniz.
+      <section className="flex min-h-[55vh] flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
+        <Building className="h-12 w-12 text-slate-300" />
+        <h1 className="text-2xl font-semibold text-slate-900">Henüz hiç ilan eklemediniz.</h1>
+        <p className="max-w-md text-sm text-slate-600">
+          Premium panelinizi doldurmak için ilk ilanınızı hemen ekleyin. İlanlarınız burada analizlerle birlikte görünecek.
         </p>
-        <Button asChild>
-          <Link href="/add-listing">Yeni Ilan Ekle</Link>
+        <Button asChild className="bg-accent text-primary hover:bg-[var(--gold-hover)]">
+          <Link href="/add-listing">
+            <Plus className="mr-2 h-4 w-4" />
+            Yeni İlan Ekle
+          </Link>
         </Button>
       </section>
     );
   }
 
   return (
-    <section className="space-y-4">
-      <h1 className="text-2xl font-semibold">Ilanlarim</h1>
-      <div className="rounded-xl border border-border">
-        <Table>
-          <TableCaption>Hesabiniza ait aktif ilanlar.</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Gorsel</TableHead>
-              <TableHead>Baslik</TableHead>
-              <TableHead>Fiyat</TableHead>
-              <TableHead>Durum</TableHead>
-              <TableHead className="text-right">Aksiyonlar</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {items.map((property) => (
-              <TableRow key={property._id}>
-                <TableCell>
-                  <div className="relative h-14 w-24 overflow-hidden rounded-md border border-border">
-                    <Image
-                      src={
-                        property.images?.[0] ||
-                        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1400&auto=format&fit=crop"
-                      }
-                      alt={property.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </TableCell>
-                <TableCell className="font-medium">{property.title}</TableCell>
-                <TableCell>{formatTry(property.price)}</TableCell>
-                <TableCell>{property.isActive ? "Aktif" : "Pasif"}</TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => deleteMutation.mutate(property._id)}
+    <section className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold text-slate-900">İlanlarım</h1>
+        <Button asChild className="bg-accent text-primary hover:bg-[var(--gold-hover)]">
+          <Link href="/add-listing">
+            <Plus className="mr-2 h-4 w-4" />
+            Yeni İlan
+          </Link>
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm text-slate-500">Toplam İlan</p>
+              <p className="mt-2 text-3xl font-semibold text-slate-900">{totalListings}</p>
+            </div>
+            <Building className="h-6 w-6 text-accent" />
+          </div>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm text-slate-500">Aktif İlanlar</p>
+              <p className="mt-2 text-3xl font-semibold text-slate-900">{activeListings}</p>
+            </div>
+            <span className="inline-flex items-center gap-2 text-sm text-slate-600">
+              <span className="h-2 w-2 rounded-full bg-green-500" />
+              Aktif
+            </span>
+          </div>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm text-slate-500">Toplam Görüntülenme</p>
+              <p className="mt-2 text-3xl font-semibold text-slate-900">{totalViews.toLocaleString("tr-TR")}</p>
+            </div>
+            <TrendingUp className="h-6 w-6 text-accent" />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {items.map((property) => {
+          const imageUrl =
+            property.images?.[0] ||
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1400&auto=format&fit=crop";
+          const isActive = Boolean(property.isActive);
+          return (
+            <div
+              key={property._id}
+              className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:flex-row md:items-center"
+            >
+              <div className="flex items-start gap-4 md:flex-1">
+                <div className="relative h-24 w-full overflow-hidden rounded-lg border border-slate-200 md:size-24 md:w-24">
+                  <Image src={imageUrl} alt={property.title} fill sizes="96px" className="object-cover" />
+                </div>
+                <div className="min-w-0 space-y-1">
+                  <p className="truncate text-lg font-semibold text-slate-900">{property.title}</p>
+                  <p className="inline-flex items-center gap-1 text-sm text-slate-500">
+                    <MapPin className="h-4 w-4 text-accent" />
+                    {property.location?.city} / {property.location?.district || "Merkez"}
+                  </p>
+                  <p className="inline-flex items-center gap-1 text-sm text-slate-500">
+                    <Calendar className="h-4 w-4 text-accent" />
+                    {formatDate(property.createdAt)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 md:items-end">
+                <p className="text-xl font-bold text-slate-900">{formatTry(property.price)}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge
+                    className={
+                      isActive ? "bg-green-100 text-green-800 hover:bg-green-100" : "bg-slate-100 text-slate-700 hover:bg-slate-100"
+                    }
+                  >
+                    {isActive ? "Aktif" : "Pasif"}
+                  </Badge>
+                  <span className="inline-flex items-center gap-1 text-sm text-slate-600">
+                    <Eye className="h-4 w-4 text-accent" />
+                    {(property.viewCount || 0).toLocaleString("tr-TR")}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:justify-end">
+                <Button variant="outline" className="w-full gap-2 md:w-auto" disabled>
+                  <Edit className="h-4 w-4" />
+                  Düzenle
+                </Button>
+
+                <AlertDialog>
+                  <AlertDialogTrigger
+                    render={
+                      <Button
+                        variant="outline"
+                        className="w-full gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 md:w-auto"
+                      />
+                    }
                     disabled={deleteMutation.isPending}
                   >
-                    {deleteMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                        Siliniyor
-                      </>
-                    ) : (
-                      "Sil"
-                    )}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                    <Trash2 className="h-4 w-4" />
+                    Sil
+                  </AlertDialogTrigger>
+
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogMedia className="text-red-600">
+                        <AlertCircle />
+                      </AlertDialogMedia>
+                      <AlertDialogTitle>İlanı Silmek İstediğinize Emin Misiniz?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Bu işlem geri alınamaz. İlan veritabanından kalıcı olarak silinecektir.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>İptal</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive/10 text-destructive hover:bg-destructive/20"
+                        onClick={() => deleteMutation.mutate(property._id)}
+                        disabled={deleteMutation.isPending}
+                      >
+                        {deleteMutation.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Siliniyor...
+                          </>
+                        ) : (
+                          "Sil"
+                        )}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
