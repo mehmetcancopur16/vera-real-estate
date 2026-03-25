@@ -1,6 +1,7 @@
 "use client";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import { AlertTriangle, RotateCcw, Search, SearchX, SlidersHorizontal, Sparkles } from "lucide-react";
 import PropertyGrid from "@/components/property/PropertyGrid";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,29 @@ import { usePropertyStore } from "@/store/usePropertyStore";
 
 export default function ListingsPage() {
   const { filters, setFilters, resetFilters } = usePropertyStore();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // Footer kategorileri gibi query parametreli yönlendirmelerde, filtreleri URL'den senkronize ediyoruz.
+    const q = searchParams?.toString?.() || "";
+    if (!q) {
+      resetFilters();
+      return;
+    }
+
+    resetFilters();
+    setFilters({
+      city: searchParams.get("city") || "",
+      type: searchParams.get("type") || "",
+      listingType: searchParams.get("listingType") || "",
+      minPrice: searchParams.get("minPrice") || "",
+      maxPrice: searchParams.get("maxPrice") || "",
+      rooms: searchParams.get("rooms") || "",
+      search: searchParams.get("search") || "",
+      sortBy: searchParams.get("sortBy") || "newest",
+    });
+  }, [searchParams, resetFilters, setFilters]);
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["properties-list", filters],
     queryFn: () => getProperties(filters),

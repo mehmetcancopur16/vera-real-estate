@@ -70,6 +70,7 @@ export default function RegisterPage() {
           src="https://images.unsplash.com/photo-1600573472550-8090b5e0745e?q=80&w=1600&auto=format&fit=crop"
           alt="Luxury residence"
           fill
+          sizes="(max-width: 768px) 100vw, 50vw"
           className="object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-primary/65 to-black/70" />

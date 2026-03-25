@@ -44,11 +44,12 @@ export default function LoginPage() {
 
   return (
     <div className="grid w-full grid-cols-1 md:grid-cols-2">
-      <section className="relative hidden h-full min-h-screen md:block md:w-1/2">
+      <section className="relative hidden md:flex">
         <Image
           src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1600&auto=format&fit=crop"
           alt="Luxury residence"
           fill
+          sizes="(max-width: 768px) 100vw, 50vw"
           className="object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-primary/65 to-black/70" />
@@ -65,8 +66,8 @@ export default function LoginPage() {
           </p>
         </div>
       </section>
-      <section className="flex flex-col justify-center bg-slate-50 px-6 py-10">
-        <div className="mx-auto w-full max-w-md animate-in fade-in slide-in-from-bottom-4 rounded-2xl border border-slate-200 bg-white p-8 shadow-2xl duration-700">
+      <section className="flex items-center justify-center bg-slate-50 p-6">
+        <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 rounded-2xl border border-slate-200 bg-white p-8 shadow-2xl duration-700">
           <h1 className="text-3xl font-semibold text-slate-900">Giris Yap</h1>
           <p className="mt-1 text-sm text-slate-500">Hesabiniza erismek icin bilgilerinizi girin.</p>
           <Form {...form}>

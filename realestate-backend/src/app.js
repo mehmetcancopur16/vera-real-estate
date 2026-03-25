@@ -13,10 +13,12 @@ import { mongoSanitizeCompatible } from './middlewares/mongo-sanitize.middleware
 import authRoutes from './routes/auth.routes.js';
 import propertyRoutes from './routes/property.routes.js';
 import contactRoutes from './routes/contact.routes.js';
+import newsletterRoutes from './routes/newsletter.routes.js';
 
 const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
+  'http://localhost:3001',
   // Production: add Vercel frontend domains via CORS_ORIGINS env (comma-separated).
   ...(process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
@@ -90,6 +92,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/properties', propertyRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/newsletter', newsletterRoutes);
 
 app.use((req, res, next) => {
   res.status(404).json({ success: false, message: 'Not found' });
