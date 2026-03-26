@@ -46,7 +46,8 @@ async function loadProperty(id) {
 }
 
 export async function generateMetadata({ params }) {
-  const property = await loadProperty(params.id);
+  const { id } = await params;
+  const property = await loadProperty(id);
 
   if (!property) {
     return {
@@ -62,7 +63,8 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function PropertyDetailPage({ params }) {
-  const property = await loadProperty(params.id);
+  const { id } = await params;
+  const property = await loadProperty(id);
 
   if (!property) {
     return (
@@ -92,7 +94,7 @@ export default async function PropertyDetailPage({ params }) {
 
   return (
     <div className="space-y-8">
-      <section className="space-y-4 overflow-hidden rounded-3xl border border-slate-200 bg-white p-4 md:p-6">
+      <section className="panel-surface space-y-4 overflow-hidden rounded-3xl p-4 md:p-6">
         <div className="relative h-[320px] w-full overflow-hidden rounded-2xl md:h-[520px]">
           <Image src={heroImage} alt={property.title} fill sizes="100vw" priority className="object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
@@ -117,7 +119,7 @@ export default async function PropertyDetailPage({ params }) {
 
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="panel-surface rounded-2xl p-6">
             <p className="inline-flex items-center gap-1 text-sm text-slate-500">
               <MapPin className="h-4 w-4 text-accent" />
               {property.location?.city} / {property.location?.district || "Merkez"}
@@ -140,33 +142,33 @@ export default async function PropertyDetailPage({ params }) {
           </div>
 
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-            <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="panel-surface rounded-xl p-4">
               <p className="inline-flex items-center gap-2 text-xs text-slate-500"><BedDouble className="h-4 w-4 text-accent" /> Oda</p>
               <p className="mt-1 text-xl font-semibold text-slate-900">{property.features?.rooms ?? "-"}</p>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="panel-surface rounded-xl p-4">
               <p className="inline-flex items-center gap-2 text-xs text-slate-500"><Bath className="h-4 w-4 text-accent" /> Banyo</p>
               <p className="mt-1 text-xl font-semibold text-slate-900">{property.features?.bathrooms ?? "-"}</p>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="panel-surface rounded-xl p-4">
               <p className="inline-flex items-center gap-2 text-xs text-slate-500"><Ruler className="h-4 w-4 text-accent" /> m2</p>
               <p className="mt-1 text-xl font-semibold text-slate-900">{property.size ?? "-"}</p>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="panel-surface rounded-xl p-4">
               <p className="inline-flex items-center gap-2 text-xs text-slate-500"><Home className="h-4 w-4 text-accent" /> Kat</p>
               <p className="mt-1 text-xl font-semibold text-slate-900">{property.features?.floor ?? "-"}</p>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="panel-surface rounded-xl p-4">
               <p className="inline-flex items-center gap-2 text-xs text-slate-500"><CalendarDays className="h-4 w-4 text-accent" /> Yapi Yili</p>
               <p className="mt-1 text-xl font-semibold text-slate-900">{property.yearBuilt ?? "-"}</p>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="panel-surface rounded-xl p-4">
               <p className="inline-flex items-center gap-2 text-xs text-slate-500"><ClipboardCheck className="h-4 w-4 text-accent" /> Aidat</p>
               <p className="mt-1 text-xl font-semibold text-slate-900">{property.maintenanceFee ? formatTry(property.maintenanceFee) : "-"}</p>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="panel-surface rounded-2xl p-6">
             <h2 className="text-2xl font-semibold text-slate-900">Aciklama</h2>
             <p className="mt-3 leading-relaxed text-slate-700">{property.description}</p>
             <p className="mt-4 inline-flex items-center gap-1 text-sm text-slate-500">
@@ -175,7 +177,7 @@ export default async function PropertyDetailPage({ params }) {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="panel-surface rounded-2xl p-6">
             <h2 className="text-2xl font-semibold text-slate-900">Olanaklar</h2>
             {amenities.length > 0 ? (
               <div className="mt-4 flex flex-wrap gap-2">
@@ -201,19 +203,19 @@ export default async function PropertyDetailPage({ params }) {
             </div>
           </div>
 
-          <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="panel-surface space-y-3 rounded-2xl p-6">
             <h2 className="text-2xl font-semibold text-slate-900">Konum</h2>
             <MapView properties={mapProperties} />
           </div>
         </div>
 
-        <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-24">
+        <aside className="panel-surface h-fit rounded-2xl p-5 lg:sticky lg:top-24">
           <h3 className="text-xl font-semibold text-slate-900">Danismanla Iletisime Gec</h3>
           <p className="mt-2 text-sm text-slate-600">
             Bu ilanla ilgili detayli bilgi ve randevu talepleriniz icin uzman ekibimiz sizinle hizla iletisime gecsin.
           </p>
           <div className="mt-5 space-y-2">
-            <button type="button" className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-accent/90">
+            <button type="button" className="w-full rounded-lg bg-gold-gradient px-4 py-2.5 text-sm font-semibold text-primary transition hover:brightness-95">
               Iletisime Gec
             </button>
             <button type="button" className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">

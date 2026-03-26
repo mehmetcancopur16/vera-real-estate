@@ -37,7 +37,7 @@ export default function ContactPage() {
 
   return (
     <div className="space-y-8">
-      <section className="relative overflow-hidden rounded-3xl border border-slate-200">
+      <section className="relative overflow-hidden rounded-3xl border border-border/80 premium-ring">
         <div className="relative h-[280px] w-full">
           <Image
             src="https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1400&auto=format&fit=crop"
@@ -60,7 +60,7 @@ export default function ContactPage() {
       </section>
 
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
           <h2 className="text-2xl font-semibold text-slate-900">Vera Merkez Ofis</h2>
           <p className="mt-2 text-sm text-slate-600">
             Premium emlak danismanligi, yatirim yonetimi ve ozel portfoy hizmetlerimiz icin size bir
@@ -97,7 +97,7 @@ export default function ContactPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
           <h2 className="text-2xl font-semibold text-slate-900">Mesaj Birakin</h2>
           <p className="mt-2 text-sm text-slate-600">
             Talebinizi bize iletin, uzman ekibimiz en kisa surede sizinle iletisime gececektir.
@@ -159,7 +159,7 @@ export default function ContactPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-accent text-primary hover:bg-[var(--gold-hover)]"
+                className="w-full bg-gold-gradient text-primary hover:brightness-95"
               >
                 {isSubmitting ? (
                   <>

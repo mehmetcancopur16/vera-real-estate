@@ -47,16 +47,16 @@ export default function Navbar() {
     : "VR";
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-accent/20 bg-primary/90 text-primary-foreground backdrop-blur-sm">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4">
-        <Link href="/" className="text-xl tracking-wide md:text-2xl">
-          <span className="font-semibold text-accent">Vera</span>{" "}
-          <span className="font-light text-white">Real Estate</span>
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-border/70 bg-[var(--header)] text-primary-foreground backdrop-blur-xl">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3.5">
+        <Link href="/" className="text-xl tracking-wide transition-transform duration-200 hover:scale-[1.01] md:text-2xl">
+          <span className="font-semibold text-gradient-gold">Vera</span>{" "}
+          <span className="font-light text-primary-foreground">Real Estate</span>
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="group relative px-1 py-1 text-sm font-medium text-white/90 transition-colors hover:text-accent">
+            <Link key={item.href} href={item.href} className="group relative px-1 py-1 text-sm font-medium text-white/85 transition-colors duration-200 hover:text-accent">
               <span>{item.label}</span>
               <span className="absolute bottom-0 left-0 h-[1.5px] w-full origin-center scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100" />
             </Link>
@@ -67,15 +67,18 @@ export default function Navbar() {
           <div className="hidden md:block">
             <DropdownMenu>
               <DropdownMenuTrigger
-                className="rounded-full ring-2 ring-accent/40 transition hover:ring-accent"
+                className="rounded-full ring-2 ring-accent/35 transition-all duration-200 hover:-translate-y-0.5 hover:ring-accent"
                 aria-label="user-menu"
               >
                 <Avatar className="size-9 bg-accent text-primary">
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
-                <div className="px-2 py-1.5 text-xs text-muted-foreground">{user?.email || "Hesap"}</div>
+              <DropdownMenuContent align="end" className="w-60">
+                <div className="rounded-lg bg-surface px-2.5 py-2">
+                  <p className="text-xs font-medium text-foreground">{user?.name || "Vera Uye"}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{user?.email || "Hesap"}</p>
+                </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => router.push("/profile")} className="cursor-pointer">
                   <CircleUserRound className="mr-2 h-4 w-4" />
@@ -107,7 +110,7 @@ export default function Navbar() {
             <Button
               asChild
               size="sm"
-              className="bg-gradient-to-r from-accent to-[var(--gold-hover)] text-primary shadow-sm hover:from-[var(--gold-hover)] hover:to-accent"
+              className="bg-gold-gradient text-primary premium-ring hover:brightness-95"
             >
               <Link href="/register">Register</Link>
             </Button>
@@ -118,11 +121,11 @@ export default function Navbar() {
           <Sheet>
             <SheetTrigger
               aria-label="menu"
-              className="inline-flex size-8 items-center justify-center rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              className="inline-flex size-9 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white transition-colors hover:bg-white/20"
             >
               <Menu className="h-5 w-5" />
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] bg-slate-950 text-white">
+            <SheetContent side="right" className="w-[300px] border-l border-border/60 bg-[var(--header)] text-white">
               <SheetHeader>
                 <SheetTitle>
                   <span className="font-semibold text-accent">Vera</span>{" "}
@@ -135,7 +138,7 @@ export default function Navbar() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="rounded-md px-3 py-2 text-sm text-white/90 transition hover:bg-white/10 hover:text-accent"
+                      className="rounded-lg px-3 py-2 text-sm text-white/90 transition-all duration-200 hover:bg-white/10 hover:text-accent"
                     >
                       {item.label}
                     </Link>
@@ -175,7 +178,7 @@ export default function Navbar() {
                       </Button>
                       <Button
                         asChild
-                        className="bg-gradient-to-r from-accent to-[var(--gold-hover)] text-primary hover:from-[var(--gold-hover)] hover:to-accent"
+                        className="bg-gold-gradient text-primary hover:brightness-95"
                       >
                         <Link href="/register">Register</Link>
                       </Button>

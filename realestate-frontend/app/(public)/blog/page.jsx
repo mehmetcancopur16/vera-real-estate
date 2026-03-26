@@ -88,7 +88,7 @@ const categories = [
 
 function BlogCard({ category, post }) {
   return (
-    <article className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-2 hover:shadow-xl">
+    <article className="group overflow-hidden rounded-xl border border-border/80 bg-card shadow-sm transition hover:-translate-y-2 hover:shadow-xl">
       <div className="relative overflow-hidden">
         <Image
           src={post.image}
@@ -127,7 +127,7 @@ function BlogCard({ category, post }) {
 export default function BlogPage() {
   return (
     <div className="space-y-14">
-      <section className="relative overflow-hidden rounded-3xl border border-slate-200">
+      <section className="relative overflow-hidden rounded-3xl border border-border/80 premium-ring">
         <div className="relative h-[360px] w-full">
           <Image
             src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1800&auto=format&fit=crop"

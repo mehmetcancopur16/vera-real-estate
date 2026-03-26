@@ -66,8 +66,8 @@ export default function LoginPage() {
           </p>
         </div>
       </section>
-      <section className="flex items-center justify-center bg-slate-50 p-6">
-        <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 rounded-2xl border border-slate-200 bg-white p-8 shadow-2xl duration-700">
+      <section className="flex items-center justify-center bg-surface p-6">
+        <div className="panel-surface w-full max-w-md animate-in fade-in slide-in-from-bottom-4 rounded-2xl p-8 shadow-2xl duration-700">
           <h1 className="text-3xl font-semibold text-slate-900">Giris Yap</h1>
           <p className="mt-1 text-sm text-slate-500">Hesabiniza erismek icin bilgilerinizi girin.</p>
           <Form {...form}>
@@ -141,7 +141,7 @@ export default function LoginPage() {
               </div>
               <Button
                 type="submit"
-                className="w-full gap-2 bg-accent text-primary shadow-md transition-all hover:bg-[var(--gold-hover)] hover:shadow-lg active:scale-95"
+                className="w-full gap-2 bg-gold-gradient text-primary shadow-md transition-all hover:brightness-95 hover:shadow-lg active:scale-95"
                 disabled={isLoading}
               >
                 {isLoading ? (

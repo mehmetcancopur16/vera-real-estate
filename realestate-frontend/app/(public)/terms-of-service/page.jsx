@@ -1,13 +1,13 @@
 export default function TermsOfServicePage() {
   return (
     <div>
-      <section className="rounded-3xl bg-slate-50 px-6 py-14 text-center">
+      <section className="rounded-3xl border border-border/80 bg-surface px-6 py-14 text-center premium-ring">
         <h1 className="text-4xl font-semibold text-slate-900 md:text-5xl">Kullanım Şartları</h1>
         <p className="mt-3 text-sm text-slate-600">Son Güncelleme: Mart 2026</p>
       </section>
 
-      <section className="mx-auto max-w-4xl py-12 px-4">
-        <div className="space-y-8 text-slate-700 leading-relaxed">
+      <section className="mx-auto max-w-4xl px-4 py-12">
+        <div className="space-y-8 leading-relaxed text-slate-700">
           <div>
             <h2 className="text-2xl font-bold text-slate-900 border-b border-slate-200 pb-2">1. Genel Hükümler</h2>
             <p className="mt-3 text-sm">

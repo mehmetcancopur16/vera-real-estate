@@ -34,7 +34,7 @@ const socials = [
 ];
 
 const linkClass =
-  "text-sm text-slate-300 transition-colors hover:text-white";
+  "text-sm text-slate-300 transition-colors duration-200 hover:text-accent";
 
 const schema = z.object({
   email: z.string().trim().email("Geçerli bir e-posta girin"),
@@ -57,8 +57,8 @@ export default function Footer() {
   }
 
   return (
-    <footer className="mt-14 bg-slate-950 text-slate-200">
-      <div className="h-1 bg-gradient-to-r from-transparent via-accent to-transparent" />
+    <footer className="mt-16 border-t border-border/60 bg-[var(--header)] text-slate-200">
+      <div className="h-1 bg-gold-gradient opacity-80" />
 
       <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-8 px-4 py-12 md:grid-cols-2 xl:grid-cols-4">
         <section className="space-y-4">
@@ -123,7 +123,7 @@ export default function Footer() {
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex size-9 items-center justify-center rounded-full border border-slate-700 text-slate-300 transition-transform hover:border-accent hover:text-accent hover:scale-110"
+                className="inline-flex size-9 items-center justify-center rounded-full border border-slate-700 text-slate-300 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent hover:text-accent"
                 aria-label={label}
               >
                 <Icon className="h-4 w-4" />
@@ -135,7 +135,7 @@ export default function Footer() {
               type="email"
               placeholder="E-posta adresiniz"
               {...form.register("email")}
-              className="border-slate-700 bg-slate-900 text-white placeholder:text-slate-500"
+              className="border-slate-700 bg-slate-900/90 text-white placeholder:text-slate-500"
             />
             {form.formState.errors.email?.message && (
               <p className="text-xs text-amber-300">{form.formState.errors.email.message}</p>
@@ -143,7 +143,7 @@ export default function Footer() {
             <Button
               type="submit"
               disabled={form.formState.isSubmitting}
-              className="w-full bg-gradient-to-r from-accent to-[var(--gold-hover)] text-primary hover:from-[var(--gold-hover)] hover:to-accent"
+              className="w-full bg-gold-gradient text-primary hover:brightness-95"
             >
               {form.formState.isSubmitting ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

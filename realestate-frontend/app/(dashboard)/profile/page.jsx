@@ -114,7 +114,7 @@ export default function ProfilePage() {
           <h1 className="text-2xl font-semibold text-slate-900">Profil</h1>
           <p className="mt-1 text-sm text-slate-600">Hesap bilgilerinizi yönetin ve güvenliğinizi güncel tutun.</p>
         </div>
-        <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600 md:inline-flex">
+        <div className="hidden items-center gap-2 rounded-full border border-border/80 bg-surface px-3 py-1 text-xs text-slate-600 md:inline-flex">
           <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
           Premium panel
         </div>
@@ -128,7 +128,7 @@ export default function ProfilePage() {
         </TabsList>
 
         <TabsContent value="personal" className="space-y-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="panel-surface rounded-2xl p-5 shadow-sm">
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4">
                 <div className="relative">
@@ -168,7 +168,7 @@ export default function ProfilePage() {
               <div className="flex flex-col gap-2 md:items-end">
                 <Button
                   type="button"
-                  className="bg-accent text-primary hover:bg-[var(--gold-hover)]"
+                  className="bg-gold-gradient text-primary hover:brightness-95"
                   onClick={() => updateMeMutation.mutate()}
                   disabled={updateMeMutation.isPending}
                 >
@@ -201,7 +201,7 @@ export default function ProfilePage() {
         </TabsContent>
 
         <TabsContent value="security" className="space-y-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="panel-surface rounded-2xl p-5 shadow-sm">
             <div className="flex items-center gap-3">
               <span className="inline-flex size-10 items-center justify-center rounded-xl bg-slate-950 text-white ring-1 ring-slate-900">
                 <User className="h-5 w-5 text-accent" />
@@ -260,7 +260,7 @@ export default function ProfilePage() {
             <div className="mt-5 flex justify-end">
               <Button
                 type="button"
-                className="bg-accent text-primary hover:bg-[var(--gold-hover)]"
+                className="bg-gold-gradient text-primary hover:brightness-95"
                 onClick={() => changePasswordMutation.mutate()}
                 disabled={changePasswordMutation.isPending}
               >
@@ -276,7 +276,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-red-200 bg-white p-5 shadow-sm">
+          <div className="panel-surface rounded-2xl border-red-200 p-5 shadow-sm">
             <p className="text-sm font-semibold text-slate-900">Hesabı Sil</p>
             <p className="mt-1 text-sm text-slate-600">
               Bu işlem geri alınamaz. Hesabınız ve tüm ilanlarınız kalıcı olarak silinecektir.
@@ -343,7 +343,7 @@ export default function ProfilePage() {
         </TabsContent>
 
         <TabsContent value="preferences" className="space-y-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="panel-surface rounded-2xl p-5 shadow-sm">
             <p className="text-sm font-semibold text-slate-900">Bildirim & Tercihler</p>
             <p className="mt-1 text-sm text-slate-600">Bu ayarlar şimdilik arayüz amaçlıdır; istenirse backend’e bağlarız.</p>
 

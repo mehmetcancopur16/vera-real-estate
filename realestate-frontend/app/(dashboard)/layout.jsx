@@ -161,7 +161,7 @@ export default function DashboardLayout({ children }) {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-foreground">
+    <div className="min-h-screen bg-gradient-to-b from-surface to-background text-foreground">
       <div className="border-b border-slate-200/70 bg-white/70 backdrop-blur md:hidden">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
@@ -188,11 +188,11 @@ export default function DashboardLayout({ children }) {
       </div>
 
       <div className="mx-auto grid min-h-[calc(100vh-61px)] w-full max-w-7xl grid-cols-1 gap-6 px-4 py-6 md:min-h-screen md:grid-cols-[280px_1fr]">
-        <aside className="sticky top-6 hidden h-[calc(100vh-48px)] rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:block">
+        <aside className="panel-surface sticky top-6 hidden h-[calc(100vh-48px)] rounded-3xl p-4 md:block">
           {SidebarContent}
         </aside>
 
-        <main className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <main className="panel-surface rounded-2xl">
           <div className="hidden items-center justify-between gap-3 border-b border-slate-200/70 px-6 py-5 md:flex">
             <div className="flex items-center gap-2 text-sm text-slate-500">
               <span className="font-medium text-slate-700">Dashboard</span>
