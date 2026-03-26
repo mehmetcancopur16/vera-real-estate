@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo } from "react";
+import { Suspense, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { AlertTriangle, RotateCcw, Search, SearchX, SlidersHorizontal, Sparkles } from "lucide-react";
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { getProperties } from "@/services/property.service";
 import { usePropertyStore } from "@/store/usePropertyStore";
 
-export default function ListingsPage() {
+function ListingsPageContent() {
   const { filters, setFilters, resetFilters } = usePropertyStore();
   const searchParams = useSearchParams();
 
@@ -55,7 +55,7 @@ export default function ListingsPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-3xl bg-primary px-6 py-10 text-white">
+      <section className="rounded-3xl bg-primary px-6 py-10 text-white premium-ring">
         <p className="text-xs uppercase tracking-[0.2em] text-accent">Vera Collections</p>
         <h1 className="mt-2 text-3xl font-semibold md:text-4xl">Seckin Ilanlar</h1>
         <p className="mt-2 max-w-2xl text-sm text-slate-300">
@@ -64,7 +64,7 @@ export default function ListingsPage() {
       </section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[330px_1fr]">
-      <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-24 lg:h-fit">
+      <aside className="panel-surface rounded-2xl p-5 lg:sticky lg:top-24 lg:h-fit">
         <div className="mb-4 flex items-center justify-between">
           <div className="inline-flex items-center gap-2">
             <SlidersHorizontal className="h-4 w-4 text-accent" />
@@ -145,7 +145,7 @@ export default function ListingsPage() {
       </aside>
 
       <section className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm">
+        <div className="panel-surface flex flex-wrap items-center justify-between gap-3 rounded-xl p-4 text-sm">
           <p className="text-slate-600"><span className="font-semibold text-slate-900">{total}</span> adet ilan bulundu</p>
           <Select value={filters.sortBy || "newest"} onValueChange={(v) => setFilters({ sortBy: v })}>
             <SelectTrigger className="w-full sm:w-[210px]"><SelectValue placeholder="Siralama" /></SelectTrigger>
@@ -165,7 +165,7 @@ export default function ListingsPage() {
                 key={key}
                 type="button"
                 onClick={() => removeFilter(key)}
-                className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:border-accent hover:text-accent"
+                className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-surface-elevated px-3 py-1 text-xs font-medium text-slate-600 transition-colors hover:border-accent hover:text-accent"
               >
                 {key}: {String(value)}
                 <RotateCcw className="h-3 w-3" />
@@ -192,7 +192,7 @@ export default function ListingsPage() {
             <p className="mt-1 max-w-md text-sm text-muted-foreground">
               Baglanti veya sunucu kaynakli bir problem olusmus olabilir. Lutfen kisa bir sure sonra tekrar deneyin.
             </p>
-            <Button onClick={() => window.location.reload()} className="mt-4 gap-2 bg-accent text-primary">
+            <Button onClick={() => window.location.reload()} className="mt-4 gap-2 bg-gold-gradient text-primary hover:brightness-95">
               <Search className="h-4 w-4" />
               Tekrar Dene
             </Button>
@@ -215,5 +215,13 @@ export default function ListingsPage() {
       </section>
       </div>
     </div>
+  );
+}
+
+export default function ListingsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[40vh] animate-pulse rounded-2xl bg-slate-100" />}>
+      <ListingsPageContent />
+    </Suspense>
   );
 }
