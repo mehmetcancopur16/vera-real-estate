@@ -41,3 +41,13 @@ export async function deleteMyProperty(id) {
   const { data } = await api.delete(`/properties/${id}`);
   return data;
 }
+
+export async function updateProperty(id, payload) {
+  const { data } = await api.put(`/properties/${id}`, payload);
+  return data;
+}
+
+export async function deletePropertyImage(propertyId, imgId) {
+  const { data } = await api.delete(`/properties/${propertyId}/images/${encodeURIComponent(imgId)}`);
+  return data;
+}

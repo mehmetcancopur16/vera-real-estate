@@ -8,7 +8,23 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
-import { CheckCircle2, CloudUpload, Loader2, X } from "lucide-react";
+import {
+  Bath,
+  BedDouble,
+  Building2,
+  Car,
+  CheckCircle2,
+  ChevronDown,
+  CloudUpload,
+  Flame,
+  Layers,
+  Loader2,
+  MapPin,
+  Maximize2,
+  Sofa,
+  Video,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,201 +46,296 @@ import {
 } from "@/components/ui/select";
 import { createProperty, uploadPropertyImages } from "@/services/property.service";
 
+/* ── constants ── */
+const TR_CITIES = [
+  "Adana","Adıyaman","Afyonkarahisar","Ağrı","Aksaray","Amasya","Ankara","Antalya",
+  "Ardahan","Artvin","Aydın","Balıkesir","Bartın","Batman","Bayburt","Bilecik",
+  "Bingöl","Bitlis","Bolu","Burdur","Bursa","Çanakkale","Çankırı","Çorum","Denizli",
+  "Diyarbakır","Düzce","Edirne","Elazığ","Erzincan","Erzurum","Eskişehir","Gaziantep",
+  "Giresun","Gümüşhane","Hakkari","Hatay","Iğdır","Isparta","İstanbul","İzmir",
+  "Kahramanmaraş","Karabük","Karaman","Kars","Kastamonu","Kayseri","Kırıkkale",
+  "Kırklareli","Kırşehir","Kilis","Kocaeli","Konya","Kütahya","Malatya","Manisa",
+  "Mardin","Mersin","Muğla","Muş","Nevşehir","Niğde","Ordu","Osmaniye","Rize",
+  "Sakarya","Samsun","Siirt","Sinop","Sivas","Şanlıurfa","Şırnak","Tekirdağ",
+  "Tokat","Trabzon","Tunceli","Uşak","Van","Yalova","Yozgat","Zonguldak",
+];
+
+const AMENITY_OPTIONS = [
+  "Balkon","Teras","Bahçe","Asansör","Otopark","Kapalı Otopark",
+  "Güvenlik / Güvenlikli Site","Havuz","Yüzme Havuzu","Spor Salonu / Fitness",
+  "Sauna","Jeneratör","Depreme Dayanıklı","Isı Yalıtımı","Ses Yalıtımı",
+  "Güneş Enerjisi","Doğalgaz","Merkezi Isıtma","Klima","Akıllı Ev Sistemi",
+  "Çelik Kapı","PVC Doğrama","Parke","Laminat","Seramik",
+  "Açık Mutfak","Ada Mutfak","Ankastre Mutfak","Banyo","Ebeveyn Banyosu",
+];
+
+const DEED_STATUS_OPTIONS = [
+  "Kat Mülkiyeti","Kat İrtifakı","Arsa Tapusu","Hisseli Tapu","Müstakil Tapu",
+];
+
+const HEATING_OPTIONS = [
+  { value: "kombi", label: "Doğalgaz Kombisi" },
+  { value: "merkezi", label: "Merkezi Isıtma" },
+  { value: "yerden", label: "Yerden Isıtma" },
+  { value: "elektrik", label: "Elektrikli Isıtma" },
+  { value: "klima", label: "Klima" },
+  { value: "soba", label: "Soba / Şömine" },
+  { value: "yok", label: "Isıtma Yok" },
+];
+
+const STEPS = [
+  { key: "basic",    title: "Temel Bilgiler",   subtitle: "Başlık, açıklama ve ilan tipi",       fields: ["title", "description", "type", "listingType"] },
+  { key: "location", title: "Konum & Fiyat",    subtitle: "Adres ve fiyatlandırma bilgileri",     fields: ["city", "district", "address", "price", "size"] },
+  { key: "features", title: "Özellikler",       subtitle: "Oda, kat, yıl ve teknik detaylar",     fields: ["rooms", "bathrooms"] },
+  { key: "images",   title: "Görsel Yükleme",   subtitle: "Sürükle-bırak ile yükleyin",           fields: [] },
+];
+
+/* ── zod schema ── */
 const schema = z.object({
-  title: z.string().min(3, "Baslik en az 3 karakter olmali"),
-  description: z.string().min(10, "Aciklama en az 10 karakter olmali"),
-  type: z.enum(["apartment", "house", "land", "commercial"]),
-  listingType: z.enum(["sale", "rent"]),
-  price: z.coerce.number().nonnegative("Fiyat 0'dan kucuk olamaz"),
-  size: z.coerce.number().nonnegative("Metrekare 0'dan kucuk olamaz").optional(),
-  rooms: z.coerce.number().int().nonnegative("Oda sayisi gecersiz"),
-  bathrooms: z.coerce.number().int().nonnegative("Banyo sayisi gecersiz"),
-  city: z.string().min(1, "Sehir zorunlu"),
-  district: z.string().min(1, "Ilce zorunlu"),
-  address: z.string().min(1, "Adres zorunlu"),
+  title:          z.string().trim().min(3, "Başlık en az 3 karakter olmalı"),
+  description:    z.string().trim().min(10, "Açıklama en az 10 karakter olmalı"),
+  type:           z.enum(["apartment", "house", "land", "commercial"]),
+  listingType:    z.enum(["sale", "rent"]),
+  price:          z.coerce.number().nonnegative("Fiyat 0'dan küçük olamaz"),
+  size:           z.coerce.number().nonnegative().optional().or(z.literal("")),
+  city:           z.string().trim().min(1, "Şehir zorunlu"),
+  district:       z.string().trim().min(1, "İlçe zorunlu"),
+  address:        z.string().trim().min(1, "Adres zorunlu"),
+  rooms:          z.coerce.number().int().nonnegative("Geçersiz oda sayısı"),
+  bathrooms:      z.coerce.number().int().nonnegative("Geçersiz banyo sayısı"),
+  floor:          z.coerce.number().int().optional().or(z.literal("")),
+  totalFloors:    z.coerce.number().int().nonnegative().optional().or(z.literal("")),
+  heating:        z.string().optional(),
+  yearBuilt:      z.coerce.number().int().min(1800).max(new Date().getFullYear() + 5).optional().or(z.literal("")),
+  status:         z.enum(["ready", "under-construction"]).default("ready"),
+  deedStatus:     z.string().optional(),
+  maintenanceFee: z.coerce.number().nonnegative().optional().or(z.literal("")),
+  parking:        z.boolean().default(false),
+  furnished:      z.boolean().default(false),
+  virtualTourUrl: z.string().url("Geçerli bir URL girin").optional().or(z.literal("")),
+  amenities:      z.array(z.string()).default([]),
 });
+
+/* ── city combobox ── */
+function normalize(str) {
+  return str.toLocaleLowerCase("tr-TR")
+    .replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ş/g,"s")
+    .replace(/ı/g,"i").replace(/ö/g,"o").replace(/ç/g,"c");
+}
+
+function CityCombobox({ value, onChange, error }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const ref = useRef(null);
+  const inputRef = useRef(null);
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return TR_CITIES;
+    const q = normalize(search.trim());
+    return TR_CITIES.filter((c) => normalize(c).includes(q));
+  }, [search]);
+
+  useEffect(() => {
+    function handler(e) {
+      if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setSearch(""); }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => { setOpen(o => !o); setTimeout(() => inputRef.current?.focus(), 40); }}
+        className={`flex h-10 w-full items-center gap-2 rounded-xl border bg-background px-3 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 ${
+          error ? "border-destructive" : "border-input"
+        }`}
+      >
+        <MapPin className="h-3.5 w-3.5 shrink-0 text-accent" />
+        <span className={`flex-1 truncate ${value ? "text-foreground" : "text-muted-foreground"}`}>
+          {value || "Şehir seçin"}
+        </span>
+        {value
+          ? <X className="h-3 w-3 shrink-0 text-slate-400" onClick={(e) => { e.stopPropagation(); onChange(""); }} />
+          : <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`} />
+        }
+      </button>
+      {open && (
+        <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-50 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl">
+          <div className="border-b border-slate-100 p-2">
+            <input ref={inputRef} value={search} onChange={(e) => setSearch(e.target.value)}
+              placeholder="Şehir ara..." className="w-full rounded-lg bg-slate-50 px-3 py-1.5 text-sm outline-none placeholder:text-slate-400 focus:bg-slate-100" />
+          </div>
+          <ul className="max-h-48 overflow-y-auto py-1">
+            {filtered.length === 0
+              ? <li className="px-3 py-2 text-xs text-slate-400">Sonuç bulunamadı</li>
+              : filtered.map((city) => (
+                <li key={city}>
+                  <button type="button" onClick={() => { onChange(city); setOpen(false); setSearch(""); }}
+                    className={`w-full px-3 py-2 text-left text-sm hover:bg-accent/10 hover:text-accent ${
+                      value === city ? "bg-accent/10 font-semibold text-accent" : "text-slate-800"
+                    }`}>{city}</button>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── toggle ── */
+function BoolToggle({ checked, onChange, labelOn, labelOff }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-sm font-semibold transition ${
+        checked
+          ? "border-accent bg-accent/10 text-accent"
+          : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300"
+      }`}
+    >
+      <span>{checked ? labelOn : labelOff}</span>
+      <span className={`h-5 w-9 rounded-full transition-colors ${checked ? "bg-accent" : "bg-slate-300"}`}>
+        <span className={`block h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-4" : "translate-x-0"}`} />
+      </span>
+    </button>
+  );
+}
+
+/* ── main form ── */
+const MAX_IMAGES = 12;
 
 export default function PropertyForm() {
   const router = useRouter();
   const [files, setFiles] = useState([]);
   const fileInputRef = useRef(null);
   const [step, setStep] = useState(1);
-  const steps = useMemo(
-    () => [
-      {
-        key: "basic",
-        title: "Temel Bilgiler",
-        subtitle: "İlan başlığı, açıklama ve tipi",
-        fields: ["title", "description", "type", "listingType"],
-      },
-      {
-        key: "pricing",
-        title: "Konum & Fiyat",
-        subtitle: "Fiyatlandırma ve adres bilgileri",
-        fields: ["price", "size", "city", "district", "address"],
-      },
-      {
-        key: "features",
-        title: "Özellikler",
-        subtitle: "Oda/banyo ve temel detaylar",
-        fields: ["rooms", "bathrooms"],
-      },
-      {
-        key: "images",
-        title: "Görsel Yükleme",
-        subtitle: "Sürükle-bırak ile yükleyin (opsiyonel)",
-        fields: [],
-      },
-    ],
-    []
-  );
 
-  const progressValue = useMemo(() => Math.round((step / steps.length) * 100), [step, steps.length]);
+  const progressValue = useMemo(() => Math.round((step / STEPS.length) * 100), [step]);
 
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      title: "",
-      description: "",
-      type: "apartment",
-      listingType: "sale",
-      price: "",
-      size: "",
-      rooms: "",
-      bathrooms: "",
-      city: "",
-      district: "",
-      address: "",
+      title: "", description: "", type: "apartment", listingType: "sale",
+      price: "", size: "", city: "", district: "", address: "",
+      rooms: "", bathrooms: "", floor: "", totalFloors: "", heating: "",
+      yearBuilt: "", status: "ready", deedStatus: "", maintenanceFee: "",
+      parking: false, furnished: false, virtualTourUrl: "", amenities: [],
     },
   });
 
   const submitMutation = useMutation({
     mutationFn: async (values) => {
+      const features = {
+        rooms:     values.rooms !== "" ? Number(values.rooms) : undefined,
+        bathrooms: values.bathrooms !== "" ? Number(values.bathrooms) : undefined,
+        floor:     values.floor !== "" ? Number(values.floor) : undefined,
+        heating:   values.heating || undefined,
+      };
+
       const payload = {
-        title: values.title,
-        description: values.description,
-        type: values.type,
-        listingType: values.listingType,
-        price: values.price,
-        size: values.size || undefined,
-        features: {
-          rooms: values.rooms,
-          bathrooms: values.bathrooms,
-        },
+        title:          values.title,
+        description:    values.description,
+        type:           values.type,
+        listingType:    values.listingType,
+        price:          Number(values.price),
+        size:           values.size !== "" ? Number(values.size) : undefined,
+        yearBuilt:      values.yearBuilt !== "" ? Number(values.yearBuilt) : undefined,
+        status:         values.status,
+        deedStatus:     values.deedStatus || undefined,
+        maintenanceFee: values.maintenanceFee !== "" ? Number(values.maintenanceFee) : undefined,
+        totalFloors:    values.totalFloors !== "" ? Number(values.totalFloors) : undefined,
+        parking:        Boolean(values.parking),
+        furnished:      Boolean(values.furnished),
+        virtualTourUrl: values.virtualTourUrl || undefined,
+        amenities:      values.amenities,
+        features,
         location: {
-          city: values.city,
+          city:     values.city,
           district: values.district,
-          address: values.address,
+          address:  values.address,
         },
       };
 
       const created = await createProperty(payload);
       const propertyId = created?.data?._id;
-
-      if (!propertyId) {
-        throw new Error("Ilan olusturulamadi");
-      }
+      if (!propertyId) throw new Error("İlan oluşturulamadı");
 
       if (files.length > 0) {
         await uploadPropertyImages(propertyId, files);
       }
-
       return created;
     },
     onSuccess: () => {
-      toast.success("Ilan basariyla olusturuldu");
+      toast.success("İlan başarıyla oluşturuldu! İlanlarım sayfasına yönlendiriliyorsunuz.");
       router.push("/my-listings");
     },
     onError: (error) => {
-      toast.error(error?.response?.data?.message || "Ilan olusturulurken hata olustu");
+      toast.error(error?.response?.data?.message || "İlan oluşturulurken bir hata oluştu.");
     },
   });
 
-  const onSubmit = (values) => {
-    submitMutation.mutate(values);
-  };
-
-  const previews = useMemo(() => {
-    return (files || []).map((f) => ({
-      name: f.name,
-      url: URL.createObjectURL(f),
-    }));
-  }, [files]);
-
-  useEffect(() => {
-    return () => {
-      previews.forEach((p) => URL.revokeObjectURL(p.url));
-    };
-  }, [previews]);
+  const previews = useMemo(() => (files || []).map((f) => ({ name: f.name, url: URL.createObjectURL(f) })), [files]);
+  useEffect(() => () => previews.forEach((p) => URL.revokeObjectURL(p.url)), [previews]);
 
   const goNext = async () => {
-    const current = steps[step - 1];
+    const current = STEPS[step - 1];
     const ok = current.fields.length ? await form.trigger(current.fields) : true;
     if (!ok) return;
-    setStep((s) => Math.min(steps.length, s + 1));
+    setStep((s) => Math.min(STEPS.length, s + 1));
   };
-
   const goBack = () => setStep((s) => Math.max(1, s - 1));
-
-  const MAX_IMAGES = 12;
-
-  const onDropFiles = (incoming) => {
-    if (!incoming?.length) return;
-    setFiles((prev) => [...prev, ...incoming].slice(0, MAX_IMAGES));
-  };
-
   const onDrop = (e) => {
     e.preventDefault();
     const incoming = Array.from(e.dataTransfer?.files || []).filter((f) => f.type?.startsWith("image/"));
-    onDropFiles(incoming);
+    setFiles((prev) => [...prev, ...incoming].slice(0, MAX_IMAGES));
   };
 
-  const removeFileAt = (idx) => {
-    setFiles((prev) => prev.filter((_, i) => i !== idx));
+  const currentAmens = form.watch("amenities");
+  const toggleAmenity = (val) => {
+    const current = form.getValues("amenities");
+    form.setValue("amenities", current.includes(val) ? current.filter((a) => a !== val) : [...current, val]);
   };
-
-  const clearAllFiles = () => setFiles([]);
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <form onSubmit={form.handleSubmit((v) => submitMutation.mutate(v))} className="space-y-6">
+
+        {/* ── Step indicator ── */}
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                Adım {step} / {steps.length}
+              <p className="text-xs font-bold uppercase tracking-widest text-accent">
+                Adım {step} / {STEPS.length}
               </p>
-              <p className="mt-2 text-xl font-semibold text-slate-900">{steps[step - 1].title}</p>
-              <p className="mt-1 text-sm text-slate-600">{steps[step - 1].subtitle}</p>
+              <p className="mt-1.5 text-xl font-bold text-foreground">{STEPS[step - 1].title}</p>
+              <p className="mt-0.5 text-sm text-slate-500">{STEPS[step - 1].subtitle}</p>
             </div>
-            <div className="w-full md:max-w-xs">
-              <div className="flex items-center justify-between text-xs text-slate-500">
+            <div className="w-full md:max-w-sm">
+              <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5">
                 <span>İlerleme</span>
-                <span className="tabular-nums">{progressValue}%</span>
+                <span className="font-semibold text-accent">{progressValue}%</span>
               </div>
-              <Progress value={progressValue} className="mt-2" />
-              <div className="mt-3 grid grid-cols-4 gap-2">
-                {steps.map((s, idx) => {
+              <Progress value={progressValue} className="h-2" />
+              <div className="mt-3 grid grid-cols-4 gap-1.5">
+                {STEPS.map((s, idx) => {
                   const n = idx + 1;
                   const done = n < step;
                   const active = n === step;
                   return (
-                    <div
-                      key={s.key}
-                      className={[
-                        "flex items-center gap-2 rounded-xl border px-2 py-2 transition",
-                        active ? "border-accent bg-accent/10" : done ? "border-slate-200 bg-slate-50" : "border-slate-200 bg-white",
-                      ].join(" ")}
-                    >
-                      <span
-                        className={[
-                          "inline-flex size-6 items-center justify-center rounded-lg text-xs font-semibold",
-                          done ? "bg-green-100 text-green-800" : active ? "bg-accent text-primary" : "bg-slate-100 text-slate-700",
-                        ].join(" ")}
-                      >
-                        {done ? <CheckCircle2 className="h-4 w-4" /> : n}
-                      </span>
-                      <span className="hidden text-xs font-medium text-slate-700 md:block">{idx + 1}</span>
+                    <div key={s.key} className={`rounded-xl border p-2 text-center transition ${
+                      active ? "border-accent bg-accent/10" : done ? "border-green-200 bg-green-50" : "border-border/60 bg-background"
+                    }`}>
+                      <div className={`mx-auto mb-1 flex h-6 w-6 items-center justify-center rounded-lg text-xs font-bold ${
+                        done ? "bg-green-100 text-green-700" : active ? "bg-accent text-slate-900" : "bg-slate-100 text-slate-500"
+                      }`}>
+                        {done ? <CheckCircle2 className="h-3.5 w-3.5" /> : n}
+                      </div>
+                      <p className="text-[10px] font-semibold leading-tight text-slate-600">{s.title.split(" ")[0]}</p>
                     </div>
                   );
                 })}
@@ -233,291 +344,408 @@ export default function PropertyForm() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        {/* ── Step content ── */}
+        <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
           <div className="grid gap-5 md:grid-cols-2">
-            {step === 1 ? (
-              <>
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-2">
-                      <FormLabel>Başlık</FormLabel>
+
+            {/* STEP 1: Temel Bilgiler */}
+            {step === 1 && <>
+              <FormField control={form.control} name="title"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel className="font-semibold">İlan Başlığı</FormLabel>
+                    <FormControl><Input placeholder="Örn: Kadıköy'de deniz manzaralı 3+1 daire" {...field} className="h-11 border-slate-300 focus-visible:ring-accent/60" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField control={form.control} name="description"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel className="font-semibold">Açıklama</FormLabel>
+                    <FormControl><Textarea rows={5} placeholder="Mülkünüzü detaylı şekilde tanıtın. Konum avantajları, özel özellikler, ulaşım imkânları..." {...field} className="resize-none border-slate-300 focus-visible:ring-accent/60" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField control={form.control} name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">Emlak Tipi</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <Input placeholder="Örn: Merkezde modern daire" {...field} />
+                        <SelectTrigger className="h-11 border-slate-300 focus:ring-accent/60">
+                          <SelectValue placeholder="Tip seçin" />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      <SelectContent>
+                        <SelectItem value="apartment">🏢 Daire</SelectItem>
+                        <SelectItem value="house">🏠 Villa / Ev</SelectItem>
+                        <SelectItem value="land">🌳 Arsa</SelectItem>
+                        <SelectItem value="commercial">🏪 Ticari</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField control={form.control} name="listingType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">İlan Türü</FormLabel>
+                    <div className="flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+                      {[{ v: "sale", l: "🏷 Satılık" }, { v: "rent", l: "🔑 Kiralık" }].map(({ v, l }) => (
+                        <button key={v} type="button" onClick={() => field.onChange(v)}
+                          className={`flex-1 rounded-lg py-2.5 text-sm font-semibold transition ${
+                            field.value === v ? "bg-white text-foreground shadow-sm" : "text-slate-500 hover:text-slate-700"
+                          }`}>{l}</button>
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </>}
 
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-2">
-                      <FormLabel>Açıklama</FormLabel>
+            {/* STEP 2: Konum & Fiyat */}
+            {step === 2 && <>
+              <FormField control={form.control} name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">Şehir</FormLabel>
+                    <FormControl>
+                      <CityCombobox value={field.value} onChange={field.onChange} error={!!form.formState.errors.city} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField control={form.control} name="district"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">İlçe / Semt</FormLabel>
+                    <FormControl><Input placeholder="Örn: Beşiktaş" {...field} className="h-10 border-slate-300 focus-visible:ring-accent/60" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField control={form.control} name="address"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel className="font-semibold">Açık Adres</FormLabel>
+                    <FormControl><Input placeholder="Mahalle, cadde/sokak, kapı no..." {...field} className="h-10 border-slate-300 focus-visible:ring-accent/60" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField control={form.control} name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">Fiyat (₺)</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">₺</span>
+                        <Input type="number" min={0} placeholder="0" {...field} className="h-10 border-slate-300 pl-7 focus-visible:ring-accent/60" />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField control={form.control} name="size"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">Alan (m²)</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input type="number" min={0} placeholder="0" {...field} className="h-10 border-slate-300 pr-10 focus-visible:ring-accent/60" />
+                        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">m²</span>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </>}
+
+            {/* STEP 3: Özellikler */}
+            {step === 3 && <>
+              {/* rooms / bathrooms */}
+              <FormField control={form.control} name="rooms"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="inline-flex items-center gap-1.5 font-semibold"><BedDouble className="h-4 w-4 text-accent" /> Oda Sayısı</FormLabel>
+                    <FormControl><Input type="number" min={0} placeholder="3" {...field} className="h-10 border-slate-300 focus-visible:ring-accent/60" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField control={form.control} name="bathrooms"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="inline-flex items-center gap-1.5 font-semibold"><Bath className="h-4 w-4 text-accent" /> Banyo Sayısı</FormLabel>
+                    <FormControl><Input type="number" min={0} placeholder="1" {...field} className="h-10 border-slate-300 focus-visible:ring-accent/60" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* floor / totalFloors */}
+              <FormField control={form.control} name="floor"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="inline-flex items-center gap-1.5 font-semibold"><Building2 className="h-4 w-4 text-accent" /> Bulunduğu Kat</FormLabel>
+                    <FormControl><Input type="number" placeholder="Örn: 3" {...field} className="h-10 border-slate-300 focus-visible:ring-accent/60" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField control={form.control} name="totalFloors"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="inline-flex items-center gap-1.5 font-semibold"><Layers className="h-4 w-4 text-accent" /> Toplam Kat</FormLabel>
+                    <FormControl><Input type="number" min={1} placeholder="Örn: 8" {...field} className="h-10 border-slate-300 focus-visible:ring-accent/60" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* yearBuilt / heating */}
+              <FormField control={form.control} name="yearBuilt"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">Yapı Yılı</FormLabel>
+                    <FormControl><Input type="number" min={1800} max={2030} placeholder="Örn: 2015" {...field} className="h-10 border-slate-300 focus-visible:ring-accent/60" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField control={form.control} name="heating"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="inline-flex items-center gap-1.5 font-semibold"><Flame className="h-4 w-4 text-accent" /> Isıtma Tipi</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <Textarea rows={6} placeholder="İlan detayları..." {...field} />
+                        <SelectTrigger className="h-10 border-slate-300 focus:ring-accent/60">
+                          <SelectValue placeholder="Seçin" />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Emlak Tipi</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Tip seçin" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="apartment">Daire</SelectItem>
-                          <SelectItem value="house">Ev</SelectItem>
-                          <SelectItem value="land">Arsa</SelectItem>
-                          <SelectItem value="commercial">Ticari</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="listingType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>İlan Türü</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Tür seçin" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="sale">Satılık</SelectItem>
-                          <SelectItem value="rent">Kiralık</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </>
-            ) : null}
-
-            {step === 2 ? (
-              <>
-                <FormField
-                  control={form.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Fiyat (TRY)</FormLabel>
+                      <SelectContent>
+                        {HEATING_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* status / deedStatus */}
+              <FormField control={form.control} name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">Yapı Durumu</FormLabel>
+                    <div className="flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+                      {[{ v: "ready", l: "Oturuma Hazır" }, { v: "under-construction", l: "İnşaat Aşamasında" }].map(({ v, l }) => (
+                        <button key={v} type="button" onClick={() => field.onChange(v)}
+                          className={`flex-1 rounded-lg px-2 py-2 text-xs font-semibold transition ${
+                            field.value === v ? "bg-white text-foreground shadow-sm" : "text-slate-500 hover:text-slate-700"
+                          }`}>{l}</button>
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField control={form.control} name="deedStatus"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">Tapu Durumu</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <Input type="number" min={0} {...field} />
+                        <SelectTrigger className="h-10 border-slate-300 focus:ring-accent/60">
+                          <SelectValue placeholder="Tapu türü seçin" />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      <SelectContent>
+                        {DEED_STATUS_OPTIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* maintenanceFee / virtualTourUrl */}
+              <FormField control={form.control} name="maintenanceFee"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">Aidat (₺/ay)</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">₺</span>
+                        <Input type="number" min={0} placeholder="0" {...field} className="h-10 border-slate-300 pl-7 focus-visible:ring-accent/60" />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField control={form.control} name="virtualTourUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="inline-flex items-center gap-1.5 font-semibold">
+                      <Video className="h-4 w-4 text-accent" /> Sanal Tur URL
+                      <span className="font-normal text-slate-400">(opsiyonel)</span>
+                    </FormLabel>
+                    <FormControl><Input placeholder="https://..." {...field} className="h-10 border-slate-300 focus-visible:ring-accent/60" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* parking / furnished */}
+              <FormField control={form.control} name="parking"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="inline-flex items-center gap-1.5 font-semibold"><Car className="h-4 w-4 text-accent" /> Otopark</FormLabel>
+                    <FormControl>
+                      <BoolToggle checked={field.value} onChange={field.onChange} labelOn="Otopark Mevcut" labelOff="Otopark Yok" />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField control={form.control} name="furnished"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="inline-flex items-center gap-1.5 font-semibold"><Sofa className="h-4 w-4 text-accent" /> Eşyalı</FormLabel>
+                    <FormControl>
+                      <BoolToggle checked={field.value} onChange={field.onChange} labelOn="Eşyalı" labelOff="Eşyasız" />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              {/* Amenities */}
+              <div className="md:col-span-2 space-y-3">
+                <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <Maximize2 className="h-4 w-4 text-accent" />
+                  Olanaklar <span className="font-normal text-slate-400">(seçin)</span>
+                </p>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+                  {AMENITY_OPTIONS.map((amenity) => {
+                    const selected = currentAmens?.includes(amenity);
+                    return (
+                      <button key={amenity} type="button" onClick={() => toggleAmenity(amenity)}
+                        className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+                          selected
+                            ? "border-accent bg-accent/10 text-accent"
+                            : "border-slate-200 bg-slate-50 text-slate-600 hover:border-accent/40"
+                        }`}
+                      >
+                        {selected && <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />}
+                        {amenity}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>}
 
-                <FormField
-                  control={form.control}
-                  name="size"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Metrekare</FormLabel>
-                      <FormControl>
-                        <Input type="number" min={0} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Şehir</FormLabel>
-                      <FormControl>
-                        <Input placeholder="İstanbul" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="district"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>İlçe</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Beşiktaş" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-2">
-                      <FormLabel>Adres</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Açık adres" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </>
-            ) : null}
-
-            {step === 3 ? (
-              <>
-                <FormField
-                  control={form.control}
-                  name="rooms"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Oda</FormLabel>
-                      <FormControl>
-                        <Input type="number" min={0} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="bathrooms"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Banyo</FormLabel>
-                      <FormControl>
-                        <Input type="number" min={0} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </>
-            ) : null}
-
-            {step === 4 ? (
-              <div className="md:col-span-2 space-y-4">
+            {/* STEP 4: Görsel Yükleme */}
+            {step === 4 && (
+              <div className="md:col-span-2 space-y-5">
                 <div
-                  className="group relative overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center transition hover:border-accent hover:bg-accent/5"
+                  className="group relative overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-10 text-center transition hover:border-accent hover:bg-accent/5"
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={onDrop}
                   role="button"
                   tabIndex={0}
-                  onClick={() => fileInputRef.current?.click?.()}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") fileInputRef.current?.click?.();
-                  }}
+                  onClick={() => fileInputRef.current?.click()}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") fileInputRef.current?.click(); }}
                 >
-                  <div className="mx-auto inline-flex size-12 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 transition group-hover:ring-accent/50">
-                    <CloudUpload className="h-6 w-6 text-accent" />
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 transition group-hover:ring-accent/50">
+                    <CloudUpload className="h-7 w-7 text-accent" />
                   </div>
-                  <p className="mt-3 text-sm font-semibold text-slate-900">Görselleri sürükle-bırak</p>
-                  <p className="mt-1 text-sm text-slate-600">veya tıklayıp seç. (JPEG/PNG/WebP)</p>
-                  <p className="mt-2 text-xs text-slate-500">
-                    En fazla <span className="font-semibold text-slate-700">{MAX_IMAGES}</span> görsel. Şu an{" "}
-                    <span className="font-semibold text-slate-700">{files.length}</span> seçili.
+                  <p className="mt-4 text-base font-bold text-foreground">Görselleri buraya sürükleyin</p>
+                  <p className="mt-1 text-sm text-slate-500">veya tıklayarak seçin · JPEG, PNG, WebP</p>
+                  <p className="mt-2 text-xs text-slate-400">
+                    En fazla <strong>{MAX_IMAGES}</strong> görsel ·{" "}
+                    <strong className="text-accent">{files.length}</strong> görsel seçili
                   </p>
-
                   <Input
                     ref={fileInputRef}
                     type="file"
                     multiple
                     accept="image/*"
                     className="hidden"
-                    onChange={(e) => onDropFiles(Array.from(e.target.files || []))}
+                    onChange={(e) => {
+                      const incoming = Array.from(e.target.files || []);
+                      setFiles((prev) => [...prev, ...incoming].slice(0, MAX_IMAGES));
+                    }}
                   />
                 </div>
 
-                {previews.length ? (
+                {previews.length > 0 ? (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-slate-900">Önizleme</p>
-                      <button
-                        type="button"
-                        onClick={clearAllFiles}
-                        className="text-sm font-medium text-red-600 transition hover:text-red-700"
-                      >
-                        Tümünü kaldır
+                      <p className="text-sm font-bold text-foreground">Önizleme ({previews.length})</p>
+                      <button type="button" onClick={() => setFiles([])}
+                        className="text-xs font-semibold text-red-500 transition hover:text-red-600">
+                        Tümünü Kaldır
                       </button>
                     </div>
-
-                    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                    <div className="grid grid-cols-3 gap-3 md:grid-cols-4">
                       {previews.map((p, idx) => (
-                        <div key={p.url} className="group relative aspect-square overflow-hidden rounded-xl border border-slate-200 bg-white">
-                          <Image
-                            src={p.url}
-                            alt={p.name}
-                            fill
-                            sizes="(max-width: 768px) 50vw, 25vw"
-                            className="object-cover transition duration-300 group-hover:scale-[1.03]"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeFileAt(idx)}
-                            className="absolute right-2 top-2 inline-flex size-8 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-700 shadow-sm opacity-0 transition hover:bg-red-50 hover:text-red-700 group-hover:opacity-100"
-                            aria-label="remove-image"
-                          >
-                            <X className="h-4 w-4" />
+                        <div key={p.url} className="group relative aspect-square overflow-hidden rounded-xl border border-slate-200">
+                          <Image src={p.url} alt={p.name} fill sizes="25vw" className="object-cover transition group-hover:scale-105" />
+                          {idx === 0 && (
+                            <span className="absolute left-2 top-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-slate-900">Kapak</span>
+                          )}
+                          <button type="button" onClick={() => setFiles((prev) => prev.filter((_, i) => i !== idx))}
+                            className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-600 opacity-0 shadow transition hover:bg-red-50 hover:text-red-600 group-hover:opacity-100">
+                            <X className="h-3.5 w-3.5" />
                           </button>
                         </div>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-slate-500">Henüz görsel eklemediniz (opsiyonel).</p>
+                  <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-400">
+                    Görsel eklenmedi. Görseller opsiyoneldir — dilerseniz atlayabilirsiniz.
+                  </div>
                 )}
               </div>
-            ) : null}
+            )}
           </div>
         </div>
 
-        <div className="flex flex-col-reverse gap-2 md:flex-row md:items-center md:justify-between">
-          <Button type="button" variant="outline" onClick={goBack} disabled={step === 1 || submitMutation.isPending}>
-            Geri
+        {/* ── Navigation ── */}
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={goBack}
+            disabled={step === 1 || submitMutation.isPending}
+            className="border-slate-300 font-semibold"
+          >
+            ← Geri
           </Button>
 
-          <div className="flex flex-col gap-2 md:flex-row md:items-center">
-            {step < steps.length ? (
-              <Button type="button" className="bg-accent text-primary hover:bg-[var(--gold-hover)]" onClick={goNext}>
-                İleri
-              </Button>
-            ) : (
-              <Button type="submit" className="bg-accent text-primary hover:bg-[var(--gold-hover)]" disabled={submitMutation.isPending}>
-                {submitMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Oluşturuluyor...
-                  </>
-                ) : (
-                  "İlanı Oluştur"
-                )}
-              </Button>
-            )}
-          </div>
+          {step < STEPS.length ? (
+            <Button
+              type="button"
+              onClick={goNext}
+              className="bg-gold-gradient font-bold text-slate-900 shadow hover:brightness-105"
+            >
+              İleri → {STEPS[step].title}
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              disabled={submitMutation.isPending}
+              className="bg-gold-gradient font-bold text-slate-900 shadow-md hover:brightness-105"
+            >
+              {submitMutation.isPending ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> İlan Oluşturuluyor...</>
+              ) : (
+                "✓ İlanı Oluştur"
+              )}
+            </Button>
+          )}
         </div>
       </form>
     </Form>

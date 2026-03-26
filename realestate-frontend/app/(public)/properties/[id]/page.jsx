@@ -10,19 +10,20 @@ import {
   CheckCircle2,
   ChevronRight,
   ClipboardCheck,
+  Flame,
   Home,
   Mail,
   MapPin,
   Maximize2,
   Phone,
   Ruler,
-  Share2,
   Shield,
   Sofa,
   Sparkles,
   Video,
 } from "lucide-react";
 import MapView from "@/components/map/MapView";
+import ShareButton from "@/components/property/ShareButton";
 import { getPropertyById } from "@/services/property.service";
 
 /* ── constants ── */
@@ -129,13 +130,25 @@ export default async function PropertyDetailPage({ params }) {
   const images = property.images?.length ? property.images : fallbackImages;
   const heroImage = images[0];
 
+  const heatingLabel = {
+    kombi:    "Doğalgaz Kombisi",
+    merkezi:  "Merkezi Isıtma",
+    yerden:   "Yerden Isıtma",
+    elektrik: "Elektrikli",
+    klima:    "Klima",
+    soba:     "Soba / Şömine",
+    yok:      "Isıtma Yok",
+  };
+
   const metrics = [
     { icon: BedDouble,     label: "Oda Sayısı",   value: property.features?.rooms ?? "-" },
     { icon: Bath,          label: "Banyo",         value: property.features?.bathrooms ?? "-" },
-    { icon: Maximize2,     label: "Alan (m²)",     value: property.features?.area ?? property.size ?? "-" },
+    { icon: Maximize2,     label: "Alan (m²)",     value: property.size ?? property.features?.area ?? "-" },
     { icon: Home,          label: "Kat",           value: property.features?.floor ?? "-" },
     { icon: CalendarDays,  label: "Yapı Yılı",     value: property.yearBuilt ?? "-" },
     { icon: ClipboardCheck,label: "Aidat",         value: property.maintenanceFee ? formatTry(property.maintenanceFee) : "-" },
+    { icon: Flame,         label: "Isıtma",        value: property.features?.heating ? (heatingLabel[property.features.heating] || property.features.heating) : "-" },
+    { icon: Building2,     label: "Toplam Kat",    value: property.totalFloors ?? "-" },
   ];
 
   return (
@@ -205,13 +218,7 @@ export default async function PropertyDetailPage({ params }) {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-black/35 px-3 py-2 text-xs font-semibold text-white backdrop-blur-md transition hover:bg-black/55"
-              >
-                <Share2 className="h-3.5 w-3.5" />
-                Paylaş
-              </button>
+              <ShareButton title={property.title} text={`${property.title} - ${formatTry(property.price)}`} />
             </div>
           </div>
         </div>
@@ -291,7 +298,7 @@ export default async function PropertyDetailPage({ params }) {
           </div>
 
           {/* Metrics */}
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {metrics.map(({ icon: Icon, label, value }) => (
               <div
                 key={label}
