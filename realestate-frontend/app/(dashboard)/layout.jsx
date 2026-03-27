@@ -35,12 +35,15 @@ export default function DashboardLayout({ children }) {
   const { isAuthenticated, isLoading, checkAuth, logout, user } = useAuthStore();
   const [authChecked, setAuthChecked] = useState(false);
 
+  const isEditListing = pathname?.startsWith("/edit-listing/");
   const pageTitleMap = {
     "/my-listings": "İlanlarım",
     "/add-listing": "Yeni İlan Ekle",
     "/profile": "Profil",
   };
-  const pageTitle = pageTitleMap[pathname] || "Dashboard";
+  const pageTitle = isEditListing
+    ? "İlan Düzenle"
+    : pageTitleMap[pathname] || "Dashboard";
 
   useEffect(() => {
     checkAuth().finally(() => setAuthChecked(true));
@@ -102,7 +105,9 @@ export default function DashboardLayout({ children }) {
       <nav className="space-y-2">
         {items.map((item) => {
           const Icon = item.icon;
-          const active = pathname === item.href;
+          const active =
+            pathname === item.href ||
+            (item.href === "/my-listings" && isEditListing);
           return (
             <Link
               key={item.href}

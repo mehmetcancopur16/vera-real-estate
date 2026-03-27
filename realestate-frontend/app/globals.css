@@ -199,6 +199,85 @@
     text-transform: uppercase;
     color: var(--accent);
   }
+
+  /* Shimmer skeleton sweep */
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--surface-elevated) 100%, transparent) 25%,
+      color-mix(in oklab, var(--accent-soft) 60%, var(--surface-elevated) 40%) 50%,
+      color-mix(in oklab, var(--surface-elevated) 100%, transparent) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer-sweep 1.8s linear infinite;
+  }
+
+  /* Glow pulse for avatar / key elements */
+  .animate-glow-pulse {
+    animation: glow-pulse 2.4s ease-in-out infinite;
+  }
+
+  /* Floating orb animation */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-float-delayed {
+    animation: float 6s ease-in-out 3s infinite;
+  }
+
+  /* Gradient border utility */
+  .gradient-border {
+    position: relative;
+  }
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--accent), transparent 60%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Metric card hover lift */
+  .metric-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .metric-card:hover {
+    transform: translateY(-3px) scale(1.015);
+    box-shadow: 0 12px 32px -8px color-mix(in oklab, var(--foreground) 18%, transparent);
+  }
+
+  /* Status ribbon */
+  .status-ribbon-active {
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+  }
+  .status-ribbon-inactive {
+    background: linear-gradient(90deg, #94a3b8, #64748b);
+  }
+}
+
+@keyframes shimmer-sweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 50%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 10px color-mix(in oklab, var(--accent) 0%, transparent);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-14px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

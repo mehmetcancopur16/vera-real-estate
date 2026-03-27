@@ -44,7 +44,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createProperty, uploadPropertyImages } from "@/services/property.service";
+import { createProperty, updateProperty, uploadPropertyImages } from "@/services/property.service";
 
 /* ── constants ── */
 const TR_CITIES = [
@@ -209,24 +209,51 @@ function BoolToggle({ checked, onChange, labelOn, labelOff }) {
 /* ── main form ── */
 const MAX_IMAGES = 12;
 
-export default function PropertyForm() {
+export default function PropertyForm({ propertyId = null, defaultValues: initialData = null }) {
   const router = useRouter();
+  const isEditMode = Boolean(propertyId);
   const [files, setFiles] = useState([]);
   const fileInputRef = useRef(null);
   const [step, setStep] = useState(1);
 
   const progressValue = useMemo(() => Math.round((step / STEPS.length) * 100), [step]);
 
+  const buildDefaults = (data) => ({
+    title:          data?.title || "",
+    description:    data?.description || "",
+    type:           data?.type || "apartment",
+    listingType:    data?.listingType || "sale",
+    price:          data?.price ?? "",
+    size:           data?.size ?? "",
+    city:           data?.location?.city || "",
+    district:       data?.location?.district || "",
+    address:        data?.location?.address || "",
+    rooms:          data?.features?.rooms ?? "",
+    bathrooms:      data?.features?.bathrooms ?? "",
+    floor:          data?.features?.floor ?? "",
+    totalFloors:    data?.totalFloors ?? "",
+    heating:        data?.features?.heating || "",
+    yearBuilt:      data?.yearBuilt ?? "",
+    status:         data?.status || "ready",
+    deedStatus:     data?.deedStatus || "",
+    maintenanceFee: data?.maintenanceFee ?? "",
+    parking:        Boolean(data?.parking),
+    furnished:      Boolean(data?.furnished),
+    virtualTourUrl: data?.virtualTourUrl || "",
+    amenities:      data?.amenities || [],
+  });
+
   const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: {
-      title: "", description: "", type: "apartment", listingType: "sale",
-      price: "", size: "", city: "", district: "", address: "",
-      rooms: "", bathrooms: "", floor: "", totalFloors: "", heating: "",
-      yearBuilt: "", status: "ready", deedStatus: "", maintenanceFee: "",
-      parking: false, furnished: false, virtualTourUrl: "", amenities: [],
-    },
+    defaultValues: buildDefaults(initialData),
   });
+
+  /* Sync form when initialData arrives asynchronously */
+  useEffect(() => {
+    if (initialData) {
+      form.reset(buildDefaults(initialData));
+    }
+  }, [initialData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const submitMutation = useMutation({
     mutationFn: async (values) => {
@@ -261,21 +288,35 @@ export default function PropertyForm() {
         },
       };
 
-      const created = await createProperty(payload);
-      const propertyId = created?.data?._id;
-      if (!propertyId) throw new Error("İlan oluşturulamadı");
-
-      if (files.length > 0) {
-        await uploadPropertyImages(propertyId, files);
+      if (isEditMode) {
+        const updated = await updateProperty(propertyId, payload);
+        if (files.length > 0) {
+          await uploadPropertyImages(propertyId, files);
+        }
+        return updated;
+      } else {
+        const created = await createProperty(payload);
+        const newId = created?.data?._id;
+        if (!newId) throw new Error("İlan oluşturulamadı");
+        if (files.length > 0) {
+          await uploadPropertyImages(newId, files);
+        }
+        return created;
       }
-      return created;
     },
     onSuccess: () => {
-      toast.success("İlan başarıyla oluşturuldu! İlanlarım sayfasına yönlendiriliyorsunuz.");
+      if (isEditMode) {
+        toast.success("İlan başarıyla güncellendi!");
+      } else {
+        toast.success("İlan başarıyla oluşturuldu!");
+      }
       router.push("/my-listings");
     },
     onError: (error) => {
-      toast.error(error?.response?.data?.message || "İlan oluşturulurken bir hata oluştu.");
+      toast.error(
+        error?.response?.data?.message ||
+        (isEditMode ? "İlan güncellenirken hata oluştu." : "İlan oluşturulurken hata oluştu.")
+      );
     },
   });
 
@@ -740,9 +781,9 @@ export default function PropertyForm() {
               className="bg-gold-gradient font-bold text-slate-900 shadow-md hover:brightness-105"
             >
               {submitMutation.isPending ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> İlan Oluşturuluyor...</>
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {isEditMode ? "Güncelleniyor..." : "İlan Oluşturuluyor..."}</>
               ) : (
-                "✓ İlanı Oluştur"
+                isEditMode ? "✓ İlanı Güncelle" : "✓ İlanı Oluştur"
               )}
             </Button>
           )}
