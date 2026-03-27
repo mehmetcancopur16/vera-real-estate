@@ -1,108 +1,275 @@
-# Vera Real Estate
+# Vera Real Estate — Full-Stack Emlak Portalı
 
-Modern, güvenli ve SEO odaklı bir full-stack emlak portalı.
+> Modern, güvenli ve ölçeklenebilir bir full-stack emlak portalı.  
+> Kullanıcılar ilan oluşturabilir, görsel yükleyebilir, filtreleyebilir, haritada keşfedebilir ve kendi dashboard alanından ilanlarını yönetebilir.
 
-Bu monorepo; backend (Node.js + Express + MongoDB) ve frontend (Next.js + Tailwind + shadcn/ui) katmanlarını tek projede birleştirir. Kullanıcılar JWT ile giriş yapabilir, ilan oluşturabilir, görsel yükleyebilir, ilanlarını yönetebilir, gelişmiş filtreleme yapabilir ve ilanları harita üzerinde görüntüleyebilir.
+---
 
-## Monorepo Yapısı
+## Proje Mimarisi
 
-```text
-vera-real-estate/
-├── realestate-backend/    # Express API, MongoDB, Cloudinary, Swagger
-├── realestate-frontend/   # Next.js 15 App Router, Zustand, React Query
-└── README.md              # Bu dosya
+```
+┌─────────────────────────────────────────────────────────┐
+│                     Vera Real Estate                     │
+├───────────────────────────┬─────────────────────────────┤
+│   realestate-frontend     │   realestate-backend        │
+│   Next.js 15 App Router   │   Express 5 REST API        │
+│   Port: 3000              │   Port: 5050                │
+│                           │                             │
+│  ┌─ (public)              │  ┌─ /api/auth               │
+│  │   Home, Listings,      │  │   register, login, me,   │
+│  │   Detail, Map          │  │   avatar, password       │
+│  │                        │  │                          │
+│  ├─ (auth)                │  └─ /api/properties         │
+│  │   Login, Register      │      list, create, update,  │
+│  │                        │      delete, images, my     │
+│  └─ (dashboard)           │                             │
+│      my-listings,         │  MongoDB  ←→  Cloudinary    │
+│      add-listing,         │  (Atlas)       (images)     │
+│      edit-listing,        │                             │
+│      profile              │  JWT Auth + Helmet + CORS   │
+└───────────────────────────┴─────────────────────────────┘
 ```
 
-## Teknoloji Özeti
+---
 
-- Frontend: Next.js 15, React 19, Tailwind CSS v4, shadcn/ui, Zustand, TanStack Query, Leaflet
-- Backend: Node.js 22, Express 5, MongoDB + Mongoose, JWT, Cloudinary, Zod, Winston, Swagger
+## Tech Stack
 
-## Öne Çıkan Özellikler
+### Frontend
 
-- JWT authentication + protected routes
-- Role/owner authorization (admin/sahip kontrolü)
-- Dinamik ilan filtreleme (şehir, fiyat, oda, metin arama, sayfalama)
-- Cloudinary çoklu görsel yükleme ve görsel silme
-- Dashboard: ilan ekleme, ilan listeleme, soft delete
-- Harita entegrasyonu (Leaflet + SSR-safe dynamic import)
-- Next.js dinamik metadata ile ilan detay SEO
-- Merkezi hata yakalama, rate-limit, mongo sanitize, hpp güvenlik katmanı
+| Katman | Teknoloji |
+|--------|-----------|
+| Framework | Next.js 15 (App Router), React 19 |
+| Styling | Tailwind CSS v4, shadcn/ui (base-nova), tw-animate-css |
+| State | Zustand (`useAuthStore`) |
+| Data Fetching | TanStack React Query v5 |
+| Forms | React Hook Form + Zod |
+| HTTP | Axios (interceptor ile JWT header) |
+| Maps | Leaflet + react-leaflet |
+| Icons | lucide-react |
+| Toasts | Sonner |
+
+### Backend
+
+| Katman | Teknoloji |
+|--------|-----------|
+| Framework | Express 5 |
+| Veritabanı | MongoDB + Mongoose |
+| Auth | JWT (jsonwebtoken + bcryptjs) |
+| Dosya Yükleme | Multer + Cloudinary |
+| Validasyon | Zod + Joi |
+| Loglama | Winston + Morgan |
+| Güvenlik | Helmet, CORS, Rate Limit, HPP, Mongo Sanitize |
+| Dokümantasyon | Swagger UI (swagger-jsdoc) |
+
+---
+
+## Özellikler
+
+- **Kimlik Doğrulama** — JWT tabanlı register/login, token yenileme, `rememberMe` (1 gün / 30 gün)
+- **Kullanıcı Profili** — Ad/email güncelleme, avatar yükleme (Cloudinary), şifre değiştirme, hesap silme
+- **İlan Yönetimi** — 4 adımlı sihirbaz (temel bilgiler, konum & fiyat, özellikler, görseller)
+- **Dashboard** — İlan istatistikleri, görüntülenme sayaçları, aktif/pasif yönetimi, düzenleme
+- **Listeleme & Filtreleme** — Şehir, fiyat, oda, ilan tipi, kiralık/satılık filtreleri; sayfalama
+- **Harita** — Leaflet ile konum görselleştirme
+- **Görsel Yükleme** — Drag & drop, max 12 görsel/ilan, Cloudinary CDN
+- **Bildirim Sistemi** — Gerçek ilan verisi tabanlı dinamik bildirimler (frontend)
+- **SEO** — Next.js `generateMetadata`, OG tags, structured data
+- **Güvenlik** — Helmet, rate limiting, HPP, Mongo sanitize, owner kontrolü
+
+---
 
 ## Hızlı Başlangıç
 
-### 1) Repo klonla
+### Gereksinimler
+
+- Node.js ≥ 18
+- MongoDB (local veya Atlas)
+- Cloudinary hesabı (görsel yükleme için)
+
+### Kurulum
 
 ```bash
+# 1. Klonla
 git clone https://github.com/mehmetcancopur16/vera-real-estate.git
 cd vera-real-estate
-```
 
-### 2) Tüm bağımlılıkları tek komutla kur
-
-```bash
+# 2. Tüm bağımlılıkları kur
 npm run install:all
-```
 
-### 3) Ortam değişkenlerini ayarla
+# 3. Backend env ayarla
+cp realestate-backend/.env.example realestate-backend/.env
+# → MONGO_URI, JWT_SECRET, CLOUDINARY_* değerlerini doldur
 
-- Backend: `realestate-backend/.env.example` dosyasını `realestate-backend/.env` olarak kopyala ve doldur.
-- Frontend: `realestate-frontend/.env.local` oluştur:
+# 4. Frontend env ayarla
+cp realestate-frontend/.env.local.example realestate-frontend/.env.local
+# → NEXT_PUBLIC_API_URL=http://localhost:5050/api
 
-```env
-NEXT_PUBLIC_API_URL=http://localhost:5050/api
-```
-
-### 4) Tek komutla backend + frontend başlat
-
-```bash
+# 5. Geliştirme sunucusunu başlat (iki process aynı anda)
 npm run dev
 ```
 
-## Kullanılan Root Scriptler
+Uygulama açılır:
+- Frontend: `http://localhost:3000`
+- API: `http://localhost:5050/api`
+- Swagger: `http://localhost:5050/api-docs`
 
-- `npm run dev:backend` → backend dev server
-- `npm run dev:frontend` → frontend dev server
-- `npm run dev` → concurrently ile ikisini birden çalıştırır
-- `npm run install:all` → root + backend + frontend bağımlılıklarını kurar
-
-## Yerel Erişim Adresleri
-
-- Frontend: [http://localhost:3000](http://localhost:3000)
-- Backend API: [http://localhost:5050](http://localhost:5050)
-- Swagger: [http://localhost:5050/api-docs](http://localhost:5050/api-docs)
-
-## Seed (Örnek Veri) Kullanımı
+### Seed Verisi (Opsiyonel)
 
 ```bash
 cd realestate-backend
 npm run seed
 ```
 
-Bu komut veritabanını temizler, 1 admin kullanıcı ve örnek ilanlar oluşturur.
+Admin hesabı: `admin@vera.com` / `123456`
 
-- Admin email: `admin@vera.com`
-- Admin şifre: `123456`
+---
 
-## Deployment Özeti
+## Script Açıklamaları
 
-- Backend (Render/Railway): `realestate-backend` dizinini servis root olarak kullan.
-- Frontend (Vercel): `realestate-frontend` dizinini root directory seç.
-- MongoDB: Atlas kullan ve `MONGO_URI` değerini production ortam değişkenlerinde tanımla.
-- Frontend production env: `NEXT_PUBLIC_API_URL=https://<backend-domain>/api`
+| Script | Açıklama |
+|--------|----------|
+| `npm run dev` | Backend + Frontend aynı anda başlatır (concurrently) |
+| `npm run dev:backend` | Yalnızca backend başlatır |
+| `npm run dev:frontend` | Yalnızca frontend başlatır |
+| `npm run install:all` | Root + backend + frontend bağımlılıklarını kurar |
 
-## Dokümantasyon
+---
 
-- Backend detayları: `realestate-backend/README.md`
-- Frontend detayları: `realestate-frontend/README.md`
+## Ortam Değişkenleri
 
-## Sık Karşılaşılan Sorunlar
+### Backend (`realestate-backend/.env`)
 
-- Frontend API çağrıları başarısız:
-  - `realestate-frontend/.env.local` içindeki `NEXT_PUBLIC_API_URL` değerini kontrol et.
-- CORS hatası:
-  - Backend `CORS_ORIGINS` ortam değişkenine frontend originini ekle.
-- Cloudinary yükleme çalışmıyor:
-  - Backend `.env` içindeki `CLOUDINARY_*` değerlerini kontrol et.
-- Swagger açılmıyor:
-  - Backend’in gerçekten `5050` portunda çalıştığını doğrula.
+| Değişken | Zorunlu | Açıklama |
+|----------|---------|----------|
+| `MONGO_URI` | ✅ | MongoDB bağlantı URL'i |
+| `JWT_SECRET` | ✅ | Token imzalama anahtarı (min 32 karakter önerilir) |
+| `PORT` | — | API portu (varsayılan: 5050) |
+| `NODE_ENV` | — | `development` / `production` |
+| `JWT_EXPIRES_IN` | — | Token geçerlilik süresi (varsayılan: `1d`) |
+| `CORS_ORIGINS` | — | İzin verilen origin'ler (virgülle ayrılmış) |
+| `CLOUDINARY_CLOUD_NAME` | — | Cloudinary cloud adı |
+| `CLOUDINARY_API_KEY` | — | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | — | Cloudinary API secret |
+
+### Frontend (`realestate-frontend/.env.local`)
+
+| Değişken | Zorunlu | Açıklama |
+|----------|---------|----------|
+| `NEXT_PUBLIC_API_URL` | ✅ | Backend API base URL (ör. `http://localhost:5050/api`) |
+
+---
+
+## API Endpoint Özeti
+
+### Auth — `/api/auth`
+
+| Method | Path | Auth | Açıklama |
+|--------|------|------|----------|
+| POST | `/register` | — | Yeni kullanıcı kaydı |
+| POST | `/login` | — | Giriş, JWT döner |
+| GET | `/me` | JWT | Profil bilgisi |
+| PATCH | `/me` | JWT | Ad / email güncelle |
+| PATCH | `/password` | JWT | Şifre değiştir |
+| POST | `/avatar` | JWT | Avatar yükle (multipart) |
+| DELETE | `/me` | JWT | Hesap sil |
+
+### Properties — `/api/properties`
+
+| Method | Path | Auth | Açıklama |
+|--------|------|------|----------|
+| GET | `/` | — | Filtreli ilan listesi |
+| GET | `/featured` | — | Öne çıkan 6 ilan |
+| GET | `/my` | JWT | Kullanıcının kendi ilanları |
+| GET | `/:id` | — | İlan detayı |
+| POST | `/` | JWT | Yeni ilan oluştur |
+| PUT | `/:id` | JWT + Owner | İlan güncelle |
+| DELETE | `/:id` | JWT + Owner | İlan sil |
+| POST | `/:id/images` | JWT + Owner | Görsel yükle (max 5/istek) |
+| DELETE | `/:id/images/:imgId` | JWT + Owner | Görsel sil |
+
+---
+
+## Deployment
+
+### Frontend → Vercel
+
+```bash
+# Vercel CLI
+npx vercel --cwd realestate-frontend
+
+# Environment Variables (Vercel Dashboard):
+NEXT_PUBLIC_API_URL=https://your-api.onrender.com/api
+```
+
+### Backend → Render / Railway
+
+```bash
+# Root dizini: realestate-backend
+# Build command: npm install
+# Start command: node server.js
+
+# Gerekli env var'lar: MONGO_URI, JWT_SECRET, CLOUDINARY_*
+# CORS_ORIGINS=https://your-frontend.vercel.app
+```
+
+### Veritabanı → MongoDB Atlas
+
+1. Atlas'ta yeni cluster oluştur
+2. Database user ekle
+3. Connection string'i `MONGO_URI` olarak ayarla
+4. Network Access → `0.0.0.0/0` (veya Render/Railway IP'si)
+
+---
+
+## Proje Yapısı
+
+```
+vera-real-estate/
+├── package.json              # Root scripts (concurrently)
+├── README.md
+├── realestate-backend/
+│   ├── server.js             # Express başlatma
+│   ├── .env.example
+│   └── src/
+│       ├── app.js            # Middleware, route mount
+│       ├── config/           # DB, Cloudinary
+│       ├── controllers/      # auth, property
+│       ├── middlewares/      # auth, upload, validate, error
+│       ├── models/           # User, Property
+│       ├── routes/           # auth, property routes
+│       ├── scripts/          # seed.js
+│       ├── utils/            # ApiError, logger
+│       └── validations/      # Zod schemas
+└── realestate-frontend/
+    ├── app/
+    │   ├── (public)/         # Home, listings, detail
+    │   ├── (auth)/           # Login, register
+    │   ├── (dashboard)/      # my-listings, add/edit-listing, profile
+    │   ├── globals.css
+    │   └── layout.tsx
+    ├── components/
+    │   ├── ui/               # shadcn bileşenleri
+    │   ├── forms/            # PropertyForm
+    │   ├── layout/           # Navbar, Footer
+    │   ├── property/         # PropertyCard, PropertyList
+    │   └── map/              # MapView
+    ├── services/             # auth.service.js, property.service.js
+    ├── store/                # useAuthStore.js
+    └── lib/                  # axios.js, utils.ts
+```
+
+---
+
+## Katkıda Bulunma
+
+1. Bu repo'yu fork'la
+2. Feature branch oluştur: `git checkout -b feat/yeni-ozellik`
+3. Değişikliklerini commit'le: `git commit -m "feat: yeni özellik"`
+4. Branch'ini push'la: `git push origin feat/yeni-ozellik`
+5. Pull Request aç
+
+---
+
+## Lisans
+
+MIT © 2025 Vera Real Estate
