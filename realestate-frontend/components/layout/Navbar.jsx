@@ -9,6 +9,7 @@ import {
   LogOut,
   Menu,
   Plus,
+  Shield,
   Sparkles,
   UserRound,
 } from "lucide-react";
@@ -146,32 +147,50 @@ export default function Navbar() {
                 </div>
 
                 <div className="p-2">
-                  <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2.5 text-slate-700 hover:bg-violet-50 hover:text-violet-700 focus:bg-violet-50 focus:text-violet-700">
-                    <Link href="/profile" className="flex items-center gap-2.5">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-100">
-                        <CircleUserRound className="h-4 w-4 text-violet-600" />
-                      </span>
-                      <span className="font-semibold">Profilim</span>
-                    </Link>
+                  <DropdownMenuItem
+                    className="cursor-pointer rounded-xl px-3 py-2.5 text-slate-700 hover:bg-violet-50 hover:text-violet-700 focus:bg-violet-50 focus:text-violet-700"
+                    onClick={() => router.push("/profile")}
+                  >
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-100">
+                      <CircleUserRound className="h-4 w-4 text-violet-600" />
+                    </span>
+                    <span className="ml-2.5 font-semibold">Profilim</span>
                   </DropdownMenuItem>
 
-                  <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2.5 text-slate-700 hover:bg-blue-50 hover:text-blue-700 focus:bg-blue-50 focus:text-blue-700">
-                    <Link href="/my-listings" className="flex items-center gap-2.5">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100">
-                        <LayoutDashboard className="h-4 w-4 text-blue-600" />
-                      </span>
-                      <span className="font-semibold">İlanlarım</span>
-                    </Link>
+                  <DropdownMenuItem
+                    className="cursor-pointer rounded-xl px-3 py-2.5 text-slate-700 hover:bg-blue-50 hover:text-blue-700 focus:bg-blue-50 focus:text-blue-700"
+                    onClick={() => router.push("/my-listings")}
+                  >
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100">
+                      <LayoutDashboard className="h-4 w-4 text-blue-600" />
+                    </span>
+                    <span className="ml-2.5 font-semibold">İlanlarım</span>
                   </DropdownMenuItem>
 
-                  <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2.5 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 focus:bg-emerald-50 focus:text-emerald-700">
-                    <Link href="/add-listing" className="flex items-center gap-2.5">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100">
-                        <Plus className="h-4 w-4 text-emerald-600" />
-                      </span>
-                      <span className="font-semibold">Yeni İlan Ekle</span>
-                    </Link>
+                  <DropdownMenuItem
+                    className="cursor-pointer rounded-xl px-3 py-2.5 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 focus:bg-emerald-50 focus:text-emerald-700"
+                    onClick={() => router.push("/add-listing")}
+                  >
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100">
+                      <Plus className="h-4 w-4 text-emerald-600" />
+                    </span>
+                    <span className="ml-2.5 font-semibold">Yeni İlan Ekle</span>
                   </DropdownMenuItem>
+
+                  {user?.role === "admin" && (
+                    <>
+                      <DropdownMenuSeparator className="my-2" />
+                      <DropdownMenuItem
+                        className="cursor-pointer rounded-xl px-3 py-2.5 text-slate-700 hover:bg-violet-50 hover:text-violet-700 focus:bg-violet-50 focus:text-violet-700"
+                        onClick={() => router.push("/admin")}
+                      >
+                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-100">
+                          <Shield className="h-4 w-4 text-violet-600" />
+                        </span>
+                        <span className="ml-2.5 font-semibold">Admin Panel</span>
+                      </DropdownMenuItem>
+                    </>
+                  )}
 
                   <DropdownMenuSeparator className="my-2" />
 
@@ -287,6 +306,14 @@ export default function Navbar() {
                         Profilim
                       </Link>
                     </Button>
+                    {user?.role === "admin" && (
+                      <Button asChild variant="secondary" className="w-full justify-start bg-violet-500/20 text-violet-200 hover:bg-violet-500/30">
+                        <Link href="/admin">
+                          <Shield className="mr-2 h-4 w-4" />
+                          Admin Panel
+                        </Link>
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       className="w-full justify-start text-red-400 hover:bg-red-500/10 hover:text-red-300"

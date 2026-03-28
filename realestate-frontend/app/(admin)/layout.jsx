@@ -12,7 +12,9 @@ import {
   List,
   Loader2,
   LogOut,
+  Mail,
   Menu,
+  MessageSquare,
   Shield,
   Users,
   X,
@@ -49,6 +51,20 @@ const ADMIN_NAV = [
     icon: List,
     desc: "Tüm ilanları yönet",
     iconColor: "from-emerald-500 to-teal-600",
+  },
+  {
+    href: "/admin/contacts",
+    label: "Mesajlar",
+    icon: MessageSquare,
+    desc: "İletişim formları",
+    iconColor: "from-orange-500 to-rose-600",
+  },
+  {
+    href: "/admin/newsletters",
+    label: "Bülten",
+    icon: Mail,
+    desc: "Newsletter aboneleri",
+    iconColor: "from-pink-500 to-rose-600",
   },
 ];
 

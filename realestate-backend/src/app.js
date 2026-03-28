@@ -83,7 +83,29 @@ app.use(
 );
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));
+
+const swaggerUiOptions = {
+  explorer: true,
+  customSiteTitle: 'Vera Real Estate API Docs',
+  customCss: `
+    .swagger-ui .topbar { background: #0f172a; }
+    .swagger-ui .topbar .download-url-wrapper { display: none; }
+    .swagger-ui .info .title { color: #0f172a; }
+  `,
+  swaggerOptions: {
+    persistAuthorization: true,
+    filter: true,
+    displayRequestDuration: true,
+    docExpansion: 'none',
+    defaultModelsExpandDepth: 2,
+    tagsSorter: 'alpha'
+  }
+};
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+app.get('/api-docs.json', (_req, res) => res.json(swaggerSpec));
+app.get('/docs.json', (_req, res) => res.json(swaggerSpec));
 
 /**
  * @openapi

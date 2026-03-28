@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import User from '../models/User.model.js';
 import Property from '../models/Property.model.js';
+import Contact from '../models/Contact.model.js';
+import Newsletter from '../models/Newsletter.model.js';
 import { ApiError } from '../utils/ApiError.js';
 import { PLAN_LIMITS } from './property.controller.js';
 
@@ -14,7 +16,9 @@ export async function getStats(req, res, next) {
       inactiveListings,
       planDistribution,
       recentUsers,
-      recentListings
+      recentListings,
+      totalNewsletters,
+      unreadContacts
     ] = await Promise.all([
       User.countDocuments(),
       Property.countDocuments(),
@@ -25,7 +29,9 @@ export async function getStats(req, res, next) {
         { $sort: { _id: 1 } }
       ]),
       User.find().sort({ createdAt: -1 }).limit(8).select('name email role subscription createdAt avatarUrl').lean(),
-      Property.find().sort({ createdAt: -1 }).limit(6).populate('owner', 'name email').lean()
+      Property.find().sort({ createdAt: -1 }).limit(6).populate('owner', 'name email').lean(),
+      Newsletter.countDocuments({ isActive: true }),
+      Contact.countDocuments({ isRead: false })
     ]);
 
     res.json({
@@ -40,7 +46,9 @@ export async function getStats(req, res, next) {
           return acc;
         }, { free: 0, professional: 0, corporate: 0 }),
         recentUsers,
-        recentListings
+        recentListings,
+        totalNewsletters,
+        unreadContacts
       }
     });
   } catch (err) {
@@ -198,6 +206,112 @@ export async function deleteAnyListing(req, res, next) {
     if (!property) throw new ApiError(404, 'İlan bulunamadı');
 
     res.json({ success: true, message: 'İlan silindi' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/* ── Contacts ── */
+export async function getContacts(req, res, next) {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 20));
+    const skip = (page - 1) * limit;
+    const search = req.query.search ? String(req.query.search).trim() : '';
+
+    const filter = {};
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { message: { $regex: search, $options: 'i' } }
+      ];
+    }
+    if (req.query.isRead !== undefined && req.query.isRead !== '') {
+      filter.isRead = req.query.isRead === 'true';
+    }
+
+    const [contacts, total] = await Promise.all([
+      Contact.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Contact.countDocuments(filter)
+    ]);
+
+    res.json({
+      success: true,
+      data: contacts,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) || 0 }
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function markContactRead(req, res, next) {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) throw new ApiError(400, 'Geçersiz mesaj ID');
+
+    const contact = await Contact.findByIdAndUpdate(id, { isRead: true }, { new: true }).lean();
+    if (!contact) throw new ApiError(404, 'Mesaj bulunamadı');
+
+    res.json({ success: true, data: contact });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function deleteContact(req, res, next) {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) throw new ApiError(400, 'Geçersiz mesaj ID');
+
+    const contact = await Contact.findByIdAndDelete(id);
+    if (!contact) throw new ApiError(404, 'Mesaj bulunamadı');
+
+    res.json({ success: true, message: 'Mesaj silindi' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/* ── Newsletters ── */
+export async function getNewsletters(req, res, next) {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
+    const skip = (page - 1) * limit;
+    const search = req.query.search ? String(req.query.search).trim() : '';
+
+    const filter = {};
+    if (search) filter.email = { $regex: search, $options: 'i' };
+    if (req.query.isActive !== undefined && req.query.isActive !== '') {
+      filter.isActive = req.query.isActive === 'true';
+    }
+
+    const [newsletters, total] = await Promise.all([
+      Newsletter.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Newsletter.countDocuments(filter)
+    ]);
+
+    res.json({
+      success: true,
+      data: newsletters,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) || 0 }
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function deleteNewsletter(req, res, next) {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) throw new ApiError(400, 'Geçersiz abone ID');
+
+    const sub = await Newsletter.findByIdAndDelete(id);
+    if (!sub) throw new ApiError(404, 'Abone bulunamadı');
+
+    res.json({ success: true, message: 'Abone silindi' });
   } catch (err) {
     next(err);
   }

@@ -42,6 +42,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -657,42 +658,38 @@ export default function DashboardLayout({ children }) {
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex items-center gap-2.5 py-0.5">
-                    <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarImage src={user?.avatarUrl || ""} alt={user?.name} />
-                      <AvatarFallback className="bg-slate-900 text-[10px] font-black text-accent">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-bold text-slate-900">
-                        {user?.name || "Kullanıcı"}
-                      </p>
-                      <p className="truncate text-xs text-slate-500">
-                        {user?.email || ""}
-                      </p>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex items-center gap-2.5 py-0.5">
+                      <Avatar className="h-8 w-8 shrink-0">
+                        <AvatarImage src={user?.avatarUrl || ""} alt={user?.name} />
+                        <AvatarFallback className="bg-slate-900 text-[10px] font-black text-accent">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-slate-900">
+                          {user?.name || "Kullanıcı"}
+                        </p>
+                        <p className="truncate text-xs text-slate-500">
+                          {user?.email || ""}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </DropdownMenuLabel>
+                  </DropdownMenuLabel>
+                </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/profile">
-                    <UserCircle2 className="mr-2 h-4 w-4 text-violet-500" />
-                    Profil Ayarları
-                  </Link>
+                <DropdownMenuItem onClick={() => router.push("/profile")}>
+                  <UserCircle2 className="mr-2 h-4 w-4 text-violet-500" />
+                  Profil Ayarları
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/my-listings">
-                    <LayoutDashboard className="mr-2 h-4 w-4 text-blue-500" />
-                    İlanlarım
-                  </Link>
+                <DropdownMenuItem onClick={() => router.push("/my-listings")}>
+                  <LayoutDashboard className="mr-2 h-4 w-4 text-blue-500" />
+                  İlanlarım
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/add-listing">
-                    <Plus className="mr-2 h-4 w-4 text-emerald-500" />
-                    Yeni İlan Ekle
-                  </Link>
+                <DropdownMenuItem onClick={() => router.push("/add-listing")}>
+                  <Plus className="mr-2 h-4 w-4 text-emerald-500" />
+                  Yeni İlan Ekle
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

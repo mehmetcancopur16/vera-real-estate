@@ -38,6 +38,33 @@ export async function deleteAdminListing(id) {
   return data;
 }
 
+/* ── Admin Contacts ── */
+export async function getAdminContacts(params = {}) {
+  const { data } = await api.get("/admin/contacts", { params });
+  return data;
+}
+
+export async function markAdminContactRead(id) {
+  const { data } = await api.patch(`/admin/contacts/${id}/read`);
+  return data;
+}
+
+export async function deleteAdminContact(id) {
+  const { data } = await api.delete(`/admin/contacts/${id}`);
+  return data;
+}
+
+/* ── Admin Newsletters ── */
+export async function getAdminNewsletters(params = {}) {
+  const { data } = await api.get("/admin/newsletters", { params });
+  return data;
+}
+
+export async function deleteAdminNewsletter(id) {
+  const { data } = await api.delete(`/admin/newsletters/${id}`);
+  return data;
+}
+
 /* ── Subscription ── */
 export async function getSubscriptionPlans() {
   const { data } = await api.get("/subscription/plans");

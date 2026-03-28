@@ -1,33 +1,43 @@
 # Vera Real Estate — Full-Stack Emlak Portalı
 
-> Modern, güvenli ve ölçeklenebilir bir full-stack emlak portalı.  
-> Kullanıcılar ilan oluşturabilir, görsel yükleyebilir, filtreleyebilir, haritada keşfedebilir ve kendi dashboard alanından ilanlarını yönetebilir.
+> Modern, güvenli ve ölçeklenebilir full-stack emlak portalı.  
+> Next.js 15 frontend + Express 5 REST API + MongoDB + Cloudinary.
+
+[![API Docs](https://img.shields.io/badge/API%20Docs-Swagger%20UI-85EA2D?logo=swagger)](http://localhost:5050/docs)
+[![Frontend](https://img.shields.io/badge/Frontend-Next.js%2015-black?logo=next.js)](http://localhost:3000)
+[![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 
 ---
 
 ## Proje Mimarisi
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                     Vera Real Estate                     │
-├───────────────────────────┬─────────────────────────────┤
-│   realestate-frontend     │   realestate-backend        │
-│   Next.js 15 App Router   │   Express 5 REST API        │
-│   Port: 3000              │   Port: 5050                │
-│                           │                             │
-│  ┌─ (public)              │  ┌─ /api/auth               │
-│  │   Home, Listings,      │  │   register, login, me,   │
-│  │   Detail, Map          │  │   avatar, password       │
-│  │                        │  │                          │
-│  ├─ (auth)                │  └─ /api/properties         │
-│  │   Login, Register      │      list, create, update,  │
-│  │                        │      delete, images, my     │
-│  └─ (dashboard)           │                             │
-│      my-listings,         │  MongoDB  ←→  Cloudinary    │
-│      add-listing,         │  (Atlas)       (images)     │
-│      edit-listing,        │                             │
-│      profile              │  JWT Auth + Helmet + CORS   │
-└───────────────────────────┴─────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                         Vera Real Estate                         │
+├─────────────────────────────┬────────────────────────────────────┤
+│   realestate-frontend       │   realestate-backend               │
+│   Next.js 15 App Router     │   Express 5 REST API               │
+│   Port: 3000                │   Port: 5050                       │
+│                             │                                    │
+│  ┌─ (public)                │  /api/auth        → JWT auth       │
+│  │  Home, Listings, Detail  │  /api/properties  → İlan CRUD      │
+│  │  Blog, Contact, About    │  /api/contact     → Form mesajı    │
+│  │  /docs → API Docs sayfası│  /api/newsletter  → Abonelik       │
+│  │                          │  /api/subscription→ Plan yönetimi  │
+│  ├─ (auth)                  │  /api/admin       → Admin panel    │
+│  │  Login, Register         │                                    │
+│  │                          │  /docs    → Swagger UI             │
+│  ├─ (dashboard)             │  /api-docs → Swagger UI (alias)    │
+│  │  my-listings, add/edit   │  /docs.json → OpenAPI spec         │
+│  │  profile, upgrade        │                                    │
+│  │                          │  MongoDB  ←→  Cloudinary           │
+│  └─ (admin)                 │  JWT + Helmet + Rate Limit         │
+│     /admin → Dashboard      └────────────────────────────────────┘
+│     /admin/users
+│     /admin/listings
+│     /admin/contacts
+│     /admin/newsletters
+└─────────────────────────────
 ```
 
 ---
@@ -39,14 +49,15 @@
 | Katman | Teknoloji |
 |--------|-----------|
 | Framework | Next.js 15 (App Router), React 19 |
-| Styling | Tailwind CSS v4, shadcn/ui (base-nova), tw-animate-css |
+| Styling | Tailwind CSS v4, shadcn/ui (base-nova) |
 | State | Zustand (`useAuthStore`) |
 | Data Fetching | TanStack React Query v5 |
 | Forms | React Hook Form + Zod |
-| HTTP | Axios (interceptor ile JWT header) |
+| HTTP | Axios (JWT interceptor) |
 | Maps | Leaflet + react-leaflet |
 | Icons | lucide-react |
 | Toasts | Sonner |
+| UI Primitives | @base-ui/react |
 
 ### Backend
 
@@ -56,25 +67,36 @@
 | Veritabanı | MongoDB + Mongoose |
 | Auth | JWT (jsonwebtoken + bcryptjs) |
 | Dosya Yükleme | Multer + Cloudinary |
-| Validasyon | Zod + Joi |
+| Validasyon | Zod |
 | Loglama | Winston + Morgan |
 | Güvenlik | Helmet, CORS, Rate Limit, HPP, Mongo Sanitize |
-| Dokümantasyon | Swagger UI (swagger-jsdoc) |
+| Dokümantasyon | **Swagger UI** (swagger-jsdoc + swagger-ui-express) |
 
 ---
 
 ## Özellikler
 
-- **Kimlik Doğrulama** — JWT tabanlı register/login, token yenileme, `rememberMe` (1 gün / 30 gün)
-- **Kullanıcı Profili** — Ad/email güncelleme, avatar yükleme (Cloudinary), şifre değiştirme, hesap silme
-- **İlan Yönetimi** — 4 adımlı sihirbaz (temel bilgiler, konum & fiyat, özellikler, görseller)
-- **Dashboard** — İlan istatistikleri, görüntülenme sayaçları, aktif/pasif yönetimi, düzenleme
-- **Listeleme & Filtreleme** — Şehir, fiyat, oda, ilan tipi, kiralık/satılık filtreleri; sayfalama
-- **Harita** — Leaflet ile konum görselleştirme
-- **Görsel Yükleme** — Drag & drop, max 12 görsel/ilan, Cloudinary CDN
-- **Bildirim Sistemi** — Gerçek ilan verisi tabanlı dinamik bildirimler (frontend)
-- **SEO** — Next.js `generateMetadata`, OG tags, structured data
-- **Güvenlik** — Helmet, rate limiting, HPP, Mongo sanitize, owner kontrolü
+### Genel Kullanıcı
+- JWT tabanlı register/login (`rememberMe` ile 1 gün / 30 gün)
+- Profil güncelleme, avatar yükleme (Cloudinary), şifre değiştirme
+- 4 adımlı ilan oluşturma sihirbazı
+- İlan listeleme: şehir, fiyat, oda, tip, kiralık/satılık filtreleri
+- Leaflet haritasında konum görselleştirme
+- Drag & drop görsel yükleme (max 12/ilan, Cloudinary CDN)
+- Bildirim sistemi (ilan verisi tabanlı)
+- Abonelik sistemi: Free / Professional / Corporate
+
+### Admin Panel (`/admin`)
+- Genel bakış: kullanıcı/ilan/mesaj/bülten istatistikleri, plan dağılımı
+- Kullanıcı yönetimi: arama, plan/rol değiştirme, silme
+- İlan yönetimi: aktif/pasif yapma, silme
+- Mesaj yönetimi: okundu işaretleme, email yanıt, silme
+- Newsletter yönetimi: abone listeleme, silme
+
+### API Dokümantasyonu
+- Swagger UI: `http://localhost:5050/docs`
+- OpenAPI JSON spec: `http://localhost:5050/docs.json`
+- Frontend özet sayfası: `http://localhost:3000/docs`
 
 ---
 
@@ -96,42 +118,43 @@ cd vera-real-estate
 # 2. Tüm bağımlılıkları kur
 npm run install:all
 
-# 3. Backend env ayarla
+# 3. Backend env
 cp realestate-backend/.env.example realestate-backend/.env
-# → MONGO_URI, JWT_SECRET, CLOUDINARY_* değerlerini doldur
+# → .env içine MONGO_URI, JWT_SECRET ve Cloudinary bilgilerini gir
 
-# 4. Frontend env ayarla
+# 4. Frontend env
 cp realestate-frontend/.env.local.example realestate-frontend/.env.local
 # → NEXT_PUBLIC_API_URL=http://localhost:5050/api
 
-# 5. Geliştirme sunucusunu başlat (iki process aynı anda)
+# 5. Geliştirme sunucusunu başlat
 npm run dev
 ```
 
-Uygulama açılır:
-- Frontend: `http://localhost:3000`
-- API: `http://localhost:5050/api`
-- Swagger: `http://localhost:5050/api-docs`
+| URL | Servis |
+|-----|--------|
+| `http://localhost:3000` | Frontend |
+| `http://localhost:5050/api` | REST API |
+| `http://localhost:5050/docs` | Swagger UI |
+| `http://localhost:3000/docs` | API özet sayfası |
 
 ### Seed Verisi (Opsiyonel)
 
 ```bash
-cd realestate-backend
-npm run seed
+cd realestate-backend && npm run seed
 ```
 
-Admin hesabı: `admin@vera.com` / `123456`
+Oluşturulan admin hesabı: `admin@vera.com` / `123456`
 
 ---
 
-## Script Açıklamaları
+## Scriptler
 
 | Script | Açıklama |
 |--------|----------|
-| `npm run dev` | Backend + Frontend aynı anda başlatır (concurrently) |
-| `npm run dev:backend` | Yalnızca backend başlatır |
-| `npm run dev:frontend` | Yalnızca frontend başlatır |
-| `npm run install:all` | Root + backend + frontend bağımlılıklarını kurar |
+| `npm run dev` | Backend + Frontend eş zamanlı başlatır |
+| `npm run dev:backend` | Yalnızca backend |
+| `npm run dev:frontend` | Yalnızca frontend |
+| `npm run install:all` | Tüm bağımlılıkları kurar |
 
 ---
 
@@ -140,9 +163,9 @@ Admin hesabı: `admin@vera.com` / `123456`
 ### Backend (`realestate-backend/.env`)
 
 | Değişken | Zorunlu | Açıklama |
-|----------|---------|----------|
+|----------|:-------:|----------|
 | `MONGO_URI` | ✅ | MongoDB bağlantı URL'i |
-| `JWT_SECRET` | ✅ | Token imzalama anahtarı (min 32 karakter önerilir) |
+| `JWT_SECRET` | ✅ | Token imzalama anahtarı (≥ 32 karakter) |
 | `PORT` | — | API portu (varsayılan: 5050) |
 | `NODE_ENV` | — | `development` / `production` |
 | `JWT_EXPIRES_IN` | — | Token geçerlilik süresi (varsayılan: `1d`) |
@@ -154,17 +177,19 @@ Admin hesabı: `admin@vera.com` / `123456`
 ### Frontend (`realestate-frontend/.env.local`)
 
 | Değişken | Zorunlu | Açıklama |
-|----------|---------|----------|
-| `NEXT_PUBLIC_API_URL` | ✅ | Backend API base URL (ör. `http://localhost:5050/api`) |
+|----------|:-------:|----------|
+| `NEXT_PUBLIC_API_URL` | ✅ | Backend API base URL (`http://localhost:5050/api`) |
 
 ---
 
 ## API Endpoint Özeti
 
+> Tam etkileşimli dokümantasyon için → **[Swagger UI](http://localhost:5050/docs)**
+
 ### Auth — `/api/auth`
 
 | Method | Path | Auth | Açıklama |
-|--------|------|------|----------|
+|--------|------|:----:|----------|
 | POST | `/register` | — | Yeni kullanıcı kaydı |
 | POST | `/login` | — | Giriş, JWT döner |
 | GET | `/me` | JWT | Profil bilgisi |
@@ -176,123 +201,113 @@ Admin hesabı: `admin@vera.com` / `123456`
 ### Properties — `/api/properties`
 
 | Method | Path | Auth | Açıklama |
-|--------|------|------|----------|
+|--------|------|:----:|----------|
 | GET | `/` | — | Filtreli ilan listesi |
 | GET | `/featured` | — | Öne çıkan 6 ilan |
-| GET | `/my` | JWT | Kullanıcının kendi ilanları |
+| GET | `/my` | JWT | Kullanıcının ilanları |
 | GET | `/:id` | — | İlan detayı |
 | POST | `/` | JWT | Yeni ilan oluştur |
-| PUT | `/:id` | JWT + Owner | İlan güncelle |
-| DELETE | `/:id` | JWT + Owner | İlan sil |
-| POST | `/:id/images` | JWT + Owner | Görsel yükle (max 5/istek) |
-| DELETE | `/:id/images/:imgId` | JWT + Owner | Görsel sil |
+| PUT | `/:id` | JWT+Owner | İlan güncelle |
+| DELETE | `/:id` | JWT+Owner | İlan sil |
+| POST | `/:id/images` | JWT+Owner | Görsel yükle |
+| DELETE | `/:id/images/:imgId` | JWT+Owner | Görsel sil |
+
+### Contact — `/api/contact`
+
+| Method | Path | Auth | Açıklama |
+|--------|------|:----:|----------|
+| POST | `/` | — | İletişim formu gönder |
+
+### Newsletter — `/api/newsletter`
+
+| Method | Path | Auth | Açıklama |
+|--------|------|:----:|----------|
+| POST | `/subscribe` | — | Email aboneliği |
+
+### Subscription — `/api/subscription`
+
+| Method | Path | Auth | Açıklama |
+|--------|------|:----:|----------|
+| GET | `/plans` | — | Mevcut planlar |
+| POST | `/upgrade` | JWT | Plan yükselt |
+
+### Admin — `/api/admin` _(Admin JWT gerekli)_
+
+| Method | Path | Açıklama |
+|--------|------|----------|
+| GET | `/stats` | Dashboard istatistikleri |
+| GET | `/users` | Kullanıcı listesi |
+| PATCH | `/users/:id` | Kullanıcı güncelle |
+| DELETE | `/users/:id` | Kullanıcı sil |
+| GET | `/listings` | Tüm ilanlar |
+| PATCH | `/listings/:id/toggle` | Aktif/pasif yap |
+| DELETE | `/listings/:id` | İlan sil |
+| GET | `/contacts` | İletişim mesajları |
+| PATCH | `/contacts/:id/read` | Okundu işaretle |
+| DELETE | `/contacts/:id` | Mesaj sil |
+| GET | `/newsletters` | Bülten aboneleri |
+| DELETE | `/newsletters/:id` | Abone sil |
 
 ---
 
-## Deployment
+## API Dokümantasyonu (Swagger)
 
-### Frontend → Vercel
+Tüm endpoint'ler OpenAPI 3.0.3 formatında belgelenmiştir.
 
-```bash
-# Vercel CLI
-npx vercel --cwd realestate-frontend
+### Erişim Yolları
 
-# Environment Variables (Vercel Dashboard):
-NEXT_PUBLIC_API_URL=https://your-api.onrender.com/api
-```
+| URL | Açıklama |
+|-----|----------|
+| `http://localhost:5050/docs` | Etkileşimli Swagger UI |
+| `http://localhost:5050/api-docs` | Swagger UI (alias) |
+| `http://localhost:5050/docs.json` | Ham OpenAPI JSON spec |
+| `http://localhost:3000/docs` | Frontend özet sayfası |
 
-### Backend → Render / Railway
+### Swagger UI Özellikleri
+- JWT Bearer token ile kimlik doğrulama (`Authorize` butonu)
+- `persistAuthorization: true` — sayfa yenilemesinde token saklanır
+- Endpoint filtreleme ve arama
+- İstek süresi görüntüleme
+- Tüm şemalar: User, Property, Contact, Newsletter, Subscription, Error, Pagination
 
-```bash
-# Root dizini: realestate-backend
-# Build command: npm install
-# Start command: node server.js
-
-# Gerekli env var'lar: MONGO_URI, JWT_SECRET, CLOUDINARY_*
-# CORS_ORIGINS=https://your-frontend.vercel.app
-```
-
-### Veritabanı → MongoDB Atlas
-
-1. Atlas'ta yeni cluster oluştur
-2. Database user ekle
-3. Connection string'i `MONGO_URI` olarak ayarla
-4. Network Access → `0.0.0.0/0` (veya Render/Railway IP'si)
-
----
-
-## Proje Yapısı
+### Swagger UI Ekran Görüntüsü
 
 ```
-vera-real-estate/
-├── package.json              # Root scripts (concurrently)
-├── README.md
-├── realestate-backend/
-│   ├── server.js             # Express başlatma
-│   ├── .env.example
-│   └── src/
-│       ├── app.js            # Middleware, route mount
-│       ├── config/           # DB, Cloudinary
-│       ├── controllers/      # auth, property
-│       ├── middlewares/      # auth, upload, validate, error
-│       ├── models/           # User, Property
-│       ├── routes/           # auth, property routes
-│       ├── scripts/          # seed.js
-│       ├── utils/            # ApiError, logger
-│       └── validations/      # Zod schemas
-└── realestate-frontend/
-    ├── app/
-    │   ├── (public)/         # Home, listings, detail
-    │   ├── (auth)/           # Login, register
-    │   ├── (dashboard)/      # my-listings, add/edit-listing, profile
-    │   ├── globals.css
-    │   └── layout.tsx
-    ├── components/
-    │   ├── ui/               # shadcn bileşenleri
-    │   ├── forms/            # PropertyForm
-    │   ├── layout/           # Navbar, Footer
-    │   ├── property/         # PropertyCard, PropertyList
-    │   └── map/              # MapView
-    ├── services/             # auth.service.js, property.service.js
-    ├── store/                # useAuthStore.js
-    └── lib/                  # axios.js, utils.ts
+http://localhost:5050/docs
+├── System
+│   └── GET /api/health
+├── Auth (7 endpoint)
+├── Properties (9 endpoint)
+├── Contact (1 endpoint)
+├── Newsletter (1 endpoint)
+├── Subscription (2 endpoint)
+├── Admin — Stats (1 endpoint)
+├── Admin — Users (3 endpoint)
+├── Admin — Listings (3 endpoint)
+├── Admin — Contacts (3 endpoint)
+└── Admin — Newsletters (2 endpoint)
 ```
-
----
-
-## Katkıda Bulunma
-
-1. Bu repo'yu fork'la
-2. Feature branch oluştur: `git checkout -b feat/yeni-ozellik`
-3. Değişikliklerini commit'le: `git commit -m "feat: yeni özellik"`
-4. Branch'ini push'la: `git push origin feat/yeni-ozellik`
-5. Pull Request aç
-
----
-
-## Lisans
-
-MIT © 2025 Vera Real Estate
 
 ---
 
 ## Admin Panel
 
-Admin kullanıcılar `/admin` route grubuna erişebilir (role: `admin`).
+Admin kullanıcılar `/admin` route grubuna erişebilir. Navbar'daki profil menüsünde "Admin Panel" linki görünür (yalnızca `role: "admin"` kullanıcılarda).
 
 ### Admin Rotaları
 
 | Rota | Açıklama |
 |------|----------|
-| `/admin` | Genel bakış — kullanıcı/ilan istatistikleri, plan dağılımı |
-| `/admin/users` | Kullanıcı yönetimi — plan/rol değiştir, kullanıcı sil |
-| `/admin/listings` | İlan yönetimi — aktif/pasif yap, ilan sil |
+| `/admin` | Genel bakış dashboard |
+| `/admin/users` | Kullanıcı yönetimi |
+| `/admin/listings` | İlan yönetimi |
+| `/admin/contacts` | İletişim mesaj yönetimi |
+| `/admin/newsletters` | Newsletter abone yönetimi |
 
-### Admin Seed Kullanıcısı
-
-MongoDB'de bir kullanıcının `role` alanını `"admin"` olarak güncelle:
+### Admin Kullanıcı Oluşturma
 
 ```js
+// MongoDB shell
 db.users.updateOne({ email: "admin@vera.com" }, { $set: { role: "admin" } })
 ```
 
@@ -301,7 +316,7 @@ db.users.updateOne({ email: "admin@vera.com" }, { $set: { role: "admin" } })
 ## Abonelik Sistemi
 
 | Plan | İlan Limiti | Ücret |
-|------|-------------|-------|
+|------|:-----------:|-------|
 | Free | 3 ilan | Ücretsiz |
 | Professional | 7 ilan | ₺299/ay |
 | Corporate | Sınırsız | ₺799/ay |
@@ -309,7 +324,104 @@ db.users.updateOne({ email: "admin@vera.com" }, { $set: { role: "admin" } })
 ### Mock Ödeme Akışı
 
 1. `/upgrade` — Plan seçim sayfası
-2. `/upgrade/checkout?plan=professional` — Görsel kart flip animasyonu ile ödeme formu
-3. `/upgrade/success?plan=professional` — Konfeti animasyonu ile başarı ekranı
+2. `/upgrade/checkout?plan=professional` — Kart flip animasyonlu ödeme formu
+3. `/upgrade/success?plan=professional` — Konfeti animasyonlu başarı ekranı
 
 > Not: Bu platform demo amaçlıdır; gerçek ödeme alınmaz.
+
+---
+
+## Proje Yapısı
+
+```
+vera-real-estate/
+├── package.json
+├── README.md
+├── realestate-backend/
+│   ├── server.js
+│   ├── .env.example
+│   └── src/
+│       ├── app.js                   # Middleware, route mount, Swagger setup
+│       ├── config/
+│       │   ├── db.js
+│       │   └── swagger.config.js    # OpenAPI 3.0.3 tam şemalar
+│       ├── controllers/
+│       │   ├── admin.controller.js
+│       │   ├── auth.controller.js
+│       │   ├── contact.controller.js
+│       │   ├── newsletter.controller.js
+│       │   ├── property.controller.js
+│       │   └── subscription.controller.js
+│       ├── middlewares/
+│       ├── models/
+│       │   ├── User.model.js
+│       │   ├── Property.model.js
+│       │   ├── Contact.model.js
+│       │   └── Newsletter.model.js
+│       ├── routes/                  # Tüm route'larda @openapi JSDoc
+│       ├── scripts/                 # seed.js
+│       ├── utils/
+│       └── validations/
+└── realestate-frontend/
+    ├── app/
+    │   ├── (public)/
+    │   │   ├── docs/page.jsx        # API özet sayfası → /docs
+    │   │   └── ...
+    │   ├── (auth)/
+    │   ├── (dashboard)/
+    │   └── (admin)/
+    │       └── admin/
+    │           ├── page.jsx
+    │           ├── users/
+    │           ├── listings/
+    │           ├── contacts/
+    │           └── newsletters/
+    ├── components/
+    ├── services/
+    │   └── admin.service.js         # contacts + newsletters dahil
+    ├── store/
+    └── lib/
+```
+
+---
+
+## Deployment
+
+### Frontend → Vercel
+
+```bash
+npx vercel --cwd realestate-frontend
+# Environment: NEXT_PUBLIC_API_URL=https://your-api.onrender.com/api
+```
+
+### Backend → Render / Railway
+
+```
+Root: realestate-backend
+Build: npm install
+Start: node server.js
+Env: MONGO_URI, JWT_SECRET, CLOUDINARY_*, CORS_ORIGINS
+```
+
+### Veritabanı → MongoDB Atlas
+
+1. Yeni cluster oluştur
+2. Database user ekle
+3. `MONGO_URI` olarak connection string'i ayarla
+4. Network Access → `0.0.0.0/0`
+
+---
+
+## Katkıda Bulunma
+
+1. Fork'la
+2. Branch: `git checkout -b feat/yeni-ozellik`
+3. Commit: `git commit -m "feat: yeni özellik"`
+4. Push: `git push origin feat/yeni-ozellik`
+5. Pull Request aç
+
+---
+
+## Lisans
+
+MIT © 2025 Vera Real Estate

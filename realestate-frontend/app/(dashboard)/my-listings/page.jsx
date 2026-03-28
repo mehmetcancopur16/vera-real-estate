@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -53,6 +54,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -952,6 +954,7 @@ function DeleteButton({ property, deleteMutation }) {
 
 /* ─── Actions Dropdown (for grid cards) ─── */
 function PropertyActionsMenu({ property, detailHref, editHref, deleteMutation }) {
+  const router = useRouter();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -961,18 +964,18 @@ function PropertyActionsMenu({ property, detailHref, editHref, deleteMutation })
         <MoreVertical className="h-4 w-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">
-        <DropdownMenuLabel className="text-xs text-slate-500">İşlemler</DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="text-xs text-slate-500">İşlemler</DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuItem
           onClick={() => window.open(detailHref, "_blank", "noopener,noreferrer")}
         >
           <Eye className="mr-2 h-4 w-4 text-blue-500" />
           Önizle
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={editHref}>
-            <Edit className="mr-2 h-4 w-4 text-amber-500" />
-            Düzenle
-          </Link>
+        <DropdownMenuItem onClick={() => router.push(editHref)}>
+          <Edit className="mr-2 h-4 w-4 text-amber-500" />
+          Düzenle
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <AlertDialog>
