@@ -1,7 +1,10 @@
 import mongoose from 'mongoose';
+import path from 'path';
+import { unlink } from 'fs/promises';
+import { existsSync } from 'fs';
 import Property from '../models/Property.model.js';
 import { ApiError } from '../utils/ApiError.js';
-import cloudinary from '../config/cloudinary.js';
+import { UPLOAD_ROOT } from '../middlewares/upload.middleware.js';
 
 const PROPERTY_TYPES = new Set(['apartment', 'house', 'land', 'commercial']);
 const LISTING_TYPES = new Set(['sale', 'rent']);
@@ -10,20 +13,29 @@ function escapeRegex(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-/**
- * URL query → MongoDB filtre objesi (liste: sadece aktif ilanlar).
- */
+async function deleteLocalFile(fileUrl) {
+  try {
+    if (!fileUrl) return;
+    const match = fileUrl.match(/\/uploads\/(.+)$/);
+    if (!match) return;
+    const filePath = path.join(UPLOAD_ROOT, match[1]);
+    if (existsSync(filePath)) {
+      await unlink(filePath);
+    }
+  } catch {
+    // non-critical
+  }
+}
+
 export function buildFilter(query) {
   const filter = { isActive: true };
 
   if (query.city && String(query.city).trim()) {
     filter['location.city'] = new RegExp(escapeRegex(String(query.city).trim()), 'i');
   }
-
   if (query.type && PROPERTY_TYPES.has(query.type)) {
     filter.type = query.type;
   }
-
   if (query.listingType && LISTING_TYPES.has(query.listingType)) {
     filter.listingType = query.listingType;
   }
@@ -38,9 +50,7 @@ export function buildFilter(query) {
 
   if (query.rooms !== undefined && query.rooms !== '') {
     const r = Number(query.rooms);
-    if (!Number.isNaN(r)) {
-      filter['features.rooms'] = r;
-    }
+    if (!Number.isNaN(r)) filter['features.rooms'] = r;
   }
 
   if (query.search && String(query.search).trim()) {
@@ -50,85 +60,24 @@ export function buildFilter(query) {
   return filter;
 }
 
-function assertCloudinary() {
-  const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = process.env;
-  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
-    throw new ApiError(500, 'Cloudinary ortam değişkenleri eksik');
-  }
-}
-
-function uploadBuffer(buffer) {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      (err, result) => {
-        if (err) reject(err);
-        else resolve(result.secure_url);
-      },
-      { folder: 'vera-real-estate/properties', resource_type: 'image' }
-    );
-    stream.end(buffer);
-  });
-}
-
-function parseCloudinaryPublicIdFromUrl(url) {
-  try {
-    const parsed = new URL(url);
-    const marker = '/upload/';
-    const uploadIndex = parsed.pathname.indexOf(marker);
-    if (uploadIndex === -1) return null;
-
-    let rest = parsed.pathname.slice(uploadIndex + marker.length);
-    rest = rest.replace(/^v\d+\//, '');
-    const withoutExtension = rest.replace(/\.[^/.]+$/, '');
-    return withoutExtension || null;
-  } catch {
-    return null;
-  }
-}
-
 export async function createProperty(req, res, next) {
   try {
     const {
-      title,
-      description,
-      type,
-      listingType,
-      price,
-      currency,
-      size,
-      amenities,
-      yearBuilt,
-      status,
-      deedStatus,
-      maintenanceFee,
-      totalFloors,
-      parking,
-      furnished,
-      virtualTourUrl,
-      isFeatured,
-      features,
-      location
+      title, description, type, listingType, price, currency, size,
+      amenities, yearBuilt, status, deedStatus, maintenanceFee, totalFloors,
+      parking, furnished, virtualTourUrl, isFeatured, features, location
     } = req.body;
 
     if (!title || !description || !type || !listingType || price === undefined || price === '') {
       throw new ApiError(400, 'title, description, type, listingType ve price zorunludur');
     }
-    if (!location?.city) {
-      throw new ApiError(400, 'location.city zorunludur');
-    }
-    if (!PROPERTY_TYPES.has(type)) {
-      throw new ApiError(400, 'Geçersiz type');
-    }
-    if (!LISTING_TYPES.has(listingType)) {
-      throw new ApiError(400, 'Geçersiz listingType');
-    }
+    if (!location?.city) throw new ApiError(400, 'location.city zorunludur');
+    if (!PROPERTY_TYPES.has(type)) throw new ApiError(400, 'Geçersiz type');
+    if (!LISTING_TYPES.has(listingType)) throw new ApiError(400, 'Geçersiz listingType');
 
     const property = await Property.create({
       owner: req.user.id,
-      title,
-      description,
-      type,
-      listingType,
+      title, description, type, listingType,
       price: Number(price),
       currency: currency || 'TRY',
       size: size !== undefined && size !== '' ? Number(size) : undefined,
@@ -181,12 +130,7 @@ export async function getProperties(req, res, next) {
     res.json({
       success: true,
       data: items,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit) || 0
-      }
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) || 0 }
     });
   } catch (err) {
     next(err);
@@ -201,29 +145,17 @@ export async function getMyProperties(req, res, next) {
 
     const filter = { owner: req.user.id };
     const includeInactive = String(req.query.includeInactive || '').trim() === '1';
-    if (!includeInactive) {
-      filter.isActive = true;
-    }
+    if (!includeInactive) filter.isActive = true;
 
     const [items, total] = await Promise.all([
-      Property.find(filter)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .populate('owner', 'name email')
-        .lean(),
+      Property.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).populate('owner', 'name email').lean(),
       Property.countDocuments(filter)
     ]);
 
     res.status(200).json({
       success: true,
       data: items,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit) || 0
-      }
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) || 0 }
     });
   } catch (err) {
     next(err);
@@ -233,19 +165,15 @@ export async function getMyProperties(req, res, next) {
 export async function getPropertyById(req, res, next) {
   try {
     const { id } = req.params;
-    if (!mongoose.isValidObjectId(id)) {
-      throw new ApiError(400, 'Geçersiz ilan kimliği');
-    }
+    if (!mongoose.isValidObjectId(id)) throw new ApiError(400, 'Geçersiz ilan kimliği');
 
     const property = await Property.findOneAndUpdate(
       { _id: id, isActive: true },
       { $inc: { viewCount: 1 } },
       { new: true }
     ).populate('owner', 'name email');
-    if (!property) {
-      throw new ApiError(404, 'İlan bulunamadı');
-    }
 
+    if (!property) throw new ApiError(404, 'İlan bulunamadı');
     res.json({ success: true, data: property });
   } catch (err) {
     next(err);
@@ -258,36 +186,15 @@ export async function updateProperty(req, res, next) {
     if (!property) throw new ApiError(404, 'İlan bulunamadı');
 
     const allowed = [
-      'title',
-      'description',
-      'type',
-      'listingType',
-      'price',
-      'currency',
-      'size',
-      'amenities',
-      'yearBuilt',
-      'status',
-      'deedStatus',
-      'maintenanceFee',
-      'totalFloors',
-      'parking',
-      'furnished',
-      'virtualTourUrl',
-      'isFeatured',
-      'features',
-      'location',
-      'isActive',
-      'images'
+      'title', 'description', 'type', 'listingType', 'price', 'currency', 'size',
+      'amenities', 'yearBuilt', 'status', 'deedStatus', 'maintenanceFee', 'totalFloors',
+      'parking', 'furnished', 'virtualTourUrl', 'isFeatured', 'features', 'location',
+      'isActive', 'images'
     ];
     for (const key of allowed) {
       if (req.body[key] !== undefined) {
-        if (key === 'type' && !PROPERTY_TYPES.has(req.body.type)) {
-          throw new ApiError(400, 'Geçersiz type');
-        }
-        if (key === 'listingType' && !LISTING_TYPES.has(req.body.listingType)) {
-          throw new ApiError(400, 'Geçersiz listingType');
-        }
+        if (key === 'type' && !PROPERTY_TYPES.has(req.body.type)) throw new ApiError(400, 'Geçersiz type');
+        if (key === 'listingType' && !LISTING_TYPES.has(req.body.listingType)) throw new ApiError(400, 'Geçersiz listingType');
         property[key] = req.body[key];
       }
     }
@@ -302,8 +209,14 @@ export async function updateProperty(req, res, next) {
 
 export async function deleteProperty(req, res, next) {
   try {
-    const deleted = await Property.findByIdAndDelete(req.params.id);
-    if (!deleted) throw new ApiError(404, 'İlan bulunamadı');
+    const property = await Property.findByIdAndDelete(req.params.id);
+    if (!property) throw new ApiError(404, 'İlan bulunamadı');
+
+    // Delete associated image files
+    for (const imageUrl of property.images || []) {
+      await deleteLocalFile(imageUrl);
+    }
+
     res.status(200).json({ success: true, message: 'İlan kalıcı olarak silindi' });
   } catch (err) {
     next(err);
@@ -312,17 +225,15 @@ export async function deleteProperty(req, res, next) {
 
 export async function uploadPropertyImages(req, res, next) {
   try {
-    assertCloudinary();
-
     const property = await Property.findById(req.params.id);
     if (!property) throw new ApiError(404, 'İlan bulunamadı');
 
     const files = req.files;
-    if (!files?.length) {
-      throw new ApiError(400, 'En az bir görsel yükleyin');
-    }
+    if (!files?.length) throw new ApiError(400, 'En az bir görsel yükleyin');
 
-    const urls = await Promise.all(files.map((f) => uploadBuffer(f.buffer)));
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const urls = files.map((f) => `${baseUrl}/uploads/properties/${f.filename}`);
+
     property.images.push(...urls);
     await property.save();
     await property.populate('owner', 'name email');
@@ -335,31 +246,19 @@ export async function uploadPropertyImages(req, res, next) {
 
 export async function deletePropertyImage(req, res, next) {
   try {
-    assertCloudinary();
     const { id, imgId } = req.params;
-    if (!mongoose.isValidObjectId(id)) {
-      throw new ApiError(400, 'Geçersiz ilan kimliği');
-    }
+    if (!mongoose.isValidObjectId(id)) throw new ApiError(400, 'Geçersiz ilan kimliği');
 
     const property = await Property.findById(id);
-    if (!property) {
-      throw new ApiError(404, 'İlan bulunamadı');
-    }
+    if (!property) throw new ApiError(404, 'İlan bulunamadı');
 
     const decodedImgId = decodeURIComponent(imgId);
     const imageUrl = property.images.find(
-      (url) => url === decodedImgId || url.includes(`/${decodedImgId}.`) || url.includes(`/${decodedImgId}/`)
+      (url) => url === decodedImgId || url.endsWith(`/${decodedImgId}`) || url.includes(decodedImgId)
     );
-    if (!imageUrl) {
-      throw new ApiError(404, 'Görsel bulunamadı');
-    }
+    if (!imageUrl) throw new ApiError(404, 'Görsel bulunamadı');
 
-    const publicId = decodedImgId.includes('/') ? decodedImgId : parseCloudinaryPublicIdFromUrl(imageUrl);
-    if (!publicId) {
-      throw new ApiError(400, 'Cloudinary public_id çözümlenemedi');
-    }
-
-    await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+    await deleteLocalFile(imageUrl);
     property.images = property.images.filter((url) => url !== imageUrl);
     await property.save();
 
@@ -376,7 +275,6 @@ export async function featuredProperties(req, res, next) {
       .limit(6)
       .populate('owner', 'name email')
       .lean();
-
     res.status(200).json({ success: true, data: items });
   } catch (err) {
     next(err);

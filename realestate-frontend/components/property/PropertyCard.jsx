@@ -21,9 +21,10 @@ const TYPE_LABELS = {
 };
 
 export default function PropertyCard({ property }) {
-  const imageUrl =
-    property.images?.[0] ||
+  const rawUrl = property.images?.[0] || "";
+  const imageUrl = rawUrl ||
     "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1400&auto=format&fit=crop";
+  const isLocalImage = imageUrl.includes("localhost") || imageUrl.includes("127.0.0.1");
   const propertyId = property._id || property.id;
   const isRent = property.listingType === "rent";
   const typeLabel = TYPE_LABELS[property.type] || property.type;
@@ -38,6 +39,7 @@ export default function PropertyCard({ property }) {
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
+          unoptimized={isLocalImage}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/65 via-transparent to-transparent" />
 
@@ -104,10 +106,10 @@ export default function PropertyCard({ property }) {
               <span className="font-semibold text-foreground">{property.features.bathrooms}</span> Banyo
             </span>
           )}
-          {property.features?.area != null && (
+          {(property.features?.area != null || property.size != null) && (
             <span className="inline-flex items-center gap-1.5">
               <Maximize2 className="h-4 w-4 text-slate-400" />
-              <span className="font-semibold text-foreground">{property.features.area}</span> m²
+              <span className="font-semibold text-foreground">{property.size ?? property.features?.area}</span> m²
             </span>
           )}
         </div>

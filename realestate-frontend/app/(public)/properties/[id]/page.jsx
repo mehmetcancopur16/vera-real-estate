@@ -129,6 +129,7 @@ export default async function PropertyDetailPage({ params }) {
   ];
   const images = property.images?.length ? property.images : fallbackImages;
   const heroImage = images[0];
+  const isLocalHero = heroImage.includes("localhost") || heroImage.includes("127.0.0.1");
 
   const heatingLabel = {
     kombi:    "Doğalgaz Kombisi",
@@ -173,6 +174,7 @@ export default async function PropertyDetailPage({ params }) {
             priority
             sizes="100vw"
             className="object-cover"
+            unoptimized={isLocalHero}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent" />
 
@@ -237,6 +239,7 @@ export default async function PropertyDetailPage({ params }) {
                   fill
                   sizes="15vw"
                   className="object-cover transition hover:scale-105"
+                  unoptimized={img.includes("localhost") || img.includes("127.0.0.1")}
                 />
               </div>
             ))}

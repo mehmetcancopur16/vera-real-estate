@@ -291,7 +291,11 @@ export default function PropertyForm({ propertyId = null, defaultValues: initial
       if (isEditMode) {
         const updated = await updateProperty(propertyId, payload);
         if (files.length > 0) {
-          await uploadPropertyImages(propertyId, files);
+          try {
+            await uploadPropertyImages(propertyId, files);
+          } catch {
+            toast.warning("İlan güncellendi fakat görseller yüklenemedi. Daha sonra tekrar deneyebilirsiniz.");
+          }
         }
         return updated;
       } else {
@@ -299,7 +303,11 @@ export default function PropertyForm({ propertyId = null, defaultValues: initial
         const newId = created?.data?._id;
         if (!newId) throw new Error("İlan oluşturulamadı");
         if (files.length > 0) {
-          await uploadPropertyImages(newId, files);
+          try {
+            await uploadPropertyImages(newId, files);
+          } catch {
+            toast.warning("İlan oluşturuldu fakat görseller yüklenemedi. İlanlarım sayfasından ekleyebilirsiniz.");
+          }
         }
         return created;
       }

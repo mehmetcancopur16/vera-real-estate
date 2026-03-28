@@ -3,7 +3,7 @@ import * as authController from '../controllers/auth.controller.js';
 import { validate } from '../middlewares/validate.middleware.js';
 import { changePasswordSchema, deleteMeSchema, loginSchema, registerSchema, updateMeSchema } from '../validations/auth.validation.js';
 import { protect } from '../middlewares/auth.middleware.js';
-import { upload } from '../middlewares/upload.middleware.js';
+import { uploadAvatar } from '../middlewares/upload.middleware.js';
 
 const router = Router();
 
@@ -122,7 +122,7 @@ router.patch('/password', protect, validate(changePasswordSchema), authControlle
  *       200:
  *         description: Yüklendi
  */
-router.post('/avatar', protect, upload.single('avatar'), authController.uploadAvatar);
+router.post('/avatar', protect, uploadAvatar.single('avatar'), authController.uploadAvatar);
 
 /**
  * @openapi
