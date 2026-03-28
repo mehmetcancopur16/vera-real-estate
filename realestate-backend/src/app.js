@@ -16,6 +16,8 @@ import authRoutes from './routes/auth.routes.js';
 import propertyRoutes from './routes/property.routes.js';
 import contactRoutes from './routes/contact.routes.js';
 import newsletterRoutes from './routes/newsletter.routes.js';
+import adminRoutes from './routes/admin.routes.js';
+import subscriptionRoutes from './routes/subscription.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -106,6 +108,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/properties', propertyRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/subscription', subscriptionRoutes);
 
 app.use((req, res, next) => {
   res.status(404).json({ success: false, message: 'Not found' });

@@ -9,6 +9,7 @@ import {
   Building2,
   Calendar,
   Check,
+  Crown,
   Eye,
   EyeOff,
   Globe,
@@ -315,6 +316,13 @@ export default function ProfilePage() {
           >
             <Settings className="h-4 w-4" />
             Tercihler
+          </TabsTrigger>
+          <TabsTrigger
+            value="subscription"
+            className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold data-[state=active]:bg-slate-900 data-[state=active]:text-white"
+          >
+            <Zap className="h-4 w-4" />
+            Abonelik
           </TabsTrigger>
         </TabsList>
 
@@ -713,8 +721,119 @@ export default function ProfilePage() {
             </div>
           </div>
         </TabsContent>
+
+        {/* ── Subscription Tab ── */}
+        <TabsContent value="subscription" className="space-y-4 animate-in fade-in-0 slide-in-from-bottom-1 duration-300">
+          <SubscriptionTab user={user} totalListings={totalListings} />
+        </TabsContent>
       </Tabs>
     </section>
+  );
+}
+
+/* ─── Subscription Tab ─── */
+function SubscriptionTab({ user, totalListings }) {
+  const plan = user?.subscription?.plan || "free";
+  const expiresAt = user?.subscription?.expiresAt;
+
+  const PLAN_LIMITS = { free: 3, professional: 7, corporate: Infinity };
+  const limit = PLAN_LIMITS[plan];
+  const usedPct = limit === Infinity ? 0 : Math.min(100, Math.round((totalListings / limit) * 100));
+
+  const planStyles = {
+    free: { label: "Free", color: "from-slate-400 to-slate-600", badge: "bg-slate-100 text-slate-700 border-slate-200", icon: Zap, hint: "3 ilan hakkı", next: "professional" },
+    professional: { label: "Professional", color: "from-blue-500 to-indigo-600", badge: "bg-blue-50 text-blue-700 border-blue-200", icon: Star, hint: "7 ilan hakkı", next: "corporate" },
+    corporate: { label: "Corporate", color: "from-amber-500 to-orange-500", badge: "bg-amber-50 text-amber-700 border-amber-200", icon: Sparkles, hint: "Sınırsız ilan", next: null },
+  };
+  const ps = planStyles[plan] || planStyles.free;
+  const PlanIcon = ps.icon;
+
+  const barColor = usedPct >= 100 ? "bg-red-500" : usedPct >= 70 ? "bg-amber-500" : "bg-emerald-500";
+
+  return (
+    <div className="space-y-4">
+      {/* Current plan card */}
+      <div className="panel-surface rounded-2xl p-6 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${ps.color} shadow-lg`}>
+              <PlanIcon className="h-6 w-6 text-white" />
+            </span>
+            <div>
+              <p className="text-lg font-extrabold text-slate-900">{ps.label} Plan</p>
+              <p className="text-sm text-slate-500">{ps.hint}</p>
+            </div>
+          </div>
+          <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${ps.badge}`}>
+            Aktif
+          </span>
+        </div>
+
+        {expiresAt && plan !== "free" && (
+          <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50 px-4 py-2.5 text-sm text-blue-700">
+            <span className="font-semibold">Son geçerlilik:</span>{" "}
+            {new Date(expiresAt).toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" })}
+          </div>
+        )}
+
+        {/* Usage bar */}
+        <div className="mt-5">
+          <div className="flex items-center justify-between text-sm mb-2">
+            <span className="font-semibold text-slate-700">İlan Kullanımı</span>
+            <span className="font-extrabold text-slate-900">
+              {totalListings}{limit !== Infinity && `/${limit}`}
+              {limit !== Infinity && <span className="text-xs font-medium text-slate-400 ml-1">ilan</span>}
+              {limit === Infinity && <span className="text-xs font-medium text-slate-400 ml-1">ilan (sınırsız)</span>}
+            </span>
+          </div>
+          {limit !== Infinity && (
+            <div className="h-3 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className={`h-full rounded-full transition-all duration-700 ${barColor}`}
+                style={{ width: `${usedPct}%` }}
+              />
+            </div>
+          )}
+          {limit !== Infinity && usedPct >= 80 && (
+            <p className={`mt-1.5 text-xs font-medium ${usedPct >= 100 ? "text-red-600" : "text-amber-600"}`}>
+              {usedPct >= 100 ? "Plan limitine ulaştınız! Planınızı yükseltin." : "Plan limitine yaklaşıyorsunuz."}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Upgrade CTA */}
+      {ps.next && (
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-gradient-to-br from-slate-50 to-white p-5 text-center">
+          <p className="text-sm font-semibold text-slate-600 mb-3">
+            Daha fazla ilan için planınızı yükseltin
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <a
+              href={`/upgrade/checkout?plan=${ps.next}`}
+              className={`inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${ps.color} px-5 py-2.5 text-sm font-extrabold text-white shadow-md transition hover:brightness-105`}
+            >
+              <Sparkles className="h-4 w-4" />
+              {planStyles[ps.next]?.label} Planına Geç
+            </a>
+            <a
+              href="/upgrade"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Tüm Planlar
+            </a>
+          </div>
+        </div>
+      )}
+
+      {plan === "corporate" && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-center">
+          <Crown className="mx-auto mb-2 h-8 w-8 text-amber-500" />
+          <p className="font-extrabold text-amber-900">Corporate Plan Aktif</p>
+          <p className="text-sm text-amber-700 mt-1">Sınırsız ilan yayınlama hakkına sahipsiniz.</p>
+        </div>
+      )}
+    </div>
   );
 }
 

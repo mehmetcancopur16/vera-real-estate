@@ -273,3 +273,43 @@ vera-real-estate/
 ## Lisans
 
 MIT © 2025 Vera Real Estate
+
+---
+
+## Admin Panel
+
+Admin kullanıcılar `/admin` route grubuna erişebilir (role: `admin`).
+
+### Admin Rotaları
+
+| Rota | Açıklama |
+|------|----------|
+| `/admin` | Genel bakış — kullanıcı/ilan istatistikleri, plan dağılımı |
+| `/admin/users` | Kullanıcı yönetimi — plan/rol değiştir, kullanıcı sil |
+| `/admin/listings` | İlan yönetimi — aktif/pasif yap, ilan sil |
+
+### Admin Seed Kullanıcısı
+
+MongoDB'de bir kullanıcının `role` alanını `"admin"` olarak güncelle:
+
+```js
+db.users.updateOne({ email: "admin@vera.com" }, { $set: { role: "admin" } })
+```
+
+---
+
+## Abonelik Sistemi
+
+| Plan | İlan Limiti | Ücret |
+|------|-------------|-------|
+| Free | 3 ilan | Ücretsiz |
+| Professional | 7 ilan | ₺299/ay |
+| Corporate | Sınırsız | ₺799/ay |
+
+### Mock Ödeme Akışı
+
+1. `/upgrade` — Plan seçim sayfası
+2. `/upgrade/checkout?plan=professional` — Görsel kart flip animasyonu ile ödeme formu
+3. `/upgrade/success?plan=professional` — Konfeti animasyonu ile başarı ekranı
+
+> Not: Bu platform demo amaçlıdır; gerçek ödeme alınmaz.

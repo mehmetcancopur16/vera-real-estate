@@ -268,3 +268,38 @@ Winston + Morgan kombinasyonu kullanılır.
 - Console renklendirme: Development modunda aktif
 
 Log seviyesi `LOG_LEVEL` env değişkeni ile kontrol edilir (`error`, `warn`, `info`, `debug`).
+
+---
+
+## Admin API Endpointleri
+
+Tüm `/api/admin/*` rotaları `protect` + `restrictTo('admin')` middleware ile korunur.
+
+| Method | Endpoint | Açıklama |
+|--------|----------|----------|
+| GET | `/api/admin/stats` | Genel istatistikler (kullanıcı, ilan, plan dağılımı) |
+| GET | `/api/admin/users` | Paginated kullanıcı listesi (search, page, limit) |
+| PATCH | `/api/admin/users/:id` | Kullanıcı rol/plan güncelle |
+| DELETE | `/api/admin/users/:id` | Kullanıcı + ilanları sil |
+| GET | `/api/admin/listings` | Paginated ilan listesi (search, isActive, page, limit) |
+| PATCH | `/api/admin/listings/:id/toggle` | İlan aktif/pasif toggle |
+| DELETE | `/api/admin/listings/:id` | İlanı sil (force) |
+
+---
+
+## Abonelik API Endpointleri
+
+| Method | Endpoint | Auth | Açıklama |
+|--------|----------|------|----------|
+| GET | `/api/subscription/plans` | Public | Plan kataloğunu listele |
+| POST | `/api/subscription/upgrade` | Token | Planı yükselt (`{ plan: "professional" \| "corporate" \| "free" }`) |
+
+### Plan Limitleri
+
+| Plan | İlan Limiti |
+|------|-------------|
+| free | 3 |
+| professional | 7 |
+| corporate | Sınırsız |
+
+Limit aşıldığında `POST /api/properties` endpoint'i `403` döner.

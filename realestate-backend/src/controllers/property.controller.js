@@ -3,11 +3,14 @@ import path from 'path';
 import { unlink } from 'fs/promises';
 import { existsSync } from 'fs';
 import Property from '../models/Property.model.js';
+import User from '../models/User.model.js';
 import { ApiError } from '../utils/ApiError.js';
 import { UPLOAD_ROOT } from '../middlewares/upload.middleware.js';
 
 const PROPERTY_TYPES = new Set(['apartment', 'house', 'land', 'commercial']);
 const LISTING_TYPES = new Set(['sale', 'rent']);
+
+export const PLAN_LIMITS = { free: 3, professional: 7, corporate: Infinity };
 
 function escapeRegex(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -67,6 +70,17 @@ export async function createProperty(req, res, next) {
       amenities, yearBuilt, status, deedStatus, maintenanceFee, totalFloors,
       parking, furnished, virtualTourUrl, isFeatured, features, location
     } = req.body;
+
+    // Enforce plan listing limit
+    const owner = await User.findById(req.user.id).select('subscription role');
+    if (owner && owner.role !== 'admin') {
+      const plan = owner?.subscription?.plan || 'free';
+      const limit = PLAN_LIMITS[plan];
+      const count = await Property.countDocuments({ owner: req.user.id });
+      if (count >= limit) {
+        throw new ApiError(403, `Plan limitine ulaştınız. ${plan === 'free' ? 'Free' : 'Professional'} planda en fazla ${limit} ilan yükleyebilirsiniz. Planınızı yükseltin.`);
+      }
+    }
 
     if (!title || !description || !type || !listingType || price === undefined || price === '') {
       throw new ApiError(400, 'title, description, type, listingType ve price zorunludur');

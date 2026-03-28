@@ -11,6 +11,7 @@ import {
   CheckCheck,
   ChevronDown,
   ChevronRight,
+  Crown,
   Eye,
   LayoutDashboard,
   Loader2,
@@ -24,6 +25,7 @@ import {
   TrendingUp,
   UserCircle2,
   X,
+  Zap,
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { getMyProperties } from "@/services/property.service";
@@ -69,6 +71,13 @@ const NAV_ITEMS = [
     icon: UserCircle2,
     desc: "Hesap ayarları",
     iconColor: "from-violet-500 to-purple-600",
+  },
+  {
+    href: "/upgrade",
+    label: "Planı Yükselt",
+    icon: Crown,
+    desc: "Abonelik yönetimi",
+    iconColor: "from-amber-500 to-orange-500",
   },
 ];
 
@@ -351,6 +360,9 @@ export default function DashboardLayout({ children }) {
     "/my-listings": "İlanlarım",
     "/add-listing": "Yeni İlan Ekle",
     "/profile": "Profil",
+    "/upgrade": "Plan Yükselt",
+    "/upgrade/checkout": "Ödeme",
+    "/upgrade/success": "Başarılı",
   };
   const pageTitle = isEditListing
     ? "İlan Düzenle"
@@ -492,6 +504,39 @@ export default function DashboardLayout({ children }) {
           );
         })}
       </nav>
+
+      {/* Subscription badge */}
+      {user && (
+        <div className="px-3 pb-2">
+          {(() => {
+            const plan = user?.subscription?.plan || "free";
+            const planStyles = {
+              free: { bg: "bg-slate-100", text: "text-slate-600", border: "border-slate-200", icon: Zap, label: "Free Plan", hint: "3 ilan limiti" },
+              professional: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200", icon: Star, label: "Pro Plan", hint: "7 ilan limiti" },
+              corporate: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", icon: Crown, label: "Corporate", hint: "Sınırsız ilan" },
+            };
+            const ps = planStyles[plan] || planStyles.free;
+            const PlanIcon = ps.icon;
+            return (
+              <Link
+                href="/upgrade"
+                className={`flex items-center gap-2.5 rounded-2xl border ${ps.border} ${ps.bg} px-3 py-2.5 transition hover:brightness-95`}
+              >
+                <PlanIcon className={`h-4 w-4 ${ps.text}`} />
+                <div className="min-w-0 flex-1">
+                  <p className={`text-xs font-extrabold ${ps.text}`}>{ps.label}</p>
+                  <p className="text-[10px] text-slate-400">{ps.hint}</p>
+                </div>
+                {plan === "free" && (
+                  <span className="rounded-full bg-amber-500 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-white">
+                    Yükselt
+                  </span>
+                )}
+              </Link>
+            );
+          })()}
+        </div>
+      )}
 
       {/* Bottom actions */}
       <div className="shrink-0 border-t border-slate-100 p-3 space-y-2">

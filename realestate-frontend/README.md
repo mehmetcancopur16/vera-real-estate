@@ -316,4 +316,30 @@ NEXT_PUBLIC_API_URL=https://your-backend.onrender.com/api
 | `401 Unauthorized` | `NEXT_PUBLIC_API_URL` doğru mu? |
 | CORS hatası | Backend `CORS_ORIGINS` env'ine Vercel URL'ini ekle |
 | Harita SSR hatası | `MapView` zaten `dynamic import + ssr: false` ile yükleniyor |
-| Avatar görünmüyor | Cloudinary CORS ayarlarını kontrol et |
+| Avatar görünmüyor | `http://localhost:5050/uploads/` URL'inin backend'de static serve edildiğinden emin ol |
+
+---
+
+## Admin Panel
+
+Admin kullanıcılar `/admin` route grubuna erişir (MongoDB `role: "admin"`).
+
+| Rota | Açıklama |
+|------|----------|
+| `/admin` | Dashboard — istatistikler, plan dağılımı, son kayıtlar |
+| `/admin/users` | Tüm kullanıcılar — plan/rol select, silme |
+| `/admin/listings` | Tüm ilanlar — aktif toggle, silme, detay linki |
+
+---
+
+## Abonelik & Ödeme Akışı
+
+| Rota | Açıklama |
+|------|----------|
+| `/upgrade` | 3-tier fiyatlandırma kartları |
+| `/upgrade/checkout?plan=professional` | Mock ödeme formu (kart flip animasyonu) |
+| `/upgrade/success?plan=professional` | Başarı ekranı (konfeti animasyonu) |
+
+Profil sayfasının **Abonelik** sekmesinde mevcut plan, kullanım çubuğu ve yükseltme butonu bulunur.
+
+> Demo amaçlıdır — gerçek ödeme alınmaz.

@@ -1,52 +1,118 @@
-import PropertyForm from "@/components/forms/PropertyForm";
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import {
+  ArrowRight,
   Building2,
   Camera,
   CheckCircle2,
+  Crown,
   FileText,
   Home,
   Lightbulb,
+  Loader2,
+  Lock,
   MapPin,
   Sparkles,
+  Star,
   Timer,
+  Zap,
 } from "lucide-react";
+import { useAuthStore } from "@/store/useAuthStore";
+import { getMyProperties } from "@/services/property.service";
+import PropertyForm from "@/components/forms/PropertyForm";
+import { Button } from "@/components/ui/button";
+
+const PLAN_LIMITS = { free: 3, professional: 7, corporate: Infinity };
+
+const PLAN_INFO = {
+  free: { next: "professional", nextLabel: "Professional", nextPrice: "₺299/ay", nextLimit: "7 ilan", icon: Star, color: "from-blue-600 to-indigo-600" },
+  professional: { next: "corporate", nextLabel: "Corporate", nextPrice: "₺799/ay", nextLimit: "Sınırsız", icon: Crown, color: "from-amber-500 to-orange-500" },
+};
 
 const STEPS_INFO = [
-  {
-    icon: FileText,
-    label: "Temel Bilgiler",
-    desc: "Başlık, açıklama, ilan tipi",
-    color: "from-blue-500 to-indigo-600",
-    bg: "bg-blue-50",
-    text: "text-blue-700",
-  },
-  {
-    icon: MapPin,
-    label: "Konum & Fiyat",
-    desc: "Adres ve fiyatlandırma",
-    color: "from-emerald-500 to-teal-600",
-    bg: "bg-emerald-50",
-    text: "text-emerald-700",
-  },
-  {
-    icon: Building2,
-    label: "Özellikler",
-    desc: "Tüm teknik detaylar",
-    color: "from-violet-500 to-purple-600",
-    bg: "bg-violet-50",
-    text: "text-violet-700",
-  },
-  {
-    icon: Camera,
-    label: "Görseller",
-    desc: "Fotoğraf yükleme",
-    color: "from-amber-500 to-orange-500",
-    bg: "bg-amber-50",
-    text: "text-amber-700",
-  },
+  { icon: FileText, label: "Temel Bilgiler", desc: "Başlık, açıklama, ilan tipi", color: "from-blue-500 to-indigo-600" },
+  { icon: MapPin, label: "Konum & Fiyat", desc: "Adres ve fiyatlandırma", color: "from-emerald-500 to-teal-600" },
+  { icon: Building2, label: "Özellikler", desc: "Tüm teknik detaylar", color: "from-violet-500 to-purple-600" },
+  { icon: Camera, label: "Görseller", desc: "Fotoğraf yükleme", color: "from-amber-500 to-orange-500" },
 ];
 
+function PlanLimitWall({ plan, used, limit, nextPlan }) {
+  const Icon = nextPlan?.icon || Lock;
+  return (
+    <div className="flex flex-col items-center justify-center rounded-3xl border border-orange-200 bg-gradient-to-b from-orange-50 to-white p-8 text-center shadow-xl">
+      <div className={`mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${nextPlan?.color || "from-orange-500 to-red-500"} shadow-lg`}>
+        <Lock className="h-7 w-7 text-white" />
+      </div>
+      <h2 className="text-2xl font-extrabold text-slate-900">Plan Limitine Ulaştınız</h2>
+      <p className="mt-2 text-slate-500">
+        {plan === "corporate"
+          ? "Beklenmedik bir hata oluştu. Lütfen iletişime geçin."
+          : `${plan === "free" ? "Free" : "Professional"} planınızda en fazla ${limit} ilan yayınlayabilirsiniz. Şu an ${used} ilanınız var.`}
+      </p>
+
+      {nextPlan && (
+        <div className="mt-6 w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className={`inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${nextPlan.color} shadow`}>
+              <Icon className="h-5 w-5 text-white" />
+            </span>
+            <div className="text-left">
+              <p className="font-extrabold text-slate-900">{nextPlan.nextLabel}</p>
+              <p className="text-sm text-slate-500">{nextPlan.nextLimit} · {nextPlan.nextPrice}</p>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-col gap-2">
+            <Button
+              asChild
+              className={`h-11 w-full rounded-2xl bg-gradient-to-r ${nextPlan.color} font-extrabold text-white shadow-md hover:brightness-105`}
+            >
+              <Link href={`/upgrade/checkout?plan=${nextPlan.next}`}>
+                <Sparkles className="mr-2 h-4 w-4" />
+                {nextPlan.nextLabel}&apos;a Yükselt
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="h-9 w-full rounded-2xl font-semibold">
+              <Link href="/upgrade">
+                Tüm Planları Gör <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AddListingPage() {
+  const { user } = useAuthStore();
+  const plan = user?.subscription?.plan || "free";
+  const limit = PLAN_LIMITS[plan];
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["my-properties", { includeInactive: 1 }],
+    queryFn: () => getMyProperties({ page: 1, limit: 1, includeInactive: 1 }),
+    staleTime: 30_000,
+    enabled: plan !== "corporate",
+  });
+
+  const usedCount = data?.pagination?.total ?? 0;
+  const atLimit = plan !== "corporate" && usedCount >= limit;
+  const nextPlan = PLAN_INFO[plan];
+
+  if (isLoading && plan !== "corporate") {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-slate-300" />
+      </div>
+    );
+  }
+
+  if (atLimit) {
+    return <PlanLimitWall plan={plan} used={usedCount} limit={limit} nextPlan={nextPlan} />;
+  }
+
   return (
     <section className="space-y-6 animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
 
@@ -78,8 +144,22 @@ export default function AddListingPage() {
               4 adımlı sihirbaz ile ilanınızı profesyonel şekilde oluşturun. Temel bilgilerden fotoğraflara kadar tüm detayları eksiksiz doldurun.
             </p>
 
+            {/* Plan limit indicator */}
+            {plan !== "corporate" && (
+              <div className="mt-3 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs backdrop-blur-sm">
+                {plan === "free" ? <Zap className="h-3.5 w-3.5 text-amber-400" /> : <Star className="h-3.5 w-3.5 text-blue-400" />}
+                <span className="text-white/90 font-semibold">{usedCount}/{limit} ilan</span>
+                <span className="text-white/50">kullanıldı</span>
+                {plan === "free" && (
+                  <Link href="/upgrade" className="rounded-full bg-amber-500/80 px-2 py-0.5 text-[10px] font-black text-white transition hover:bg-amber-400">
+                    Yükselt
+                  </Link>
+                )}
+              </div>
+            )}
+
             {/* Quick stats row */}
-            <div className="mt-5 flex flex-wrap items-center gap-4">
+            <div className="mt-3 flex flex-wrap items-center gap-4">
               <div className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs backdrop-blur-sm">
                 <Timer className="h-3.5 w-3.5 text-accent" />
                 <span className="font-semibold text-white/90">~3 dakika</span>
