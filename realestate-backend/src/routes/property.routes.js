@@ -12,11 +12,27 @@ const router = Router();
  * @openapi
  * /api/properties/featured:
  *   get:
- *     tags: [Properties]
+ *     operationId: getFeaturedProperties
+ *     tags:
+ *       - Properties
  *     summary: Öne çıkan 6 ilan
+ *     description: |
+ *       Ana sayfa icin isFeatured degeri true olan en son 6 ilani doner.
  *     responses:
  *       200:
- *         description: Başarılı
+ *         description: Öne çıkan ilanlar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Property'
  */
 router.get('/featured', propertyController.featuredProperties);
 
@@ -24,20 +40,35 @@ router.get('/featured', propertyController.featuredProperties);
  * @openapi
  * /api/properties/my:
  *   get:
- *     tags: [Properties]
+ *     operationId: getMyProperties
+ *     tags:
+ *       - Properties
  *     summary: Giriş yapan kullanıcının ilanları
+ *     description: JWT ile kimliği doğrulanmış kullanıcının kendi ilanlarını sayfalı döner.
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: query
- *         name: page
- *         schema: { type: integer, default: 1 }
- *       - in: query
- *         name: limit
- *         schema: { type: integer, default: 10 }
+ *       - $ref: '#/components/parameters/PageParam'
+ *       - $ref: '#/components/parameters/LimitParam'
  *     responses:
  *       200:
  *         description: Kullanıcının ilan listesi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Property'
+ *                 pagination:
+ *                   $ref: '#/components/schemas/Pagination'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  */
 router.get('/my', protect, propertyController.getMyProperties);
 
@@ -45,40 +76,77 @@ router.get('/my', protect, propertyController.getMyProperties);
  * @openapi
  * /api/properties:
  *   get:
- *     tags: [Properties]
+ *     operationId: getProperties
+ *     tags:
+ *       - Properties
  *     summary: İlanları listele (filtreleme + sayfalama)
+ *     description: |
+ *       Tüm aktif ilanları filtre ve sayfalama ile döner.
+ *       Şehir, tip, satılık/kiralık, fiyat aralığı, oda sayısı ve
+ *       tam metin arama desteklenir.
  *     parameters:
- *       - in: query
- *         name: city
- *         schema: { type: string }
- *       - in: query
- *         name: type
- *         schema: { type: string, enum: [apartment, house, land, commercial] }
- *       - in: query
- *         name: listingType
- *         schema: { type: string, enum: [sale, rent] }
- *       - in: query
- *         name: minPrice
- *         schema: { type: number }
- *       - in: query
- *         name: maxPrice
- *         schema: { type: number }
- *       - in: query
- *         name: rooms
- *         schema: { type: integer }
- *       - in: query
- *         name: search
- *         schema: { type: string }
+ *       - name: city
+ *         in: query
+ *         description: Şehir filtresi
+ *         schema:
+ *           type: string
+ *       - name: type
+ *         in: query
+ *         description: Emlak tipi
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - apartment
+ *             - house
+ *             - land
+ *             - commercial
+ *       - name: listingType
+ *         in: query
+ *         description: Satılık veya kiralık
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - sale
+ *             - rent
+ *       - name: minPrice
+ *         in: query
+ *         description: Minimum fiyat
+ *         schema:
+ *           type: number
+ *       - name: maxPrice
+ *         in: query
+ *         description: Maksimum fiyat
+ *         schema:
+ *           type: number
+ *       - name: rooms
+ *         in: query
+ *         description: Oda sayısı
+ *         schema:
+ *           type: integer
+ *       - name: search
+ *         in: query
  *         description: Başlık ve açıklamada tam metin arama
- *       - in: query
- *         name: page
- *         schema: { type: integer, default: 1 }
- *       - in: query
- *         name: limit
- *         schema: { type: integer, default: 10 }
+ *         schema:
+ *           type: string
+ *       - $ref: '#/components/parameters/PageParam'
+ *       - $ref: '#/components/parameters/LimitParam'
  *     responses:
  *       200:
- *         description: Liste
+ *         description: İlan listesi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Property'
+ *                 pagination:
+ *                   $ref: '#/components/schemas/Pagination'
  */
 router.get('/', propertyController.getProperties);
 
@@ -86,18 +154,28 @@ router.get('/', propertyController.getProperties);
  * @openapi
  * /api/properties/{id}:
  *   get:
- *     tags: [Properties]
- *     summary: Tekil ilan
+ *     operationId: getPropertyById
+ *     tags:
+ *       - Properties
+ *     summary: Tekil ilan detayı
+ *     description: Verilen ID'ye sahip ilanın tüm bilgilerini döner. Görüntülenme sayacı +1 artar.
  *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: string }
+ *       - $ref: '#/components/parameters/IdParam'
  *     responses:
  *       200:
  *         description: İlan detayı
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Property'
  *       404:
- *         description: Bulunamadı
+ *         $ref: '#/components/responses/NotFound'
  */
 router.get('/:id', propertyController.getPropertyById);
 
@@ -105,8 +183,13 @@ router.get('/:id', propertyController.getPropertyById);
  * @openapi
  * /api/properties:
  *   post:
- *     tags: [Properties]
- *     summary: Yeni ilan (JWT gerekli)
+ *     operationId: createProperty
+ *     tags:
+ *       - Properties
+ *     summary: Yeni ilan oluştur
+ *     description: |
+ *       JWT ile kimliği doğrulanmış kullanıcı adına yeni ilan oluşturur.
+ *       Abonelik planına göre ilan limiti kontrol edilir.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -114,26 +197,24 @@ router.get('/:id', propertyController.getPropertyById);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [title, description, type, listingType, price, location]
- *             properties:
- *               title: { type: string }
- *               description: { type: string }
- *               type: { type: string, enum: [apartment, house, land, commercial] }
- *               listingType: { type: string, enum: [sale, rent] }
- *               price: { type: number }
- *               currency: { type: string }
- *               size: { type: number }
- *               features: { type: object }
- *               location:
- *                 type: object
- *                 properties:
- *                   city: { type: string }
- *                   district: { type: string }
- *                   address: { type: string }
+ *             $ref: '#/components/schemas/CreatePropertyBody'
  *     responses:
  *       201:
- *         description: Oluşturuldu
+ *         description: İlan oluşturuldu
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Property'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  */
 router.post('/', protect, validate(createPropertySchema), propertyController.createProperty);
 
@@ -141,24 +222,40 @@ router.post('/', protect, validate(createPropertySchema), propertyController.cre
  * @openapi
  * /api/properties/{id}:
  *   put:
- *     tags: [Properties]
+ *     operationId: updateProperty
+ *     tags:
+ *       - Properties
  *     summary: İlanı güncelle (sadece sahip)
+ *     description: İlan sahibi tarafından mevcut ilanın alanlarını günceller.
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: string }
+ *       - $ref: '#/components/parameters/IdParam'
  *     requestBody:
+ *       required: true
  *       content:
  *         application/json:
- *           schema: { type: object }
+ *           schema:
+ *             $ref: '#/components/schemas/UpdatePropertyBody'
  *     responses:
  *       200:
- *         description: Güncellendi
+ *         description: İlan güncellendi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Property'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
  *       403:
- *         description: Yetkisiz
+ *         $ref: '#/components/responses/Forbidden'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
  */
 router.put('/:id', protect, isOwner(Property), validate(updatePropertySchema), propertyController.updateProperty);
 
@@ -166,18 +263,28 @@ router.put('/:id', protect, isOwner(Property), validate(updatePropertySchema), p
  * @openapi
  * /api/properties/{id}:
  *   delete:
- *     tags: [Properties]
+ *     operationId: deleteProperty
+ *     tags:
+ *       - Properties
  *     summary: İlanı sil (sadece sahip)
+ *     description: İlan sahibi ilanını kalıcı olarak siler. Cloudinary'deki görseller de temizlenir.
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: string }
+ *       - $ref: '#/components/parameters/IdParam'
  *     responses:
  *       200:
- *         description: Silindi
+ *         description: İlan silindi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessMessage'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
  */
 router.delete('/:id', protect, isOwner(Property), propertyController.deleteProperty);
 
@@ -185,30 +292,54 @@ router.delete('/:id', protect, isOwner(Property), propertyController.deletePrope
  * @openapi
  * /api/properties/{id}/images:
  *   post:
- *     tags: [Properties]
- *     summary: Görselleri Cloudinary'ye yükle (en fazla 5, sadece sahip)
+ *     operationId: uploadPropertyImages
+ *     tags:
+ *       - Properties
+ *     summary: İlana görsel yükle (Cloudinary, maks 5)
+ *     description: |
+ *       İlan sahibi ilana en fazla 5 görsel yükleyebilir.
+ *       Görseller Cloudinary'ye yüklenir, URL'ler ilana eklenir.
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: string }
+ *       - $ref: '#/components/parameters/IdParam'
  *     requestBody:
  *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required:
+ *               - images
  *             properties:
  *               images:
  *                 type: array
  *                 items:
  *                   type: string
  *                   format: binary
+ *                 maxItems: 5
+ *                 description: Yüklenecek görsel dosyaları (maks 5)
  *     responses:
  *       200:
- *         description: Yüklendi
+ *         description: Görseller başarıyla yüklendi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Property'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
  */
 router.post('/:id/images', protect, isOwner(Property), upload.array('images', 5), propertyController.uploadPropertyImages);
 
@@ -216,24 +347,34 @@ router.post('/:id/images', protect, isOwner(Property), upload.array('images', 5)
  * @openapi
  * /api/properties/{id}/images/{imgId}:
  *   delete:
- *     tags: [Properties]
- *     summary: İlandaki görseli Cloudinary ve DB'den sil
+ *     operationId: deletePropertyImage
+ *     tags:
+ *       - Properties
+ *     summary: İlandaki tek görseli sil
+ *     description: Cloudinary'den ve veritabanından belirtilen görseli siler.
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
+ *       - $ref: '#/components/parameters/IdParam'
+ *       - name: imgId
+ *         in: path
  *         required: true
- *         schema: { type: string }
- *       - in: path
- *         name: imgId
- *         required: true
- *         schema: { type: string }
+ *         description: Silinecek görselin ID'si
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Görsel silindi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessMessage'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
  *       404:
- *         description: Görsel veya ilan bulunamadı
+ *         $ref: '#/components/responses/NotFound'
  */
 router.delete('/:id/images/:imgId', protect, isOwner(Property), propertyController.deletePropertyImage);
 

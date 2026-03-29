@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 
 import {
   ArrowRight,
+  ArrowUp,
   Building2,
   Facebook,
   Instagram,
@@ -71,7 +72,7 @@ export default function Footer() {
   return (
     <footer className="mt-20 bg-[var(--header)] text-slate-200">
       {/* Animated gold top border */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-accent to-transparent opacity-60" />
+      <div className="border-top-gold" />
       <div className="h-px w-full bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
       {/* Premium band */}
@@ -184,10 +185,12 @@ export default function Footer() {
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`inline-flex size-9 items-center justify-center rounded-xl border border-slate-700 text-slate-400 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20 ${color}`}
+                className={`group relative inline-flex size-9 items-center justify-center overflow-hidden rounded-xl border border-slate-700 text-slate-400 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg hover:shadow-black/20 ${color}`}
                 aria-label={label}
               >
-                <Icon className="h-4 w-4" />
+                {/* Shimmer sweep on hover */}
+                <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-500 group-hover:translate-x-full" />
+                <Icon className="relative h-4 w-4" />
               </a>
             ))}
           </div>
@@ -230,8 +233,8 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-white/5">
         <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-3 px-4 py-5 text-xs text-slate-500 md:flex-row">
-          <p>© 2026 Vera Real Estate. Tüm hakları saklıdır.</p>
-          <div className="flex items-center gap-5">
+          <p>© {new Date().getFullYear()} Vera Real Estate. Tüm hakları saklıdır.</p>
+          <div className="flex flex-wrap items-center gap-4">
             <Link href="/privacy-policy" className="transition hover:text-white">
               Gizlilik Politikası
             </Link>
@@ -239,6 +242,16 @@ export default function Footer() {
             <Link href="/terms-of-service" className="transition hover:text-white">
               Kullanım Şartları
             </Link>
+            <span className="h-3 w-px bg-white/10" />
+            {/* Scroll to top */}
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/60 px-2.5 py-1.5 font-medium text-slate-400 transition-all duration-200 hover:border-accent/50 hover:bg-accent/10 hover:text-accent"
+              aria-label="Sayfanın başına dön"
+            >
+              <ArrowUp className="h-3 w-3" />
+              Başa Dön
+            </button>
           </div>
         </div>
       </div>

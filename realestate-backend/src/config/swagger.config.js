@@ -45,7 +45,7 @@ Tüm hata yanıtları aynı formattadır: \`{ success: false, message: "..." }\`
     },
     servers: [
       {
-        url: 'http://localhost:5050',
+        url: `http://localhost:${process.env.PORT || 5050}`,
         description: 'Geliştirme sunucusu'
       }
     ],
@@ -79,7 +79,14 @@ Tüm hata yanıtları aynı formattadır: \`{ success: false, message: "..." }\`
           example: '64f1a2b3c4d5e6f7a8b9c0d1'
         },
 
-        /* ── Error ── */
+        /* ── Generic wrappers ── */
+        SuccessMessage: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            message: { type: 'string', example: 'İşlem başarılı' }
+          }
+        },
         Error: {
           type: 'object',
           properties: {
@@ -96,6 +103,55 @@ Tüm hata yanıtları aynı formattadır: \`{ success: false, message: "..." }\`
             limit: { type: 'integer', example: 20 },
             total: { type: 'integer', example: 150 },
             pages: { type: 'integer', example: 8 }
+          }
+        },
+
+        /* ── Auth Bodies ── */
+        RegisterBody: {
+          type: 'object',
+          required: ['name', 'email', 'password'],
+          properties: {
+            name: { type: 'string', example: 'Ahmet Yılmaz' },
+            email: { type: 'string', format: 'email', example: 'ahmet@vera.com' },
+            password: { type: 'string', minLength: 6, example: 'Gizli123!' }
+          }
+        },
+        LoginBody: {
+          type: 'object',
+          required: ['email', 'password'],
+          properties: {
+            email: { type: 'string', format: 'email', example: 'ahmet@vera.com' },
+            password: { type: 'string', example: 'Gizli123!' }
+          }
+        },
+        AuthResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            token: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+            data: { $ref: '#/components/schemas/User' }
+          }
+        },
+        UpdateProfileBody: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', example: 'Ahmet Kaya' },
+            email: { type: 'string', format: 'email', example: 'ahmet.kaya@vera.com' }
+          }
+        },
+        ChangePasswordBody: {
+          type: 'object',
+          required: ['currentPassword', 'newPassword'],
+          properties: {
+            currentPassword: { type: 'string', example: 'EskiSifre123' },
+            newPassword: { type: 'string', minLength: 6, example: 'YeniSifre456' }
+          }
+        },
+        DeleteAccountBody: {
+          type: 'object',
+          required: ['password'],
+          properties: {
+            password: { type: 'string', example: 'Gizli123!' }
           }
         },
 
@@ -224,6 +280,30 @@ Tüm hata yanıtları aynı formattadır: \`{ success: false, message: "..." }\`
             isFeatured: { type: 'boolean' }
           }
         },
+        UpdatePropertyBody: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            description: { type: 'string' },
+            type: { $ref: '#/components/schemas/PropertyType' },
+            listingType: { $ref: '#/components/schemas/ListingType' },
+            price: { type: 'number' },
+            currency: { type: 'string' },
+            size: { type: 'number' },
+            features: { $ref: '#/components/schemas/PropertyFeatures' },
+            location: { $ref: '#/components/schemas/PropertyLocation' },
+            amenities: { type: 'array', items: { type: 'string' } },
+            yearBuilt: { type: 'integer' },
+            status: { type: 'string', enum: ['ready', 'under-construction'] },
+            deedStatus: { type: 'string' },
+            maintenanceFee: { type: 'number' },
+            totalFloors: { type: 'integer' },
+            parking: { type: 'boolean' },
+            furnished: { type: 'boolean' },
+            virtualTourUrl: { type: 'string', format: 'uri' },
+            isFeatured: { type: 'boolean' }
+          }
+        },
 
         /* ── Contact ── */
         Contact: {
@@ -261,6 +341,13 @@ Tüm hata yanıtları aynı formattadır: \`{ success: false, message: "..." }\`
             updatedAt: { type: 'string', format: 'date-time' }
           }
         },
+        SubscribeNewsletterBody: {
+          type: 'object',
+          required: ['email'],
+          properties: {
+            email: { type: 'string', format: 'email', example: 'abone@ornek.com' }
+          }
+        },
 
         /* ── Subscription Plan ── */
         PlanInfo: {
@@ -273,8 +360,22 @@ Tüm hata yanıtları aynı formattadır: \`{ success: false, message: "..." }\`
             features: { type: 'array', items: { type: 'string' } }
           }
         },
+        UpgradePlanBody: {
+          type: 'object',
+          required: ['plan'],
+          properties: {
+            plan: { $ref: '#/components/schemas/SubscriptionPlan' }
+          }
+        },
 
-        /* ── Admin Stats ── */
+        /* ── Admin ── */
+        AdminUpdateUserBody: {
+          type: 'object',
+          properties: {
+            role: { type: 'string', enum: ['user', 'admin'], example: 'admin' },
+            'subscription.plan': { type: 'string', enum: ['free', 'professional', 'corporate'], example: 'professional' }
+          }
+        },
         AdminStats: {
           type: 'object',
           properties: {
@@ -300,6 +401,17 @@ Tüm hata yanıtları aynı formattadır: \`{ success: false, message: "..." }\`
               type: 'array',
               items: { $ref: '#/components/schemas/Property' }
             }
+          }
+        },
+
+        /* ── Health ── */
+        HealthCheck: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            message: { type: 'string', example: 'OK' },
+            service: { type: 'string', example: 'vera-real-estate-api' },
+            timestamp: { type: 'string', format: 'date-time' }
           }
         }
       },

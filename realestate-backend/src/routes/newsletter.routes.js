@@ -13,7 +13,9 @@ const subscribeSchema = z.object({
  * @openapi
  * /api/newsletter/subscribe:
  *   post:
- *     tags: [Newsletter]
+ *     operationId: subscribeToNewsletter
+ *     tags:
+ *       - Newsletter
  *     summary: Email bültenine abone ol
  *     description: |
  *       Verilen email adresi bülten aboneleri listesine eklenir.
@@ -23,13 +25,7 @@ const subscribeSchema = z.object({
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [email]
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: abone@ornek.com
+ *             $ref: '#/components/schemas/SubscribeNewsletterBody'
  *     responses:
  *       201:
  *         description: Abonelik başarıyla oluşturuldu
@@ -38,14 +34,20 @@ const subscribeSchema = z.object({
  *             schema:
  *               type: object
  *               properties:
- *                 success: { type: boolean, example: true }
- *                 message: { type: string, example: 'Bültene abone oldunuz.' }
- *                 data: { $ref: '#/components/schemas/Newsletter' }
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Bültene abone oldunuz.
+ *                 data:
+ *                   $ref: '#/components/schemas/Newsletter'
  *       400:
  *         description: Geçersiz email veya zaten kayıtlı
  *         content:
  *           application/json:
- *             schema: { $ref: '#/components/schemas/Error' }
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.post('/subscribe', validate(subscribeSchema), subscribeToNewsletter);
 

@@ -299,6 +299,172 @@
   }
 }
 
+/* Slide up entrance */
+@keyframes slide-up {
+  0% { opacity: 0; transform: translateY(24px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Border glow pulse */
+@keyframes border-glow {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 0%, transparent); }
+  50% { box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 30%, transparent); }
+}
+
+/* Gradient text shimmer sweep */
+@keyframes text-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Staggered entrance for list items */
+@keyframes stagger-in {
+  0% { opacity: 0; transform: translateY(16px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Soft pulsing glow for highlight elements */
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 40%, transparent); }
+  50% { box-shadow: 0 0 20px 4px color-mix(in oklab, var(--accent) 18%, transparent); }
+}
+
+/* Rotating gradient for active borders */
+@keyframes spin-gradient {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Smooth accordion-like reveal */
+@keyframes reveal-down {
+  0% { opacity: 0; max-height: 0; }
+  100% { opacity: 1; max-height: 500px; }
+}
+
+/* Input focus ring expand */
+@keyframes ring-expand {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 50%, transparent); }
+  100% { box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 0%, transparent); }
+}
+
+@layer utilities {
+  .animate-slide-up {
+    animation: slide-up 0.5s ease-out forwards;
+  }
+  .animate-stagger-in {
+    animation: stagger-in 0.5s ease-out forwards;
+  }
+  .animate-border-glow {
+    animation: border-glow 2s ease-in-out infinite;
+  }
+  .animate-pulse-gold {
+    animation: pulse-gold 2.5s ease-in-out infinite;
+  }
+  .animate-text-shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--accent) 0%,
+      var(--accent-strong) 30%,
+      #fff8dc 50%,
+      var(--accent-strong) 70%,
+      var(--accent) 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: text-shimmer 3s linear infinite;
+  }
+
+  /* Glass card utility */
+  .glass-card {
+    background: color-mix(in oklab, var(--card) 80%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+    box-shadow: 0 8px 32px -8px color-mix(in oklab, var(--foreground) 12%, transparent);
+  }
+
+  /* Subtle hover lift */
+  .hover-lift-sm {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .hover-lift-sm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -6px color-mix(in oklab, var(--foreground) 16%, transparent);
+  }
+
+  /* Gradient shimmer text */
+  .gradient-text-shimmer {
+    background-image: linear-gradient(
+      120deg,
+      var(--accent) 0%,
+      var(--accent-strong) 40%,
+      #ffe066 60%,
+      var(--accent) 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: text-shimmer 4s linear infinite;
+  }
+
+  /* Input glow on focus (apply to wrapper div) */
+  .input-focus-glow:focus-within {
+    animation: ring-expand 0.4s ease forwards;
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 25%, transparent);
+    border-radius: 0.75rem;
+  }
+
+  /* Stagger delay helpers */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+  .delay-600 { animation-delay: 600ms; }
+  .delay-700 { animation-delay: 700ms; }
+  .delay-800 { animation-delay: 800ms; }
+
+  /* Gold pulse glow ring */
+  .ring-gold-glow {
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--accent) 50%, transparent),
+      0 0 16px 0 color-mix(in oklab, var(--accent) 20%, transparent);
+  }
+
+  /* Animated top border gradient */
+  .border-top-gold {
+    border-top: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
+    position: relative;
+  }
+  .border-top-gold::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--accent) 30%,
+      #ffe066 50%,
+      var(--accent) 70%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: text-shimmer 3s linear infinite;
+  }
+
+  /* Card entrance opacity fill */
+  .card-entrance {
+    opacity: 0;
+    animation: stagger-in 0.5s ease-out forwards;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,

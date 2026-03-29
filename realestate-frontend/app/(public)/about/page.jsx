@@ -18,10 +18,10 @@ import {
 } from "lucide-react";
 
 const stats = [
-  { value: "500+", label: "Mutlu Aile", icon: Users2 },
-  { value: "2.400+", label: "Aktif İlan", icon: Building2 },
-  { value: "10+", label: "Yıl Tecrübe", icon: Award },
-  { value: "₺2M+", label: "İşlem Hacmi", icon: TrendingUp },
+  { value: "500+", label: "Mutlu Aile", icon: Users2, color: "text-blue-600", bg: "bg-blue-50" },
+  { value: "2.400+", label: "Aktif İlan", icon: Building2, color: "text-emerald-600", bg: "bg-emerald-50" },
+  { value: "10+", label: "Yıl Tecrübe", icon: Award, color: "text-purple-600", bg: "bg-purple-50" },
+  { value: "₺2M+", label: "İşlem Hacmi", icon: TrendingUp, color: "text-accent", bg: "bg-amber-50" },
 ];
 
 const values = [
@@ -29,8 +29,9 @@ const values = [
     icon: ShieldCheck,
     title: "Güven & Şeffaflık",
     desc: "Her ilanı hukuki, teknik ve finansal açıdan titizlikle inceleyerek müşterilerimize tam şeffaflık sağlarız. Sürpriz maliyet, gizli kalem yok.",
-    color: "text-blue-500",
+    color: "text-blue-600",
     bg: "bg-blue-50",
+    border: "border-blue-100",
   },
   {
     icon: Sparkles,
@@ -38,34 +39,39 @@ const values = [
     desc: "Seçkin konutlardan prestijli ticari alanlara kadar geniş ve özel bir portföy yelpazesiyle her bütçeye ve beklentiye hitap ederiz.",
     color: "text-accent",
     bg: "bg-amber-50",
+    border: "border-amber-100",
   },
   {
     icon: Clock3,
     title: "7/24 Danışmanlık",
     desc: "İhtiyacınız olan her anda uzman danışman kadromuz yanınızda. Hızlı geri dönüş garantisi ve kesintisiz iletişim ilkesiyle çalışırız.",
-    color: "text-emerald-500",
+    color: "text-emerald-600",
     bg: "bg-emerald-50",
+    border: "border-emerald-100",
   },
   {
     icon: Globe2,
     title: "Ulusal Ağ",
     desc: "İstanbul, Ankara, İzmir başta olmak üzere 20+ şehirde aktif portföy ve saha danışmanlarımızla Türkiye genelinde hizmet veriyoruz.",
-    color: "text-purple-500",
+    color: "text-purple-600",
     bg: "bg-purple-50",
+    border: "border-purple-100",
   },
   {
     icon: TrendingUp,
     title: "Yatırım Odaklı",
     desc: "Bölgesel piyasa analizleri, kira getirisi hesaplamaları ve değer artış projeksiyonlarıyla en verimli yatırım kararını almanıza destek oluruz.",
-    color: "text-rose-500",
+    color: "text-rose-600",
     bg: "bg-rose-50",
+    border: "border-rose-100",
   },
   {
     icon: HeartHandshake,
     title: "Müşteri Memnuniyeti",
     desc: "İşlem sonrası destek, tapu devri takibi ve taşınma sürecinde de yanınızda olmaya devam eden tek adres olmaktan gurur duyuyoruz.",
-    color: "text-sky-500",
+    color: "text-sky-600",
     bg: "bg-sky-50",
+    border: "border-sky-100",
   },
 ];
 
@@ -76,6 +82,7 @@ const team = [
     bio: "15 yıllık gayrimenkul tecrübesiyle İstanbul pazarının en tanınan isimlerinden biri. GYODER üyesi, lisanslı değerleme uzmanı.",
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop",
     badge: "CEO",
+    badgeColor: "from-slate-700 to-slate-900",
   },
   {
     name: "Selin Kaya",
@@ -83,6 +90,7 @@ const team = [
     bio: "10 yılda 800+ konut satışına imza atan Selin, premium segment müşteri ilişkileri konusunda sektörün referans noktasıdır.",
     image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400&auto=format&fit=crop",
     badge: "Satış",
+    badgeColor: "from-blue-600 to-indigo-700",
   },
   {
     name: "Emre Demir",
@@ -90,16 +98,17 @@ const team = [
     bio: "Ticari gayrimenkul ve arsa yatırımlarında uzmanlaşmış Emre, portföylerini büyütmek isteyen yatırımcıların ilk tercihidir.",
     image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop",
     badge: "Yatırım",
+    badgeColor: "from-emerald-600 to-teal-700",
   },
 ];
 
 const milestones = [
-  { year: "2014", title: "Kuruluş", desc: "İstanbul Levent'te küçük ama iddialı bir ofis ve 3 kişilik ekiple yolculuğumuza başladık." },
-  { year: "2016", title: "İlk 100 Satış", desc: "İki yılda 100 konut satışını geride bırakarak İstanbul'un tanınan butik emlak markalarından biri olduk." },
-  { year: "2018", title: "Ankara Şubesi", desc: "Artan talep ve kurumsal müşteri portföyümüzün genişlemesiyle başkente açıldık." },
-  { year: "2020", title: "Dijital Dönüşüm", desc: "Sektörün ilk entegre online ilan ve danışmanlık platformunu hayata geçirerek dijital öncü olduk." },
-  { year: "2022", title: "İzmir Şubesi", desc: "Ege'nin gözde şehrine taşınarak üç büyük şehirde faaliyet gösteren ulusal bir marka haline geldik." },
-  { year: "2024", title: "₺2 Milyar Hacim", desc: "Toplam işlem hacmimiz 2 milyar TL'yi geçerek kurulduğumuzdan bu yana en güçlü yılımızı yaşadık." },
+  { year: "2014", title: "Kuruluş", desc: "İstanbul Levent'te küçük ama iddialı bir ofis ve 3 kişilik ekiple yolculuğumuza başladık.", color: "border-blue-400", dot: "bg-blue-500" },
+  { year: "2016", title: "İlk 100 Satış", desc: "İki yılda 100 konut satışını geride bırakarak İstanbul'un tanınan butik emlak markalarından biri olduk.", color: "border-emerald-400", dot: "bg-emerald-500" },
+  { year: "2018", title: "Ankara Şubesi", desc: "Artan talep ve kurumsal müşteri portföyümüzün genişlemesiyle başkente açıldık.", color: "border-purple-400", dot: "bg-purple-500" },
+  { year: "2020", title: "Dijital Dönüşüm", desc: "Sektörün ilk entegre online ilan ve danışmanlık platformunu hayata geçirerek dijital öncü olduk.", color: "border-amber-400", dot: "bg-amber-500" },
+  { year: "2022", title: "İzmir Şubesi", desc: "Ege'nin gözde şehrine taşınarak üç büyük şehirde faaliyet gösteren ulusal bir marka haline geldik.", color: "border-rose-400", dot: "bg-rose-500" },
+  { year: "2024", title: "₺2 Milyar Hacim", desc: "Toplam işlem hacmimiz 2 milyar TL'yi geçerek kurulduğumuzdan bu yana en güçlü yılımızı yaşadık.", color: "border-accent", dot: "bg-accent" },
 ];
 
 const offices = [
@@ -125,10 +134,12 @@ export default function AboutPage() {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/92 via-slate-950/70 to-slate-950/30" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_50%,rgba(212,175,55,0.12),transparent_60%)]" />
+          {/* Floating orb */}
+          <div className="pointer-events-none absolute -right-20 top-10 h-72 w-72 rounded-full bg-accent/8 blur-3xl animate-float" />
           <div className="absolute inset-0 flex items-center px-8 py-12 md:px-14">
-            <div className="max-w-2xl">
+            <div className="max-w-2xl animate-in fade-in slide-in-from-left-4 duration-700">
               <span className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-black/30 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-accent backdrop-blur-md">
-                <span className="size-1.5 rounded-full bg-accent" />
+                <span className="size-1.5 rounded-full bg-accent animate-pulse" />
                 Vera Real Estate
               </span>
               <h1 className="mt-5 text-4xl font-bold leading-tight text-white md:text-6xl">
@@ -139,16 +150,10 @@ export default function AboutPage() {
                 karar alma ve butik danışmanlık anlayışını bir arada sunan kurumsal bir markayız.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  href="/properties"
-                  className="inline-flex items-center gap-2 rounded-xl bg-gold-gradient px-6 py-2.5 text-sm font-bold text-slate-900 shadow-lg transition hover:brightness-110"
-                >
+                <Link href="/properties" className="inline-flex items-center gap-2 rounded-xl bg-gold-gradient px-6 py-2.5 text-sm font-bold text-slate-900 shadow-lg transition hover:brightness-110 active:scale-[0.98]">
                   Portföyü İncele <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/30 px-6 py-2.5 text-sm font-semibold text-white transition hover:border-accent hover:bg-white/5 hover:text-accent"
-                >
+                <Link href="/contact" className="inline-flex items-center gap-2 rounded-xl border border-white/30 px-6 py-2.5 text-sm font-semibold text-white transition hover:border-accent hover:bg-white/5 hover:text-accent">
                   Bize Ulaşın
                 </Link>
               </div>
@@ -159,15 +164,16 @@ export default function AboutPage() {
 
       {/* ── STATS ── */}
       <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        {stats.map(({ value, label, icon: Icon }) => (
+        {stats.map(({ value, label, icon: Icon, color, bg }, i) => (
           <div
             key={label}
-            className="flex flex-col items-center gap-3 rounded-2xl border border-border/60 bg-card p-6 text-center shadow-sm transition hover:border-accent/40 hover:shadow-md"
+            className={`flex flex-col items-center gap-3 rounded-2xl border border-border/60 bg-card p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-accent/30 hover:shadow-lg card-entrance`}
+            style={{ animationDelay: `${i * 100}ms` }}
           >
-            <div className="rounded-2xl bg-accent/10 p-3">
-              <Icon className="h-6 w-6 text-accent" />
+            <div className={`rounded-2xl ${bg} p-3`}>
+              <Icon className={`h-6 w-6 ${color}`} />
             </div>
-            <p className="text-3xl font-bold tracking-tight">{value}</p>
+            <p className="text-3xl font-bold tracking-tight text-foreground">{value}</p>
             <p className="text-sm text-slate-500">{label}</p>
           </div>
         ))}
@@ -176,28 +182,28 @@ export default function AboutPage() {
       {/* ── VİZYON & MİSYON ── */}
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="flex flex-col gap-5">
-          <div className="rounded-2xl border border-border/60 bg-card p-8 shadow-sm">
-            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-accent">Nereye Gidiyoruz</p>
+          <div className="rounded-2xl border border-blue-100 bg-card p-8 shadow-sm transition hover:shadow-md">
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-blue-600">Nereye Gidiyoruz</p>
             <h2 className="text-2xl font-bold text-foreground">Vizyonumuz</h2>
             <p className="mt-3 leading-relaxed text-slate-600">
               Türkiye&apos;nin en seçici gayrimenkul portföyünü teknoloji destekli danışmanlık modeliyle
               buluşturarak her müşteriye ölçeklenebilir, güvenilir ve kişiselleştirilmiş bir deneyim sunmak.
             </p>
           </div>
-          <div className="rounded-2xl border border-border/60 bg-card p-8 shadow-sm">
-            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-accent">Neden Varız</p>
+          <div className="rounded-2xl border border-emerald-100 bg-card p-8 shadow-sm transition hover:shadow-md">
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-emerald-600">Neden Varız</p>
             <h2 className="text-2xl font-bold text-foreground">Misyonumuz</h2>
             <p className="mt-3 leading-relaxed text-slate-600">
               Müşterilerimizin yaşam ve yatırım hedeflerini doğru analiz ederek; doğru lokasyon, doğru
               fiyat ve doğru zaman üçlüsünde en yüksek değeri üretmek ve kalıcı ilişkiler kurmak.
             </p>
           </div>
-          <div className="rounded-2xl border border-accent/20 bg-accent/5 p-6">
+          <div className="rounded-2xl border border-accent/30 bg-accent/5 p-6">
             <div className="flex items-start gap-3">
               <Star className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
               <p className="text-sm leading-relaxed text-slate-700">
                 <span className="font-semibold text-foreground">Temel İlkemiz:</span> Sadece ilan
-                listelemiyoruz. Her müşteriye özel yol haritası çiziyor, sürecin her adımında aktif
+                listelemiyor, her müşteriye özel yol haritası çiziyor, sürecin her adımında aktif
                 danışmanlık yapıyoruz.
               </p>
             </div>
@@ -232,10 +238,11 @@ export default function AboutPage() {
           </p>
         </div>
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {values.map((v) => (
+          {values.map((v, i) => (
             <div
               key={v.title}
-              className="group rounded-2xl border border-border/60 bg-card p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-accent/30 hover:shadow-lg"
+              className={`group rounded-2xl border ${v.border} bg-card p-7 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl card-entrance`}
+              style={{ animationDelay: `${i * 80}ms` }}
             >
               <div className={`mb-5 inline-flex rounded-2xl ${v.bg} p-3.5`}>
                 <v.icon className={`h-6 w-6 ${v.color}`} />
@@ -256,33 +263,36 @@ export default function AboutPage() {
             Küçük bir ofisten Türkiye&apos;nin önde gelen premium gayrimenkul markasına uzanan yolculuğumuz.
           </p>
         </div>
-        <div className="relative">
-          <div className="absolute left-1/2 hidden h-full w-px -translate-x-1/2 bg-white/10 md:block" />
-          <div className="space-y-6">
+
+        {/* Timeline */}
+        <div className="relative mx-auto max-w-3xl">
+          {/* Vertical line */}
+          <div className="absolute left-8 top-0 h-full w-0.5 bg-white/10 md:left-1/2 md:-translate-x-1/2" />
+
+          <div className="space-y-8">
             {milestones.map((m, i) => (
               <div
                 key={m.year}
-                className={`relative flex flex-col gap-4 md:flex-row md:gap-8 ${
-                  i % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
-                }`}
+                className={`relative flex gap-6 ${i % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"}`}
               >
-                <div className={`flex-1 ${i % 2 === 0 ? "md:text-right" : "md:text-left"}`}>
+                {/* Timeline dot */}
+                <div className="absolute left-8 top-4 z-10 md:left-1/2 md:-translate-x-1/2">
+                  <div className={`h-4 w-4 rounded-full ${m.dot} ring-4 ring-primary shadow-lg`} />
+                </div>
+
+                {/* Content — mobile always left-padded */}
+                <div className={`ml-20 flex-1 md:ml-0 md:w-[calc(50%-2rem)] ${i % 2 === 0 ? "md:pr-10 md:text-right" : "md:pl-10"}`}>
                   <div
-                    className={`inline-block rounded-2xl border border-white/10 bg-white/5 p-5 transition hover:bg-white/10 ${
-                      i % 2 === 0 ? "" : ""
-                    }`}
+                    className={`inline-block rounded-2xl border ${m.color} border-opacity-30 bg-white/5 p-5 transition hover:bg-white/10`}
                   >
-                    <p className="mb-1 text-xs font-bold uppercase tracking-widest text-accent">{m.year}</p>
+                    <p className={`mb-1 text-xs font-black uppercase tracking-widest text-accent`}>{m.year}</p>
                     <h3 className="text-base font-bold text-white">{m.title}</h3>
                     <p className="mt-1.5 text-sm leading-relaxed text-slate-300">{m.desc}</p>
                   </div>
                 </div>
-                <div className="relative hidden flex-shrink-0 items-center justify-center md:flex">
-                  <div className="z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 border-accent bg-primary text-xs font-bold text-accent">
-                    {m.year.slice(2)}
-                  </div>
-                </div>
-                <div className="flex-1" />
+
+                {/* Spacer for alternating layout */}
+                <div className="hidden flex-1 md:block" />
               </div>
             ))}
           </div>
@@ -299,10 +309,11 @@ export default function AboutPage() {
           </p>
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {team.map((member) => (
+          {team.map((member, i) => (
             <div
               key={member.name}
-              className="group overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-accent/30 hover:shadow-xl"
+              className="group overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-accent/30 hover:shadow-2xl card-entrance"
+              style={{ animationDelay: `${i * 120}ms` }}
             >
               <div className="relative h-64 overflow-hidden">
                 <Image
@@ -310,10 +321,13 @@ export default function AboutPage() {
                   alt={member.name}
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 to-transparent" />
-                <span className="absolute right-4 top-4 rounded-full bg-accent/90 px-3 py-1 text-xs font-bold text-slate-900 backdrop-blur-sm">
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+                {/* Hover overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                <span className={`absolute right-4 top-4 rounded-full bg-gradient-to-r ${member.badgeColor} px-3 py-1 text-xs font-bold text-white shadow backdrop-blur-sm`}>
                   {member.badge}
                 </span>
               </div>
@@ -334,10 +348,11 @@ export default function AboutPage() {
           <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Ofislerimiz</h2>
         </div>
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-          {offices.map((o) => (
+          {offices.map((o, i) => (
             <div
               key={o.city}
-              className="rounded-2xl border border-border/60 bg-card p-7 shadow-sm transition hover:border-accent/30 hover:shadow-md"
+              className="rounded-2xl border border-border/60 bg-card p-7 shadow-sm transition-all duration-200 hover:border-accent/30 hover:shadow-md hover-lift-sm card-entrance"
+              style={{ animationDelay: `${i * 100}ms` }}
             >
               <div className="mb-4 inline-flex rounded-2xl bg-accent/10 p-3.5">
                 <MapPin className="h-6 w-6 text-accent" />
@@ -369,16 +384,10 @@ export default function AboutPage() {
             Size özel portföy analizi ve yatırım önerileri hazırlayalım.
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-2 rounded-xl bg-gold-gradient px-8 py-3 text-base font-bold text-slate-900 shadow-lg transition hover:brightness-110"
-            >
+            <Link href="/contact" className="inline-flex items-center gap-2 rounded-xl bg-gold-gradient px-8 py-3 text-base font-bold text-slate-900 shadow-lg transition hover:brightness-110">
               Ücretsiz Danışmanlık Al <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link
-              href="/properties"
-              className="inline-flex items-center justify-center rounded-xl border-2 border-white/40 px-8 py-3 text-base font-semibold text-white transition hover:border-accent hover:bg-white/10 hover:text-accent"
-            >
+            <Link href="/properties" className="inline-flex items-center justify-center rounded-xl border-2 border-white/40 px-8 py-3 text-base font-semibold text-white transition hover:border-accent hover:bg-white/10 hover:text-accent">
               İlanları İncele
             </Link>
           </div>

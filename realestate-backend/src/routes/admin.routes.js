@@ -28,7 +28,9 @@ router.use(protect, restrictTo('admin'));
  * @openapi
  * /api/admin/stats:
  *   get:
- *     tags: [Admin — Stats]
+ *     operationId: adminGetStats
+ *     tags:
+ *       - Admin — Stats
  *     summary: Genel bakış istatistikleri
  *     description: |
  *       Dashboard için toplam kullanıcı, ilan, aktif/pasif ilan, plan dağılımı,
@@ -43,7 +45,9 @@ router.use(protect, restrictTo('admin'));
  *             schema:
  *               type: object
  *               properties:
- *                 success: { type: boolean, example: true }
+ *                 success:
+ *                   type: boolean
+ *                   example: true
  *                 data:
  *                   $ref: '#/components/schemas/AdminStats'
  *       401:
@@ -61,7 +65,9 @@ router.get('/stats', getStats);
  * @openapi
  * /api/admin/users:
  *   get:
- *     tags: [Admin — Users]
+ *     operationId: adminGetUsers
+ *     tags:
+ *       - Admin — Users
  *     summary: Tüm kullanıcıları listele
  *     description: Sayfalama ve isteğe bağlı arama ile kullanıcıları getirir. Her kullanıcıya ilan sayısı eklenir.
  *     security:
@@ -78,7 +84,9 @@ router.get('/stats', getStats);
  *             schema:
  *               type: object
  *               properties:
- *                 success: { type: boolean, example: true }
+ *                 success:
+ *                   type: boolean
+ *                   example: true
  *                 data:
  *                   type: array
  *                   items:
@@ -96,7 +104,9 @@ router.get('/users', getUsers);
  * @openapi
  * /api/admin/users/{id}:
  *   patch:
- *     tags: [Admin — Users]
+ *     operationId: adminUpdateUser
+ *     tags:
+ *       - Admin — Users
  *     summary: Kullanıcıyı güncelle (rol veya plan)
  *     description: Kullanıcının `role` ve/veya `subscription.plan` alanlarını günceller.
  *     security:
@@ -108,21 +118,16 @@ router.get('/users', getUsers);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               role:
- *                 type: string
- *                 enum: [user, admin]
- *               subscription.plan:
- *                 type: string
- *                 enum: [free, professional, corporate]
+ *             $ref: '#/components/schemas/AdminUpdateUserBody'
  *           examples:
  *             changeRole:
  *               summary: Rolü admin yap
- *               value: { "role": "admin" }
+ *               value:
+ *                 role: admin
  *             changePlan:
  *               summary: Planı yükselt
- *               value: { "subscription.plan": "professional" }
+ *               value:
+ *                 subscription.plan: professional
  *     responses:
  *       200:
  *         description: Güncellendi
@@ -131,8 +136,11 @@ router.get('/users', getUsers);
  *             schema:
  *               type: object
  *               properties:
- *                 success: { type: boolean }
- *                 data: { $ref: '#/components/schemas/User' }
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
  *       400:
  *         $ref: '#/components/responses/BadRequest'
  *       401:
@@ -148,7 +156,9 @@ router.patch('/users/:id', updateUser);
  * @openapi
  * /api/admin/users/{id}:
  *   delete:
- *     tags: [Admin — Users]
+ *     operationId: adminDeleteUser
+ *     tags:
+ *       - Admin — Users
  *     summary: Kullanıcıyı ve tüm ilanlarını sil
  *     description: Kullanıcıyı ve ona ait tüm ilanları kalıcı olarak siler. Kendi hesabınızı silemezsiniz.
  *     security:
@@ -163,8 +173,12 @@ router.patch('/users/:id', updateUser);
  *             schema:
  *               type: object
  *               properties:
- *                 success: { type: boolean, example: true }
- *                 message: { type: string, example: 'Kullanıcı ve tüm ilanları silindi' }
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Kullanıcı ve tüm ilanları silindi
  *       400:
  *         $ref: '#/components/responses/BadRequest'
  *       401:
@@ -184,7 +198,9 @@ router.delete('/users/:id', deleteUser);
  * @openapi
  * /api/admin/listings:
  *   get:
- *     tags: [Admin — Listings]
+ *     operationId: adminGetListings
+ *     tags:
+ *       - Admin — Listings
  *     summary: Tüm ilanları listele
  *     description: Sayfalama, tam metin arama ve aktif/pasif filtresi ile ilanları getirir. Her ilanın sahibi populate edilir.
  *     security:
@@ -195,8 +211,9 @@ router.delete('/users/:id', deleteUser);
  *       - $ref: '#/components/parameters/SearchParam'
  *       - name: isActive
  *         in: query
- *         schema: { type: boolean }
  *         description: Aktif/pasif filtresi
+ *         schema:
+ *           type: boolean
  *     responses:
  *       200:
  *         description: İlan listesi
@@ -205,11 +222,15 @@ router.delete('/users/:id', deleteUser);
  *             schema:
  *               type: object
  *               properties:
- *                 success: { type: boolean, example: true }
+ *                 success:
+ *                   type: boolean
+ *                   example: true
  *                 data:
  *                   type: array
- *                   items: { $ref: '#/components/schemas/Property' }
- *                 pagination: { $ref: '#/components/schemas/Pagination' }
+ *                   items:
+ *                     $ref: '#/components/schemas/Property'
+ *                 pagination:
+ *                   $ref: '#/components/schemas/Pagination'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
@@ -221,7 +242,9 @@ router.get('/listings', getListings);
  * @openapi
  * /api/admin/listings/{id}/toggle:
  *   patch:
- *     tags: [Admin — Listings]
+ *     operationId: adminToggleListing
+ *     tags:
+ *       - Admin — Listings
  *     summary: İlanı aktif/pasif yap
  *     description: İlanın `isActive` değerini tersine çevirir.
  *     security:
@@ -236,9 +259,14 @@ router.get('/listings', getListings);
  *             schema:
  *               type: object
  *               properties:
- *                 success: { type: boolean }
- *                 message: { type: string, example: 'İlan aktif yapıldı' }
- *                 data: { $ref: '#/components/schemas/Property' }
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: İlan aktif yapıldı
+ *                 data:
+ *                   $ref: '#/components/schemas/Property'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
@@ -252,7 +280,9 @@ router.patch('/listings/:id/toggle', toggleListing);
  * @openapi
  * /api/admin/listings/{id}:
  *   delete:
- *     tags: [Admin — Listings]
+ *     operationId: adminDeleteListing
+ *     tags:
+ *       - Admin — Listings
  *     summary: Herhangi bir ilanı sil
  *     description: Sahip kontrolü olmaksızın herhangi bir ilanı kalıcı siler.
  *     security:
@@ -267,8 +297,12 @@ router.patch('/listings/:id/toggle', toggleListing);
  *             schema:
  *               type: object
  *               properties:
- *                 success: { type: boolean, example: true }
- *                 message: { type: string, example: 'İlan silindi' }
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: İlan silindi
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
@@ -286,7 +320,9 @@ router.delete('/listings/:id', deleteAnyListing);
  * @openapi
  * /api/admin/contacts:
  *   get:
- *     tags: [Admin — Contacts]
+ *     operationId: adminGetContacts
+ *     tags:
+ *       - Admin — Contacts
  *     summary: İletişim mesajlarını listele
  *     description: Sayfalama, arama ve okunma durumu filtresi ile iletişim formu mesajlarını getirir.
  *     security:
@@ -297,8 +333,9 @@ router.delete('/listings/:id', deleteAnyListing);
  *       - $ref: '#/components/parameters/SearchParam'
  *       - name: isRead
  *         in: query
- *         schema: { type: boolean }
  *         description: Okunma durumu filtresi
+ *         schema:
+ *           type: boolean
  *     responses:
  *       200:
  *         description: Mesaj listesi
@@ -307,11 +344,15 @@ router.delete('/listings/:id', deleteAnyListing);
  *             schema:
  *               type: object
  *               properties:
- *                 success: { type: boolean, example: true }
+ *                 success:
+ *                   type: boolean
+ *                   example: true
  *                 data:
  *                   type: array
- *                   items: { $ref: '#/components/schemas/Contact' }
- *                 pagination: { $ref: '#/components/schemas/Pagination' }
+ *                   items:
+ *                     $ref: '#/components/schemas/Contact'
+ *                 pagination:
+ *                   $ref: '#/components/schemas/Pagination'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
@@ -323,8 +364,11 @@ router.get('/contacts', getContacts);
  * @openapi
  * /api/admin/contacts/{id}/read:
  *   patch:
- *     tags: [Admin — Contacts]
+ *     operationId: adminMarkContactRead
+ *     tags:
+ *       - Admin — Contacts
  *     summary: Mesajı okundu olarak işaretle
+ *     description: Belirtilen iletişim mesajının `isRead` alanını `true` yapar.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -337,8 +381,11 @@ router.get('/contacts', getContacts);
  *             schema:
  *               type: object
  *               properties:
- *                 success: { type: boolean }
- *                 data: { $ref: '#/components/schemas/Contact' }
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Contact'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
@@ -352,8 +399,11 @@ router.patch('/contacts/:id/read', markContactRead);
  * @openapi
  * /api/admin/contacts/{id}:
  *   delete:
- *     tags: [Admin — Contacts]
+ *     operationId: adminDeleteContact
+ *     tags:
+ *       - Admin — Contacts
  *     summary: Mesajı kalıcı sil
+ *     description: Belirtilen iletişim mesajını veritabanından kalıcı olarak siler.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -366,8 +416,12 @@ router.patch('/contacts/:id/read', markContactRead);
  *             schema:
  *               type: object
  *               properties:
- *                 success: { type: boolean, example: true }
- *                 message: { type: string, example: 'Mesaj silindi' }
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Mesaj silindi
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
@@ -385,7 +439,9 @@ router.delete('/contacts/:id', deleteContact);
  * @openapi
  * /api/admin/newsletters:
  *   get:
- *     tags: [Admin — Newsletters]
+ *     operationId: adminGetNewsletters
+ *     tags:
+ *       - Admin — Newsletters
  *     summary: Newsletter abonelerini listele
  *     description: Sayfalama ve email araması ile bülten abonelerini getirir.
  *     security:
@@ -396,8 +452,9 @@ router.delete('/contacts/:id', deleteContact);
  *       - $ref: '#/components/parameters/SearchParam'
  *       - name: isActive
  *         in: query
- *         schema: { type: boolean }
  *         description: Aktif/pasif abone filtresi
+ *         schema:
+ *           type: boolean
  *     responses:
  *       200:
  *         description: Abone listesi
@@ -406,11 +463,15 @@ router.delete('/contacts/:id', deleteContact);
  *             schema:
  *               type: object
  *               properties:
- *                 success: { type: boolean, example: true }
+ *                 success:
+ *                   type: boolean
+ *                   example: true
  *                 data:
  *                   type: array
- *                   items: { $ref: '#/components/schemas/Newsletter' }
- *                 pagination: { $ref: '#/components/schemas/Pagination' }
+ *                   items:
+ *                     $ref: '#/components/schemas/Newsletter'
+ *                 pagination:
+ *                   $ref: '#/components/schemas/Pagination'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
@@ -422,8 +483,11 @@ router.get('/newsletters', getNewsletters);
  * @openapi
  * /api/admin/newsletters/{id}:
  *   delete:
- *     tags: [Admin — Newsletters]
+ *     operationId: adminDeleteNewsletter
+ *     tags:
+ *       - Admin — Newsletters
  *     summary: Aboneyi kalıcı sil
+ *     description: Belirtilen newsletter abonesini veritabanından kalıcı olarak siler.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -436,8 +500,12 @@ router.get('/newsletters', getNewsletters);
  *             schema:
  *               type: object
  *               properties:
- *                 success: { type: boolean, example: true }
- *                 message: { type: string, example: 'Abone silindi' }
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Abone silindi
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:

@@ -10,9 +10,12 @@ import {
   Building2,
   CheckCircle2,
   ChevronDown,
+  ClipboardList,
   MapPin,
+  MessageSquare,
   Search,
   Shield,
+  Sparkles,
   Star,
   TrendingUp,
   Users,
@@ -316,7 +319,7 @@ export default function HomePage() {
             {stats.map(({ label, value }, i) => (
               <div
                 key={label}
-                className={`flex flex-col items-center justify-center gap-0.5 px-4 py-5 ${
+                className={`flex flex-col items-center justify-center gap-0.5 px-4 py-5 transition-all duration-300 hover:bg-white/5 ${
                   i > 0 ? "border-l border-white/10" : ""
                 }`}
               >
@@ -381,10 +384,11 @@ export default function HomePage() {
           </div>
         ) : hasFeaturedProperties ? (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {properties.map((property) => (
+            {properties.map((property, i) => (
               <div
                 key={property._id || property.id}
-                className="group rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-accent/30 hover:shadow-xl"
+                className="card-entrance"
+                style={{ animationDelay: `${i * 100}ms` }}
               >
                 <PropertyCard property={property} />
               </div>
@@ -414,11 +418,12 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {popularLocations.map((location) => (
+          {popularLocations.map((location, i) => (
             <Link
               key={location.city}
               href={`/properties?city=${encodeURIComponent(location.cityEn)}&listingType=${listingType}`}
-              className="group relative block overflow-hidden rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="group relative block overflow-hidden rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent card-entrance"
+              style={{ animationDelay: `${i * 100}ms` }}
             >
               <div className="relative h-72">
                 <Image
@@ -429,6 +434,8 @@ export default function HomePage() {
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/25 to-transparent" />
+                {/* Hover shimmer */}
+                <div className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-gradient-to-br from-accent/10 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-5">
                   <p className="text-xl font-bold text-white transition-colors group-hover:text-accent">
                     {location.city}
@@ -444,6 +451,80 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── NASIL ÇALIŞIR ── */}
+      <section className="space-y-10">
+        <div className="text-center">
+          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-accent">3 Kolay Adım</p>
+          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Nasıl Çalışır?</h2>
+          <p className="mx-auto mt-3 max-w-lg text-base text-slate-500">
+            Vera ile ev bulmak hiç bu kadar kolay olmamıştı. Üç basit adımda hayalinizdeki mülke ulaşın.
+          </p>
+        </div>
+
+        <div className="relative grid grid-cols-1 gap-6 md:grid-cols-3">
+          {/* Connecting line */}
+          <div className="absolute left-1/2 top-10 hidden h-0.5 w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-accent/30 to-transparent md:block" />
+
+          {[
+            {
+              step: "01",
+              icon: Search,
+              title: "Arayın & Filtreleyin",
+              desc: "81 şehir, binlerce ilan arasından şehir, fiyat, oda sayısı ve daha fazlasını filtreleyerek ihtiyacınıza uygun mülkü bulun.",
+              color: "from-blue-500 to-indigo-600",
+              bg: "bg-blue-50",
+              textColor: "text-blue-600",
+              border: "border-blue-100",
+            },
+            {
+              step: "02",
+              icon: MessageSquare,
+              title: "Danışmanla İletişime Geçin",
+              desc: "Beğendiğiniz ilan için uzman danışmanımızla doğrudan iletişime geçin. İlk görüşme tamamen ücretsiz.",
+              color: "from-emerald-500 to-teal-600",
+              bg: "bg-emerald-50",
+              textColor: "text-emerald-600",
+              border: "border-emerald-100",
+            },
+            {
+              step: "03",
+              icon: ClipboardList,
+              title: "Güvenle Tamamlayın",
+              desc: "Hukuki süreç, tapu devri ve taşınma aşamalarında danışmanınız her adımda yanınızda. Güvenle, şeffaf süreçle.",
+              color: "from-amber-500 to-orange-500",
+              bg: "bg-amber-50",
+              textColor: "text-accent",
+              border: "border-amber-100",
+            },
+          ].map((item, i) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={item.step}
+                className={`relative flex flex-col gap-4 rounded-2xl border ${item.border} bg-card p-7 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl card-entrance`}
+                style={{ animationDelay: `${i * 120}ms` }}
+              >
+                {/* Step number */}
+                <div className="flex items-center gap-3">
+                  <span className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${item.color} shadow-lg`}>
+                    <Icon className="h-6 w-6 text-white" />
+                  </span>
+                  <span className={`text-3xl font-black ${item.textColor} opacity-20`}>{item.step}</span>
+                </div>
+                <h3 className="text-lg font-bold text-foreground">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-slate-500">{item.desc}</p>
+                {/* Connector arrow on desktop */}
+                {i < 2 && (
+                  <div className="absolute -right-3 top-10 z-10 hidden h-6 w-6 items-center justify-center rounded-full bg-accent text-slate-900 md:flex">
+                    <ArrowRight className="h-3 w-3" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       {/* ── WHY VERA ── */}
       <section className="rounded-3xl bg-primary px-6 py-16 md:px-10 premium-ring">
         <div className="mb-12 text-center">
@@ -455,10 +536,11 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-          {features.map((f) => (
+          {features.map((f, i) => (
             <article
               key={f.title}
-              className={`relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br ${f.gradient} p-7 transition-all duration-300 hover:-translate-y-1.5 hover:border-accent/30`}
+              className={`relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br ${f.gradient} p-7 transition-all duration-300 hover:-translate-y-1.5 hover:border-accent/30 card-entrance`}
+              style={{ animationDelay: `${i * 120}ms` }}
             >
               <div className={`mb-5 inline-flex rounded-2xl ${f.iconBg} p-3.5`}>
                 <f.icon className={`h-6 w-6 ${f.iconColor}`} />

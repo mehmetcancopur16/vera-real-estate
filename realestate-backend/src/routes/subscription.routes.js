@@ -8,7 +8,9 @@ const router = Router();
  * @openapi
  * /api/subscription/plans:
  *   get:
- *     tags: [Subscription]
+ *     operationId: getSubscriptionPlans
+ *     tags:
+ *       - Subscription
  *     summary: Mevcut abonelik planlarını listele
  *     description: |
  *       Free, Professional ve Corporate plan bilgilerini (fiyat, özellikler, ilan limiti) döner.
@@ -21,10 +23,13 @@ const router = Router();
  *             schema:
  *               type: object
  *               properties:
- *                 success: { type: boolean, example: true }
+ *                 success:
+ *                   type: boolean
+ *                   example: true
  *                 data:
  *                   type: array
- *                   items: { $ref: '#/components/schemas/PlanInfo' }
+ *                   items:
+ *                     $ref: '#/components/schemas/PlanInfo'
  */
 router.get('/plans', getPlans);
 
@@ -32,7 +37,9 @@ router.get('/plans', getPlans);
  * @openapi
  * /api/subscription/upgrade:
  *   post:
- *     tags: [Subscription]
+ *     operationId: upgradeSubscriptionPlan
+ *     tags:
+ *       - Subscription
  *     summary: Abonelik planını yükselt
  *     description: |
  *       Giriş yapmış kullanıcının abonelik planını günceller.
@@ -46,21 +53,20 @@ router.get('/plans', getPlans);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [plan]
- *             properties:
- *               plan:
- *                 $ref: '#/components/schemas/SubscriptionPlan'
+ *             $ref: '#/components/schemas/UpgradePlanBody'
  *           examples:
  *             professional:
  *               summary: Professional plana geç
- *               value: { "plan": "professional" }
+ *               value:
+ *                 plan: professional
  *             corporate:
  *               summary: Corporate plana geç
- *               value: { "plan": "corporate" }
+ *               value:
+ *                 plan: corporate
  *             downgrade:
  *               summary: Free plana dön
- *               value: { "plan": "free" }
+ *               value:
+ *                 plan: free
  *     responses:
  *       200:
  *         description: Plan güncellendi
@@ -69,9 +75,14 @@ router.get('/plans', getPlans);
  *             schema:
  *               type: object
  *               properties:
- *                 success: { type: boolean, example: true }
- *                 message: { type: string, example: 'Plan güncellendi.' }
- *                 data: { $ref: '#/components/schemas/User' }
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Plan güncellendi.
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
  *       400:
  *         $ref: '#/components/responses/BadRequest'
  *       401:

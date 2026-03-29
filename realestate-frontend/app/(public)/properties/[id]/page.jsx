@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   ChevronRight,
   ClipboardCheck,
+  Eye,
   Flame,
   Home,
   Mail,
@@ -152,6 +153,11 @@ export default async function PropertyDetailPage({ params }) {
     { icon: Building2,     label: "Toplam Kat",    value: property.totalFloors ?? "-" },
   ];
 
+  const currencyLabel = property.currency === "USD" ? "$" : property.currency === "EUR" ? "€" : "₺";
+  const deedStatus = property.deedStatus;
+  const viewCount = property.viewCount ?? 0;
+  const isActive = property.isActive !== false;
+
   return (
     <div className="space-y-8 pb-12">
 
@@ -198,6 +204,11 @@ export default async function PropertyDetailPage({ params }) {
                 Öne Çıkan
               </span>
             )}
+            {!isActive && (
+              <span className="rounded-full bg-slate-600/80 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+                Pasif
+              </span>
+            )}
           </div>
 
           {/* Back button */}
@@ -218,6 +229,12 @@ export default async function PropertyDetailPage({ params }) {
                 {formatTry(property.price)}
                 {isRent && <span className="ml-1 text-base font-normal text-white/80">/ay</span>}
               </p>
+              {viewCount > 0 && (
+                <p className="mt-1 inline-flex items-center gap-1 text-xs text-white/60">
+                  <Eye className="h-3 w-3" />
+                  {viewCount.toLocaleString("tr-TR")} görüntülenme
+                </p>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <ShareButton title={property.title} text={`${property.title} - ${formatTry(property.price)}`} />
@@ -418,6 +435,12 @@ export default async function PropertyDetailPage({ params }) {
                 {formatTry(property.price)}
                 {isRent && <span className="ml-1 text-base font-normal text-slate-400">/ay</span>}
               </p>
+              {viewCount > 0 && (
+                <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-xs text-slate-300">
+                  <Eye className="h-3 w-3 text-accent" />
+                  {viewCount.toLocaleString("tr-TR")} kişi inceledi
+                </p>
+              )}
             </div>
             <div className="space-y-2.5 p-5">
               <a
@@ -496,10 +519,16 @@ export default async function PropertyDetailPage({ params }) {
                 { label: "Emlak Tipi", value: typeLabel || "-" },
                 { label: "Durum", value: statusLabel },
                 { label: "Şehir", value: property.location?.city || "-" },
+                ...(deedStatus ? [{ label: "Tapu Durumu", value: deedStatus }] : []),
+                { label: "Para Birimi", value: currencyLabel + " (" + (property.currency || "TRY") + ")" },
+                ...(viewCount > 0 ? [{ label: "Görüntülenme", value: viewCount.toLocaleString("tr-TR") }] : []),
+                { label: "İlan Durumu", value: isActive ? "Aktif" : "Pasif" },
               ].map(({ label, value }) => (
                 <div key={label} className="flex items-center justify-between border-b border-border/40 pb-2 last:border-0 last:pb-0">
                   <span className="text-slate-400">{label}</span>
-                  <span className="font-semibold text-foreground">{value}</span>
+                  <span className={`font-semibold ${label === "İlan Durumu" ? (isActive ? "text-emerald-600" : "text-slate-500") : "text-foreground"}`}>
+                    {value}
+                  </span>
                 </div>
               ))}
             </div>

@@ -9,7 +9,9 @@ const router = Router();
  * @openapi
  * /api/contact:
  *   post:
- *     tags: [Contact]
+ *     operationId: createContactMessage
+ *     tags:
+ *       - Contact
  *     summary: İletişim formu mesajı gönder
  *     description: |
  *       Ziyaretçilerin iletişim formu üzerinden mesaj göndermesini sağlar.
@@ -33,9 +35,14 @@ const router = Router();
  *             schema:
  *               type: object
  *               properties:
- *                 success: { type: boolean, example: true }
- *                 message: { type: string, example: 'Mesajınız alındı.' }
- *                 data: { $ref: '#/components/schemas/Contact' }
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Mesajınız alındı.
+ *                 data:
+ *                   $ref: '#/components/schemas/Contact'
  *       400:
  *         $ref: '#/components/responses/BadRequest'
  */

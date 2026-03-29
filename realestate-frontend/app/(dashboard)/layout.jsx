@@ -20,6 +20,7 @@ import {
   Plus,
   PlusSquare,
   Settings,
+  Shield,
   Sparkles,
   Star,
   TrendingUp,
@@ -644,26 +645,34 @@ export default function DashboardLayout({ children }) {
 
             {/* User dropdown */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white py-1.5 pl-2 pr-2.5 shadow-sm transition hover:bg-slate-50 focus:outline-none">
-                <Avatar className="h-7 w-7">
-                  <AvatarImage src={user?.avatarUrl || ""} alt={user?.name} />
-                  <AvatarFallback className="bg-slate-900 text-[10px] font-black text-accent">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="hidden max-w-[120px] truncate text-sm font-semibold text-slate-700 md:block">
-                  {user?.name || "Kullanıcı"}
-                </span>
+              <DropdownMenuTrigger className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white py-1.5 pl-2 pr-2.5 shadow-sm transition hover:border-accent/30 hover:bg-slate-50 focus:outline-none">
+                <div className="relative">
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={user?.avatarUrl || ""} alt={user?.name} />
+                    <AvatarFallback className="bg-gradient-to-br from-slate-800 to-slate-900 text-[10px] font-black text-accent">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-400" />
+                </div>
+                <div className="hidden md:block">
+                  <span className="block max-w-[110px] truncate text-sm font-semibold text-slate-700">
+                    {user?.name || "Kullanıcı"}
+                  </span>
+                  {user?.role === "admin" && (
+                    <span className="block text-[10px] font-bold text-violet-600 leading-none">Admin</span>
+                  )}
+                </div>
                 <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-60 overflow-hidden p-1.5">
                 <DropdownMenuGroup>
                   <DropdownMenuLabel className="font-normal">
-                    <div className="flex items-center gap-2.5 py-0.5">
-                      <Avatar className="h-8 w-8 shrink-0">
+                    <div className="flex items-center gap-2.5 rounded-lg bg-slate-50 p-2.5">
+                      <Avatar className="h-9 w-9 shrink-0 ring-2 ring-accent/20">
                         <AvatarImage src={user?.avatarUrl || ""} alt={user?.name} />
-                        <AvatarFallback className="bg-slate-900 text-[10px] font-black text-accent">
+                        <AvatarFallback className="bg-gradient-to-br from-slate-800 to-slate-900 text-[10px] font-black text-accent">
                           {initials}
                         </AvatarFallback>
                       </Avatar>
@@ -674,6 +683,11 @@ export default function DashboardLayout({ children }) {
                         <p className="truncate text-xs text-slate-500">
                           {user?.email || ""}
                         </p>
+                        {user?.role === "admin" && (
+                          <span className="mt-0.5 inline-block rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-bold text-violet-700">
+                            Admin
+                          </span>
+                        )}
                       </div>
                     </div>
                   </DropdownMenuLabel>
@@ -691,6 +705,15 @@ export default function DashboardLayout({ children }) {
                   <Plus className="mr-2 h-4 w-4 text-emerald-500" />
                   Yeni İlan Ekle
                 </DropdownMenuItem>
+                {user?.role === "admin" && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => router.push("/admin")}>
+                      <Shield className="mr-2 h-4 w-4 text-violet-600" />
+                      <span className="font-semibold text-violet-700">Admin Panel</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   variant="destructive"

@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import PropertyCard from "@/components/property/PropertyCard";
+import PropertyCardList from "@/components/property/PropertyCardList";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -226,24 +227,29 @@ function ListingsPageContent() {
       {/* ── HERO ── */}
       <section className="relative overflow-hidden rounded-3xl bg-primary px-8 py-12 text-white premium-ring md:px-12">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_80%_50%,rgba(212,175,55,0.12),transparent_60%)]" />
+        <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-accent/8 blur-3xl animate-float" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
         <div className="relative flex flex-wrap items-center justify-between gap-6">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-accent">Vera Collections</p>
-            <h1 className="mt-2 text-3xl font-bold md:text-4xl">İlan Kataloğu</h1>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-accent">
+              <Sparkles className="h-2.5 w-2.5" />
+              Vera Collections
+            </span>
+            <h1 className="mt-3 text-3xl font-bold md:text-4xl">İlan Kataloğu</h1>
             <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-300">
               Türkiye genelinde binlerce satılık ve kiralık mülk arasından size en uygun olanı bulun.
               Filtreler ile aramanızı daraltın.
             </p>
           </div>
-          <div className="hidden gap-6 md:flex">
+          <div className="hidden gap-4 md:flex">
             {[
-              { value: "2.400+", label: "Aktif İlan" },
-              { value: "81", label: "Şehir" },
-              { value: "10+", label: "Yıl Tecrübe" },
-            ].map(({ value, label }) => (
-              <div key={label} className="text-center">
-                <p className="text-2xl font-bold text-accent">{value}</p>
-                <p className="text-xs text-slate-400">{label}</p>
+              { value: "2.400+", label: "Aktif İlan", color: "text-accent" },
+              { value: "81", label: "Şehir", color: "text-blue-400" },
+              { value: "10+", label: "Yıl Tecrübe", color: "text-emerald-400" },
+            ].map(({ value, label, color }) => (
+              <div key={label} className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-center backdrop-blur-sm">
+                <p className={`text-2xl font-bold ${color}`}>{value}</p>
+                <p className="mt-0.5 text-xs text-slate-400">{label}</p>
               </div>
             ))}
           </div>
@@ -537,15 +543,19 @@ function ListingsPageContent() {
             </div>
           ) : (
             <div
-              className={`grid gap-6 ${
+              className={`grid gap-4 ${
                 viewMode === "list"
                   ? "grid-cols-1"
                   : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
               }`}
             >
-              {properties.map((property) => (
-                <PropertyCard key={property._id || property.id} property={property} />
-              ))}
+              {properties.map((property, i) =>
+                viewMode === "list" ? (
+                  <PropertyCardList key={property._id || property.id} property={property} index={i} />
+                ) : (
+                  <PropertyCard key={property._id || property.id} property={property} />
+                )
+              )}
             </div>
           )}
         </section>

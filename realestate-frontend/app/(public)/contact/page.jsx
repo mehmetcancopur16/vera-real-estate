@@ -18,7 +18,11 @@ import {
   MessageSquare,
   Phone,
   Send,
+  Sparkles,
   Twitter,
+  User,
+  FileText,
+  Hash,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -85,10 +89,10 @@ const faqs = [
 ];
 
 const socials = [
-  { href: "https://instagram.com", icon: Instagram, label: "Instagram" },
-  { href: "https://linkedin.com", icon: Linkedin, label: "LinkedIn" },
-  { href: "https://facebook.com", icon: Facebook, label: "Facebook" },
-  { href: "https://twitter.com", icon: Twitter, label: "X / Twitter" },
+  { href: "https://instagram.com", icon: Instagram, label: "Instagram", color: "hover:border-pink-400 hover:text-pink-500 hover:bg-pink-50" },
+  { href: "https://linkedin.com", icon: Linkedin, label: "LinkedIn", color: "hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50" },
+  { href: "https://facebook.com", icon: Facebook, label: "Facebook", color: "hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50" },
+  { href: "https://twitter.com", icon: Twitter, label: "X / Twitter", color: "hover:border-slate-400 hover:text-slate-700 hover:bg-slate-50" },
 ];
 
 export default function ContactPage() {
@@ -104,7 +108,7 @@ export default function ContactPage() {
       toast.success("Mesajınız başarıyla iletildi! Ekibimiz en kısa sürede size geri dönecek.");
       form.reset();
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Mesaj gönderilirken bir hata oluştu. Lütfen tekrar deneyin.");
+      toast.error(error?.response?.data?.message || "Mesaj gönderilirken bir hata oluştu.");
     }
   }
 
@@ -138,17 +142,11 @@ export default function ContactPage() {
                 ekibimizle hemen iletişime geçin. İlk görüşme tamamen ücretsiz.
               </p>
               <div className="mt-6 flex flex-wrap items-center gap-6">
-                <a
-                  href="tel:+902125551234"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-accent transition hover:text-accent/80"
-                >
+                <a href="tel:+902125551234" className="inline-flex items-center gap-2 text-sm font-semibold text-accent transition hover:text-accent/80">
                   <Phone className="h-4 w-4" />
                   +90 (212) 555 12 34
                 </a>
-                <a
-                  href="mailto:iletisim@veraestate.com"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-slate-300 transition hover:text-white"
-                >
+                <a href="mailto:iletisim@veraestate.com" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-300 transition hover:text-white">
                   <Mail className="h-4 w-4" />
                   iletisim@veraestate.com
                 </a>
@@ -161,16 +159,16 @@ export default function ContactPage() {
       {/* ── QUICK STATS ── */}
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {[
-          { icon: MessageSquare, title: "4 Saat İçinde Yanıt", desc: "Mesaj ve e-postalarınıza en geç 4 saat içinde geri dönüş garantisi." },
-          { icon: Phone, title: "7/24 Telefon Desteği", desc: "Acil durumlar ve anlık sorularınız için her zaman ulaşabileceğiniz bir hat." },
-          { icon: CheckCircle2, title: "Ücretsiz İlk Görüşme", desc: "Portföy analizi ve yatırım danışmanlığında ilk görüşme tamamen ücretsiz." },
+          { icon: MessageSquare, title: "4 Saat İçinde Yanıt", desc: "Mesaj ve e-postalarınıza en geç 4 saat içinde geri dönüş garantisi.", color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100" },
+          { icon: Phone, title: "7/24 Telefon Desteği", desc: "Acil durumlar ve anlık sorularınız için her zaman ulaşabileceğiniz bir hat.", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100" },
+          { icon: CheckCircle2, title: "Ücretsiz İlk Görüşme", desc: "Portföy analizi ve yatırım danışmanlığında ilk görüşme tamamen ücretsiz.", color: "text-accent", bg: "bg-amber-50", border: "border-amber-100" },
         ].map((item) => (
           <div
             key={item.title}
-            className="flex items-start gap-4 rounded-2xl border border-border/60 bg-card p-6 shadow-sm"
+            className={`flex items-start gap-4 rounded-2xl border ${item.border} bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg`}
           >
-            <div className="shrink-0 rounded-2xl bg-accent/10 p-3">
-              <item.icon className="h-5 w-5 text-accent" />
+            <div className={`shrink-0 rounded-2xl ${item.bg} p-3`}>
+              <item.icon className={`h-5 w-5 ${item.color}`} />
             </div>
             <div>
               <p className="font-bold text-foreground">{item.title}</p>
@@ -183,11 +181,14 @@ export default function ContactPage() {
       {/* ── FORM + BİLGİLER ── */}
       <section className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]">
 
-        {/* Form */}
-        <div className="rounded-2xl border border-border/60 bg-card p-8 shadow-sm">
-          <div className="mb-6">
-            <p className="mb-1 text-xs font-bold uppercase tracking-widest text-accent">Mesaj Gönderin</p>
-            <h2 className="text-2xl font-bold text-foreground">Nasıl Yardımcı Olabiliriz?</h2>
+        {/* ── FORM ── */}
+        <div className="rounded-3xl border border-border/60 bg-card p-8 shadow-sm ring-1 ring-slate-200/50">
+          <div className="mb-7">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-accent">
+              <Send className="h-3 w-3" />
+              Mesaj Gönderin
+            </span>
+            <h2 className="mt-3 text-2xl font-bold text-foreground">Nasıl Yardımcı Olabiliriz?</h2>
             <p className="mt-1.5 text-sm text-slate-500">
               Talebinizi bize iletin; uzman danışmanımız en kısa sürede sizi arasın.
             </p>
@@ -196,98 +197,121 @@ export default function ContactPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                {/* Name */}
                 <FormField
                   control={form.control}
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-semibold text-slate-700">Ad Soyad</FormLabel>
+                      <FormLabel className="text-sm font-semibold text-slate-800">Ad Soyad</FormLabel>
                       <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="Adınız Soyadınız"
-                          className="h-11 border-slate-300 focus-visible:ring-accent/60"
-                        />
+                        <div className="group relative">
+                          <User className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-accent" />
+                          <Input
+                            {...field}
+                            placeholder="Adınız Soyadınız"
+                            className="h-11 border-slate-300 bg-white pl-10 text-slate-900 placeholder:text-slate-400 focus-visible:border-accent/70 focus-visible:ring-accent/20"
+                          />
+                        </div>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs" />
                     </FormItem>
                   )}
                 />
+
+                {/* Email */}
                 <FormField
                   control={form.control}
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-semibold text-slate-700">E-posta</FormLabel>
+                      <FormLabel className="text-sm font-semibold text-slate-800">E-posta</FormLabel>
                       <FormControl>
-                        <Input
-                          type="email"
-                          {...field}
-                          placeholder="ornek@vera.com"
-                          className="h-11 border-slate-300 focus-visible:ring-accent/60"
-                        />
+                        <div className="group relative">
+                          <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-accent" />
+                          <Input
+                            type="email"
+                            {...field}
+                            placeholder="ornek@vera.com"
+                            className="h-11 border-slate-300 bg-white pl-10 text-slate-900 placeholder:text-slate-400 focus-visible:border-accent/70 focus-visible:ring-accent/20"
+                          />
+                        </div>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs" />
                     </FormItem>
                   )}
                 />
               </div>
 
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                {/* Phone */}
                 <FormField
                   control={form.control}
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-semibold text-slate-700">
+                      <FormLabel className="text-sm font-semibold text-slate-800">
                         Telefon{" "}
                         <span className="font-normal text-slate-400">(opsiyonel)</span>
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="+90 5xx xxx xx xx"
-                          className="h-11 border-slate-300 focus-visible:ring-accent/60"
-                        />
+                        <div className="group relative">
+                          <Phone className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-accent" />
+                          <Input
+                            type="tel"
+                            {...field}
+                            placeholder="+90 5xx xxx xx xx"
+                            className="h-11 border-slate-300 bg-white pl-10 text-slate-900 placeholder:text-slate-400 focus-visible:border-accent/70 focus-visible:ring-accent/20"
+                          />
+                        </div>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs" />
                     </FormItem>
                   )}
                 />
+
+                {/* Subject */}
                 <FormField
                   control={form.control}
                   name="subject"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-semibold text-slate-700">Konu</FormLabel>
+                      <FormLabel className="text-sm font-semibold text-slate-800">Konu</FormLabel>
                       <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="Satın Alma / Kiralama / Yatırım"
-                          className="h-11 border-slate-300 focus-visible:ring-accent/60"
-                        />
+                        <div className="group relative">
+                          <Hash className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-accent" />
+                          <Input
+                            {...field}
+                            placeholder="Danışmanlık, ilan, diğer..."
+                            className="h-11 border-slate-300 bg-white pl-10 text-slate-900 placeholder:text-slate-400 focus-visible:border-accent/70 focus-visible:ring-accent/20"
+                          />
+                        </div>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs" />
                     </FormItem>
                   )}
                 />
               </div>
 
+              {/* Message */}
               <FormField
                 control={form.control}
                 name="message"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-semibold text-slate-700">Mesajınız</FormLabel>
+                    <FormLabel className="text-sm font-semibold text-slate-800">Mesajınız</FormLabel>
                     <FormControl>
-                      <Textarea
-                        rows={5}
-                        {...field}
-                        placeholder="Aradığınız mülk türü, bütçe aralığı, tercih ettiğiniz lokasyon veya sormak istediğiniz her şeyi yazabilirsiniz..."
-                        className="resize-none border-slate-300 focus-visible:ring-accent/60"
-                      />
+                      <div className="group relative">
+                        <FileText className="pointer-events-none absolute left-3.5 top-3.5 h-4 w-4 text-slate-400 transition-colors group-focus-within:text-accent" />
+                        <Textarea
+                          {...field}
+                          rows={5}
+                          placeholder="Mülk tercihleri, lokasyon, bütçe veya diğer taleplerinizi yazın..."
+                          className="border-slate-300 bg-white pl-10 text-slate-900 placeholder:text-slate-400 focus-visible:border-accent/70 focus-visible:ring-accent/20 resize-none leading-relaxed"
+                        />
+                      </div>
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )}
               />
@@ -295,92 +319,69 @@ export default function ContactPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-12 w-full bg-gold-gradient font-bold text-slate-900 shadow-md hover:brightness-105"
+                className="h-12 w-full gap-2 rounded-xl bg-gold-gradient font-bold text-slate-900 shadow-md shadow-amber-200/30 transition-all hover:brightness-95 hover:shadow-lg active:scale-[0.98]"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     Gönderiliyor...
                   </>
                 ) : (
                   <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Mesajı Gönder
+                    <Send className="h-4 w-4" />
+                    Mesaj Gönder
                   </>
                 )}
               </Button>
-
-              <p className="text-center text-xs text-slate-400">
-                Formunuz KVKK kapsamında gizlilik politikamıza uygun şekilde işlenir.
-              </p>
             </form>
           </Form>
         </div>
 
-        {/* Sağ panel */}
-        <div className="space-y-5">
-          {/* İletişim bilgileri */}
-          <div className="rounded-2xl border border-border/60 bg-card p-7 shadow-sm">
-            <div className="flex items-center gap-2.5 mb-5">
+        {/* ── SIDEBAR ── */}
+        <div className="space-y-4">
+          {/* Contact info */}
+          <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
+            <div className="mb-5 flex items-center gap-2">
               <Building2 className="h-5 w-5 text-accent" />
               <h3 className="text-lg font-bold text-foreground">Genel Merkez — İstanbul</h3>
             </div>
             <ul className="space-y-4">
-              <li className="flex items-start gap-3.5">
-                <div className="mt-0.5 shrink-0 rounded-xl bg-accent/10 p-2.5">
-                  <MapPin className="h-4 w-4 text-accent" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Adres</p>
-                  <p className="mt-0.5 text-sm text-slate-700">Levent Mah. Büyükdere Cad. No:185, Şişli / İstanbul</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-3.5">
-                <div className="mt-0.5 shrink-0 rounded-xl bg-accent/10 p-2.5">
-                  <Phone className="h-4 w-4 text-accent" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Telefon</p>
-                  <a href="tel:+902125551234" className="mt-0.5 block text-sm font-medium text-slate-700 hover:text-accent">
-                    +90 (212) 555 12 34
-                  </a>
-                </div>
-              </li>
-              <li className="flex items-start gap-3.5">
-                <div className="mt-0.5 shrink-0 rounded-xl bg-accent/10 p-2.5">
-                  <Mail className="h-4 w-4 text-accent" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">E-posta</p>
-                  <a href="mailto:iletisim@veraestate.com" className="mt-0.5 block text-sm font-medium text-slate-700 hover:text-accent">
-                    iletisim@veraestate.com
-                  </a>
-                </div>
-              </li>
-              <li className="flex items-start gap-3.5">
-                <div className="mt-0.5 shrink-0 rounded-xl bg-accent/10 p-2.5">
-                  <Clock3 className="h-4 w-4 text-accent" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Çalışma Saatleri</p>
-                  <p className="mt-0.5 text-sm text-slate-700">Pzt–Cum: 09:00–19:00</p>
-                  <p className="text-sm text-slate-700">Cumartesi: 10:00–16:00</p>
-                </div>
-              </li>
+              {[
+                { icon: MapPin, label: "Adres", value: "Levent Mah. Büyükdere Cad. No:185, Şişli / İstanbul", href: null },
+                { icon: Phone, label: "Telefon", value: "+90 (212) 555 12 34", href: "tel:+902125551234" },
+                { icon: Mail, label: "E-posta", value: "iletisim@veraestate.com", href: "mailto:iletisim@veraestate.com" },
+                { icon: Clock3, label: "Çalışma Saatleri", value: "Pzt–Cum: 09:00–19:00 · Cmt: 10:00–16:00", href: null },
+              ].map(({ icon: Icon, label, value, href }) => (
+                <li key={label} className="flex items-start gap-3.5">
+                  <div className="mt-0.5 shrink-0 rounded-xl bg-accent/10 p-2.5">
+                    <Icon className="h-4 w-4 text-accent" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
+                    {href ? (
+                      <a href={href} className="mt-0.5 block text-sm font-medium text-slate-700 hover:text-accent transition-colors">
+                        {value}
+                      </a>
+                    ) : (
+                      <p className="mt-0.5 text-sm text-slate-700">{value}</p>
+                    )}
+                  </div>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Sosyal medya */}
-          <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
+          {/* Social media */}
+          <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
             <p className="mb-4 text-sm font-bold text-foreground">Sosyal Medyada Takip Edin</p>
             <div className="grid grid-cols-2 gap-2">
-              {socials.map(({ href, icon: Icon, label }) => (
+              {socials.map(({ href, icon: Icon, label, color }) => (
                 <a
                   key={label}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2.5 rounded-xl border border-border/60 px-3.5 py-2.5 text-sm font-medium text-slate-600 transition hover:border-accent/40 hover:bg-accent/5 hover:text-accent"
+                  className={`flex items-center gap-2.5 rounded-xl border border-border/60 px-3.5 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm ${color}`}
                 >
                   <Icon className="h-4 w-4" />
                   {label}
@@ -389,9 +390,10 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Hızlı arама */}
+          {/* Quick call CTA */}
           <div className="overflow-hidden rounded-2xl bg-primary premium-ring">
-            <div className="p-6">
+            <div className="relative p-6">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,rgba(212,175,55,0.12),transparent_70%)]" />
               <p className="text-xs font-bold uppercase tracking-widest text-accent">Hemen Arayın</p>
               <p className="mt-2 text-lg font-bold text-white">Uzman Danışman Hattı</p>
               <p className="mt-1.5 text-sm text-slate-400">
@@ -399,7 +401,7 @@ export default function ContactPage() {
               </p>
               <a
                 href="tel:+902125551234"
-                className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-gold-gradient py-3 text-base font-bold text-slate-900 shadow-lg transition hover:brightness-110"
+                className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-gold-gradient py-3 text-base font-bold text-slate-900 shadow-lg transition hover:brightness-110 active:scale-[0.98]"
               >
                 <Phone className="h-4 w-4" />
                 +90 (212) 555 12 34
@@ -420,7 +422,7 @@ export default function ContactPage() {
           {offices.map((office) => (
             <div
               key={office.city}
-              className="group overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-accent/30 hover:shadow-lg"
+              className="group overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-accent/30 hover:shadow-xl"
             >
               <div className="relative h-44 overflow-hidden">
                 <Image
@@ -443,13 +445,13 @@ export default function ContactPage() {
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Phone className="h-4 w-4 shrink-0 text-accent" />
-                  <a href={`tel:${office.phone.replace(/\s/g, "")}`} className="text-sm font-medium text-slate-700 hover:text-accent">
+                  <a href={`tel:${office.phone.replace(/\s/g, "")}`} className="text-sm font-medium text-slate-700 hover:text-accent transition-colors">
                     {office.phone}
                   </a>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Mail className="h-4 w-4 shrink-0 text-accent" />
-                  <a href={`mailto:${office.email}`} className="text-sm font-medium text-slate-700 hover:text-accent">
+                  <a href={`mailto:${office.email}`} className="text-sm font-medium text-slate-700 hover:text-accent transition-colors">
                     {office.email}
                   </a>
                 </div>
@@ -472,14 +474,14 @@ export default function ContactPage() {
             En çok sorulan sorular ve cevapları. Daha fazlası için bizimle iletişime geçin.
           </p>
         </div>
-        <div className="mx-auto max-w-3xl space-y-4">
+        <div className="mx-auto max-w-3xl space-y-3">
           {faqs.map((faq, i) => (
             <div
               key={i}
-              className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm transition hover:border-accent/30"
+              className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm transition-all duration-200 hover:border-accent/30 hover:shadow-md"
             >
               <div className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/10 text-xs font-bold text-accent">
+                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent/10 text-xs font-bold text-accent">
                   {i + 1}
                 </span>
                 <div>
@@ -502,7 +504,6 @@ export default function ContactPage() {
           </h2>
           <p className="text-base leading-relaxed text-slate-300">
             Uzman danışmanlarımız sizi dinlesin, size özel portföy analizi ve yatırım yol haritası hazırlasın.
-            İlk görüşme tamamen ücretsiz.
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             <a

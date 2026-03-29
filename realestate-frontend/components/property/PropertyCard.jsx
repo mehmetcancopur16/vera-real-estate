@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Bath, BedDouble, MapPin, Maximize2, Sparkles } from "lucide-react";
+import { Bath, BedDouble, CalendarDays, Eye, MapPin, Maximize2, Sparkles } from "lucide-react";
 
 function formatTry(price) {
   if (!price) return "Fiyat Belirtilmemiş";
@@ -20,19 +20,33 @@ const TYPE_LABELS = {
   commercial: "Ticari",
 };
 
+const DEED_LABELS = {
+  "Kat Mülkiyeti": "Kat Mülkiyeti",
+  "Kat İrtifakı": "Kat İrtifakı",
+  "Arsa Tapusu": "Arsa Tapusu",
+  "Hisseli Tapu": "Hisseli Tapu",
+};
+
 export default function PropertyCard({ property }) {
   const rawUrl = property.images?.[0] || "";
-  const imageUrl = rawUrl ||
+  const imageUrl =
+    rawUrl ||
     "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1400&auto=format&fit=crop";
   const isLocalImage = imageUrl.includes("localhost") || imageUrl.includes("127.0.0.1");
   const propertyId = property._id || property.id;
   const isRent = property.listingType === "rent";
   const typeLabel = TYPE_LABELS[property.type] || property.type;
+  const deedStatus = property.deedStatus;
+  const yearBuilt = property.yearBuilt;
+  const viewCount = property.viewCount ?? 0;
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-accent/30 hover:shadow-xl">
       {/* Image */}
-      <Link href={`/properties/${propertyId}`} className="relative block h-56 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+      <Link
+        href={`/properties/${propertyId}`}
+        className="relative block h-56 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      >
         <Image
           src={imageUrl}
           alt={property.title}
@@ -42,14 +56,14 @@ export default function PropertyCard({ property }) {
           unoptimized={isLocalImage}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/65 via-transparent to-transparent" />
+        {/* Hover overlay shimmer */}
+        <div className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-gradient-to-br from-white/5 to-transparent" />
 
         {/* Top badges */}
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
           <span
             className={`rounded-full px-2.5 py-1 text-xs font-bold shadow-sm ${
-              isRent
-                ? "bg-blue-600 text-white"
-                : "bg-emerald-600 text-white"
+              isRent ? "bg-blue-600 text-white" : "bg-emerald-600 text-white"
             }`}
           >
             {isRent ? "Kiralık" : "Satılık"}
@@ -66,6 +80,14 @@ export default function PropertyCard({ property }) {
           <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-gold-gradient px-2.5 py-1 text-xs font-bold text-slate-900 shadow-sm">
             <Sparkles className="h-3 w-3" />
             Öne Çıkan
+          </span>
+        )}
+
+        {/* Year built badge if available */}
+        {yearBuilt && (
+          <span className="absolute bottom-10 right-3 inline-flex items-center gap-1 rounded-full border border-white/20 bg-black/45 px-2 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur-sm">
+            <CalendarDays className="h-2.5 w-2.5" />
+            {yearBuilt}
           </span>
         )}
 
@@ -92,6 +114,13 @@ export default function PropertyCard({ property }) {
           {[property.location?.district, property.location?.city].filter(Boolean).join(", ") || "Konum belirtilmemiş"}
         </p>
 
+        {/* Deed status chip */}
+        {deedStatus && (
+          <span className="mt-2 inline-flex w-fit items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
+            {DEED_LABELS[deedStatus] || deedStatus}
+          </span>
+        )}
+
         {/* Metrics */}
         <div className="mt-4 flex items-center gap-4 border-t border-border/60 pt-4 text-sm text-slate-600">
           {property.features?.rooms != null && (
@@ -116,12 +145,17 @@ export default function PropertyCard({ property }) {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-border/60 px-5 py-3">
+      <div className="flex items-center justify-between border-t border-border/60 px-5 py-3">
+        {/* View count */}
+        <span className="inline-flex items-center gap-1 text-xs text-slate-400">
+          <Eye className="h-3.5 w-3.5" />
+          {viewCount.toLocaleString("tr-TR")}
+        </span>
         <Link
           href={`/properties/${propertyId}`}
-          className="block w-full rounded-xl border border-border py-2 text-center text-sm font-semibold text-slate-600 transition hover:border-accent hover:bg-accent/5 hover:text-accent"
+          className="rounded-xl border border-border px-4 py-1.5 text-sm font-semibold text-slate-600 transition hover:border-accent hover:bg-accent/5 hover:text-accent"
         >
-          Detayları Gör →
+          Detaylar →
         </Link>
       </div>
     </article>
