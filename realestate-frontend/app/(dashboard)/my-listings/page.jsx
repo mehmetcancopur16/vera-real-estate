@@ -331,7 +331,7 @@ export default function MyListingsPage() {
 
   /* ── Main content ── */
   return (
-    <section className="space-y-6 animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
+    <section className="space-y-6 animate-in fade-in-0 slide-in-from-bottom-3 duration-700">
 
       {/* ── Hero Banner ── */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-6 pb-16 text-white shadow-xl">
@@ -640,12 +640,13 @@ export default function MyListingsPage() {
         {/* Grid view */}
         {view === "grid" && visibleItems.length > 0 && (
           <div className="grid gap-5 md:grid-cols-2 animate-in fade-in-0 duration-500">
-            {visibleItems.map((property) => (
-              <PropertyCardGrid
-                key={property._id}
-                property={property}
-                deleteMutation={deleteMutation}
-              />
+            {visibleItems.map((property, i) => (
+              <div key={property._id} className="card-entrance" style={{ animationDelay: `${i * 60}ms` }}>
+                <PropertyCardGrid
+                  property={property}
+                  deleteMutation={deleteMutation}
+                />
+              </div>
             ))}
           </div>
         )}
@@ -653,12 +654,13 @@ export default function MyListingsPage() {
         {/* List view */}
         {view === "list" && visibleItems.length > 0 && (
           <div className="space-y-3 animate-in fade-in-0 duration-500">
-            {visibleItems.map((property) => (
-              <PropertyCardList
-                key={property._id}
-                property={property}
-                deleteMutation={deleteMutation}
-              />
+            {visibleItems.map((property, i) => (
+              <div key={property._id} className="card-entrance" style={{ animationDelay: `${i * 50}ms` }}>
+                <PropertyCardList
+                  property={property}
+                  deleteMutation={deleteMutation}
+                />
+              </div>
             ))}
           </div>
         )}

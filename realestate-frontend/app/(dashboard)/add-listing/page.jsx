@@ -184,7 +184,8 @@ export default function AddListingPage() {
               {STEPS_INFO.map(({ icon: Icon, label, desc, color }, i) => (
                 <div
                   key={label}
-                  className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3.5 py-3 backdrop-blur-sm transition hover:bg-white/10"
+                  className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3.5 py-3 backdrop-blur-sm transition hover:bg-white/10 card-entrance"
+                  style={{ animationDelay: `${i * 80}ms` }}
                 >
                   <div
                     className={[
@@ -252,7 +253,7 @@ export default function AddListingPage() {
       </div>
 
       {/* ── Form card ── */}
-      <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl ring-2 ring-accent/10">
+      <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl ring-2 ring-accent/10 animate-in fade-in-0 slide-in-from-bottom-3 duration-700">
         {/* Subtle top accent line */}
         <div className="h-1 w-full bg-gradient-to-r from-accent via-amber-400 to-orange-400" />
         <div className="p-1">

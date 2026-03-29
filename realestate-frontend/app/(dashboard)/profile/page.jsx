@@ -732,105 +732,254 @@ export default function ProfilePage() {
 }
 
 /* ─── Subscription Tab ─── */
+const PLAN_DETAILS = {
+  free: {
+    label: "Free",
+    price: "Ücretsiz",
+    priceNote: "Sonsuza kadar",
+    color: "from-slate-500 to-slate-700",
+    badgeBg: "bg-slate-100",
+    badgeText: "text-slate-700",
+    badgeBorder: "border-slate-200",
+    icon: Zap,
+    hint: "3 ilan hakkı",
+    next: "professional",
+    nextLabel: "Professional",
+    nextColor: "from-blue-600 to-indigo-600",
+    features: [
+      "3 ilan yayınlama hakkı",
+      "Standart ilan görünürlüğü",
+      "Temel arama filtreleri",
+      "E-posta desteği",
+    ],
+  },
+  professional: {
+    label: "Professional",
+    price: "₺299",
+    priceNote: "/ ay",
+    color: "from-blue-500 to-indigo-600",
+    badgeBg: "bg-blue-50",
+    badgeText: "text-blue-700",
+    badgeBorder: "border-blue-200",
+    icon: Star,
+    hint: "7 ilan hakkı",
+    next: "corporate",
+    nextLabel: "Corporate",
+    nextColor: "from-amber-500 to-orange-500",
+    features: [
+      "7 ilan yayınlama hakkı",
+      "Öne çıkarılmış ilan seçeneği",
+      "Gelişmiş arama filtreleri",
+      "Öncelikli e-posta desteği",
+      "İlan istatistikleri",
+      "Özel profil rozeti",
+    ],
+  },
+  corporate: {
+    label: "Corporate",
+    price: "₺799",
+    priceNote: "/ ay",
+    color: "from-amber-500 to-orange-500",
+    badgeBg: "bg-amber-50",
+    badgeText: "text-amber-700",
+    badgeBorder: "border-amber-200",
+    icon: Crown,
+    hint: "Sınırsız ilan",
+    next: null,
+    features: [
+      "Sınırsız ilan yayınlama",
+      "Premium ilan görünürlüğü",
+      "Tüm gelişmiş filtreler",
+      "7/24 öncelikli destek",
+      "Detaylı analitik raporlar",
+      "Kurumsal profil rozeti",
+      "API erişimi",
+      "Özel müşteri temsilcisi",
+    ],
+  },
+};
+
+const PLAN_LIMITS_SUB = { free: 3, professional: 7, corporate: Infinity };
+
 function SubscriptionTab({ user, totalListings }) {
   const plan = user?.subscription?.plan || "free";
   const expiresAt = user?.subscription?.expiresAt;
-
-  const PLAN_LIMITS = { free: 3, professional: 7, corporate: Infinity };
-  const limit = PLAN_LIMITS[plan];
-  const usedPct = limit === Infinity ? 0 : Math.min(100, Math.round((totalListings / limit) * 100));
-
-  const planStyles = {
-    free: { label: "Free", color: "from-slate-400 to-slate-600", badge: "bg-slate-100 text-slate-700 border-slate-200", icon: Zap, hint: "3 ilan hakkı", next: "professional" },
-    professional: { label: "Professional", color: "from-blue-500 to-indigo-600", badge: "bg-blue-50 text-blue-700 border-blue-200", icon: Star, hint: "7 ilan hakkı", next: "corporate" },
-    corporate: { label: "Corporate", color: "from-amber-500 to-orange-500", badge: "bg-amber-50 text-amber-700 border-amber-200", icon: Sparkles, hint: "Sınırsız ilan", next: null },
-  };
-  const ps = planStyles[plan] || planStyles.free;
+  const ps = PLAN_DETAILS[plan] || PLAN_DETAILS.free;
   const PlanIcon = ps.icon;
-
+  const limit = PLAN_LIMITS_SUB[plan];
+  const usedPct = limit === Infinity ? 0 : Math.min(100, Math.round((totalListings / limit) * 100));
   const barColor = usedPct >= 100 ? "bg-red-500" : usedPct >= 70 ? "bg-amber-500" : "bg-emerald-500";
 
+  const renewalDate = expiresAt && plan !== "free"
+    ? new Date(expiresAt).toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" })
+    : null;
+
   return (
-    <div className="space-y-4">
-      {/* Current plan card */}
-      <div className="panel-surface rounded-2xl p-6 shadow-sm">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${ps.color} shadow-lg`}>
-              <PlanIcon className="h-6 w-6 text-white" />
-            </span>
+    <div className="space-y-5">
+
+      {/* ── Hero plan card ── */}
+      <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${ps.color} p-7 text-white shadow-2xl`}>
+        <div className="pointer-events-none absolute -right-12 -top-12 h-52 w-52 rounded-full bg-white/10 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-8 -left-8 h-36 w-36 rounded-full bg-black/10 blur-xl" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/20 ring-2 ring-white/30 shadow-lg">
+              <PlanIcon className="h-7 w-7 text-white" />
+            </div>
             <div>
-              <p className="text-lg font-extrabold text-slate-900">{ps.label} Plan</p>
-              <p className="text-sm text-slate-500">{ps.hint}</p>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-white/80">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 animate-pulse" />
+                Aktif Plan
+              </span>
+              <p className="mt-1 text-2xl font-extrabold">{ps.label}</p>
+              <p className="text-sm text-white/70">{ps.hint}</p>
             </div>
           </div>
-          <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${ps.badge}`}>
-            Aktif
-          </span>
+          <div className="text-left sm:text-right">
+            <p className="text-3xl font-extrabold tabular-nums">{ps.price}</p>
+            <p className="text-sm text-white/60">{ps.priceNote}</p>
+          </div>
         </div>
 
-        {expiresAt && plan !== "free" && (
-          <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50 px-4 py-2.5 text-sm text-blue-700">
-            <span className="font-semibold">Son geçerlilik:</span>{" "}
-            {new Date(expiresAt).toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" })}
-          </div>
-        )}
-
-        {/* Usage bar */}
-        <div className="mt-5">
-          <div className="flex items-center justify-between text-sm mb-2">
-            <span className="font-semibold text-slate-700">İlan Kullanımı</span>
-            <span className="font-extrabold text-slate-900">
-              {totalListings}{limit !== Infinity && `/${limit}`}
-              {limit !== Infinity && <span className="text-xs font-medium text-slate-400 ml-1">ilan</span>}
-              {limit === Infinity && <span className="text-xs font-medium text-slate-400 ml-1">ilan (sınırsız)</span>}
-            </span>
-          </div>
-          {limit !== Infinity && (
-            <div className="h-3 overflow-hidden rounded-full bg-slate-100">
-              <div
-                className={`h-full rounded-full transition-all duration-700 ${barColor}`}
-                style={{ width: `${usedPct}%` }}
-              />
+        {/* Renewal / billing info */}
+        <div className="relative mt-5 flex flex-wrap gap-3">
+          {renewalDate ? (
+            <div className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs backdrop-blur-sm">
+              <Calendar className="h-3.5 w-3.5 text-white/70" />
+              <span className="font-semibold">Yenileme: <span className="text-white">{renewalDate}</span></span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs backdrop-blur-sm">
+              <ShieldCheck className="h-3.5 w-3.5 text-white/70" />
+              <span className="font-semibold text-white/80">Süresiz ücretsiz plan</span>
             </div>
           )}
-          {limit !== Infinity && usedPct >= 80 && (
-            <p className={`mt-1.5 text-xs font-medium ${usedPct >= 100 ? "text-red-600" : "text-amber-600"}`}>
-              {usedPct >= 100 ? "Plan limitine ulaştınız! Planınızı yükseltin." : "Plan limitine yaklaşıyorsunuz."}
-            </p>
-          )}
+          <div className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs backdrop-blur-sm">
+            <Building2 className="h-3.5 w-3.5 text-white/70" />
+            <span className="font-semibold text-white/80">
+              {totalListings}{limit !== Infinity ? `/${limit}` : ""} ilan kullanıldı
+            </span>
+          </div>
+        </div>
+
+        {/* Usage bar */}
+        {limit !== Infinity && (
+          <div className="relative mt-5">
+            <div className="mb-2 flex items-center justify-between text-xs text-white/70">
+              <span>İlan Limiti</span>
+              <span className="font-bold text-white">{Math.round(usedPct)}%</span>
+            </div>
+            <div className="h-2.5 overflow-hidden rounded-full bg-white/20">
+              <div
+                className="h-full rounded-full bg-white transition-all duration-700"
+                style={{ width: `${usedPct}%`, opacity: usedPct >= 100 ? 1 : 0.85 }}
+              />
+            </div>
+            {usedPct >= 80 && (
+              <p className="mt-1.5 text-[11px] font-semibold text-white/80">
+                {usedPct >= 100 ? "Limite ulaştınız — planı yükseltin." : "Limite yaklaşıyorsunuz."}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ── Plan features ── */}
+      <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
+        <div className="mb-4 flex items-center gap-2">
+          <span className={`inline-flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br ${ps.color} shadow`}>
+            <PlanIcon className="h-4 w-4 text-white" />
+          </span>
+          <p className="font-bold text-foreground">{ps.label} Plan Özellikleri</p>
+        </div>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {ps.features.map((f) => (
+            <div key={f} className="flex items-center gap-2.5 rounded-xl border border-border/40 bg-background px-3.5 py-2.5">
+              <Check className="h-4 w-4 shrink-0 text-emerald-500" />
+              <span className="text-sm text-foreground">{f}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Upgrade CTA */}
+      {/* ── Billing details ── */}
+      <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
+        <p className="mb-4 font-bold text-foreground">Fatura Bilgileri</p>
+        <div className="space-y-3">
+          {[
+            { label: "Plan", value: ps.label },
+            { label: "Fiyat", value: plan === "free" ? "Ücretsiz" : `${ps.price} / ay` },
+            { label: "Durum", value: "Aktif", valueClass: "text-emerald-600 font-bold" },
+            { label: "Sonraki Yenileme", value: renewalDate || "Süresiz" },
+            { label: "İlan Kullanımı", value: limit === Infinity ? `${totalListings} (Sınırsız)` : `${totalListings} / ${limit}` },
+          ].map(({ label, value, valueClass }) => (
+            <div key={label} className="flex items-center justify-between border-b border-border/40 pb-3 last:border-0 last:pb-0">
+              <span className="text-sm text-slate-500">{label}</span>
+              <span className={`text-sm font-semibold text-foreground ${valueClass || ""}`}>{value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Upgrade CTA (if not corporate) ── */}
       {ps.next && (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-gradient-to-br from-slate-50 to-white p-5 text-center">
-          <p className="text-sm font-semibold text-slate-600 mb-3">
-            Daha fazla ilan için planınızı yükseltin
-          </p>
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
-            <a
-              href={`/upgrade/checkout?plan=${ps.next}`}
-              className={`inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${ps.color} px-5 py-2.5 text-sm font-extrabold text-white shadow-md transition hover:brightness-105`}
-            >
-              <Sparkles className="h-4 w-4" />
-              {planStyles[ps.next]?.label} Planına Geç
-            </a>
-            <a
-              href="/upgrade"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-            >
-              Tüm Planlar
-            </a>
+        <div className="relative overflow-hidden rounded-3xl bg-primary p-6 premium-ring">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_80%_0%,rgba(212,175,55,0.15),transparent_70%)]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent" />
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-accent">Bir Adım Üst Seviye</p>
+              <p className="mt-1.5 text-lg font-bold text-white">
+                {ps.nextLabel} Planına Geçin
+              </p>
+              <p className="mt-1 text-sm text-slate-400">
+                {ps.next === "professional" ? "7 ilan, öne çıkarma ve daha fazlası" : "Sınırsız ilan, API erişimi ve özel temsilci"}
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+              <a
+                href={`/upgrade/checkout?plan=${ps.next}`}
+                className={`inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r ${ps.nextColor} px-5 py-2.5 text-sm font-extrabold text-white shadow-lg transition hover:brightness-105 hover:-translate-y-0.5`}
+              >
+                <Sparkles className="h-4 w-4" />
+                Yükselt →
+              </a>
+              <a
+                href="/upgrade"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 px-5 py-2.5 text-sm font-semibold text-white/70 transition hover:border-accent/40 hover:text-accent"
+              >
+                Tüm Planlar
+              </a>
+            </div>
           </div>
         </div>
       )}
 
+      {/* ── Corporate badge ── */}
       {plan === "corporate" && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-center">
-          <Crown className="mx-auto mb-2 h-8 w-8 text-amber-500" />
-          <p className="font-extrabold text-amber-900">Corporate Plan Aktif</p>
-          <p className="text-sm text-amber-700 mt-1">Sınırsız ilan yayınlama hakkına sahipsiniz.</p>
+        <div className="relative overflow-hidden rounded-3xl border border-amber-200/60 bg-gradient-to-br from-amber-50 via-orange-50 to-white p-6 text-center shadow-sm">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(212,175,55,0.1),transparent_70%)]" />
+          <Crown className="relative mx-auto mb-3 h-10 w-10 text-amber-500" />
+          <p className="relative text-lg font-extrabold text-amber-900">Corporate Plan Aktif</p>
+          <p className="relative mt-1 text-sm text-amber-700">Sınırsız ilan ve tüm premium özellikler açık.</p>
+          <div className="relative mt-4 flex flex-wrap justify-center gap-2">
+            {["Sınırsız İlan", "API Erişimi", "Özel Temsilci", "7/24 Destek"].map((badge) => (
+              <span key={badge} className="rounded-full border border-amber-200 bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                {badge}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Plan değiştir bağlantısı (professional/corporate) */}
+      {plan !== "free" && (
+        <div className="flex items-center justify-center">
+          <a href="/upgrade" className="text-xs text-slate-400 transition hover:text-slate-600 hover:underline underline-offset-2">
+            Planı değiştir veya iptal et →
+          </a>
         </div>
       )}
     </div>

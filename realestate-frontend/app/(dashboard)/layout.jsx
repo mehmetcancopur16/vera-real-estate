@@ -242,7 +242,7 @@ function NotificationDropdown() {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger
         aria-label="Bildirimler"
-        className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 focus:outline-none"
+        className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white/70 transition hover:bg-white/20 hover:text-white focus:outline-none"
       >
         <Bell className="h-4 w-4" />
         {unreadCount > 0 && (
@@ -570,7 +570,10 @@ export default function DashboardLayout({ children }) {
       {/* ════════════════════════════════════
           FIXED TOP HEADER
       ════════════════════════════════════ */}
-      <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-slate-200/90 bg-white/95 shadow-sm backdrop-blur-xl">
+      <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-white/10 bg-[var(--header)] text-primary-foreground backdrop-blur-xl shadow-lg shadow-black/10">
+        {/* Gold accent top line — matches public Navbar */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-accent/70 to-transparent" />
+
         <div className="flex h-full items-center gap-3 px-4 md:px-6">
 
           {/* Mobile: hamburger + brand */}
@@ -578,7 +581,7 @@ export default function DashboardLayout({ children }) {
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger
                 aria-label="Menü"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white/80 transition hover:bg-white/20 hover:text-white"
               >
                 <Menu className="h-5 w-5" />
               </SheetTrigger>
@@ -590,11 +593,14 @@ export default function DashboardLayout({ children }) {
               </SheetContent>
             </Sheet>
 
-            <Link href="/my-listings" className="flex items-center gap-2">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 shadow">
-                <Building2 className="h-4 w-4 text-accent" />
+            <Link href="/my-listings" className="flex items-center gap-2 transition-transform hover:scale-[1.02]">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-amber-500 shadow-lg shadow-amber-900/20">
+                <Sparkles className="h-4 w-4 text-slate-900" />
               </span>
-              <span className="text-sm font-extrabold text-slate-900">Vera</span>
+              <span className="text-sm">
+                <span className="font-extrabold text-gradient-gold">Vera</span>{" "}
+                <span className="font-light text-white/80">Dashboard</span>
+              </span>
             </Link>
           </div>
 
@@ -603,27 +609,27 @@ export default function DashboardLayout({ children }) {
             className="hidden flex-1 items-center gap-2 text-sm md:flex"
             style={{ paddingLeft: 272 }}
           >
-            <span className="font-medium text-slate-400">Dashboard</span>
-            <ChevronRight className="h-4 w-4 text-slate-300" />
+            <span className="font-medium text-white/40">Dashboard</span>
+            <ChevronRight className="h-4 w-4 text-white/25" />
             {isEditListing ? (
               <>
                 <Link
                   href="/my-listings"
-                  className="font-medium text-slate-500 transition hover:text-slate-900"
+                  className="font-medium text-white/60 transition hover:text-white"
                 >
                   İlanlarım
                 </Link>
-                <ChevronRight className="h-4 w-4 text-slate-300" />
-                <span className="font-bold text-slate-900">İlan Düzenle</span>
+                <ChevronRight className="h-4 w-4 text-white/25" />
+                <span className="font-bold text-white">İlan Düzenle</span>
               </>
             ) : (
-              <span className="font-bold text-slate-900">{pageTitle}</span>
+              <span className="font-bold text-white">{pageTitle}</span>
             )}
           </div>
 
           {/* Mobile: page title */}
           <div className="flex-1 md:hidden">
-            <span className="text-sm font-bold text-slate-900">{pageTitle}</span>
+            <span className="text-sm font-bold text-white">{pageTitle}</span>
           </div>
 
           {/* Right: actions */}
@@ -632,7 +638,7 @@ export default function DashboardLayout({ children }) {
             <Button
               asChild
               size="sm"
-              className="hidden bg-gold-gradient text-primary hover:brightness-95 shadow-sm md:inline-flex"
+              className="hidden bg-gold-gradient text-slate-900 font-bold hover:brightness-105 shadow-sm shadow-amber-900/20 md:inline-flex"
             >
               <Link href="/add-listing">
                 <Plus className="mr-1 h-3.5 w-3.5" />
@@ -645,25 +651,25 @@ export default function DashboardLayout({ children }) {
 
             {/* User dropdown */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white py-1.5 pl-2 pr-2.5 shadow-sm transition hover:border-accent/30 hover:bg-slate-50 focus:outline-none">
+              <DropdownMenuTrigger className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 py-1.5 pl-2 pr-2.5 transition hover:bg-white/20 focus:outline-none">
                 <div className="relative">
                   <Avatar className="h-7 w-7">
                     <AvatarImage src={user?.avatarUrl || ""} alt={user?.name} />
-                    <AvatarFallback className="bg-gradient-to-br from-slate-800 to-slate-900 text-[10px] font-black text-accent">
+                    <AvatarFallback className="bg-gradient-to-br from-accent to-amber-500 text-[10px] font-black text-slate-900">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-400" />
+                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--header)] bg-emerald-400" />
                 </div>
                 <div className="hidden md:block">
-                  <span className="block max-w-[110px] truncate text-sm font-semibold text-slate-700">
+                  <span className="block max-w-[110px] truncate text-sm font-semibold text-white/90">
                     {user?.name || "Kullanıcı"}
                   </span>
                   {user?.role === "admin" && (
-                    <span className="block text-[10px] font-bold text-violet-600 leading-none">Admin</span>
+                    <span className="block text-[10px] font-bold text-accent leading-none">Admin</span>
                   )}
                 </div>
-                <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                <ChevronDown className="h-3.5 w-3.5 text-white/50" />
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end" className="w-60 overflow-hidden p-1.5">
@@ -672,7 +678,7 @@ export default function DashboardLayout({ children }) {
                     <div className="flex items-center gap-2.5 rounded-lg bg-slate-50 p-2.5">
                       <Avatar className="h-9 w-9 shrink-0 ring-2 ring-accent/20">
                         <AvatarImage src={user?.avatarUrl || ""} alt={user?.name} />
-                        <AvatarFallback className="bg-gradient-to-br from-slate-800 to-slate-900 text-[10px] font-black text-accent">
+                        <AvatarFallback className="bg-gradient-to-br from-accent to-amber-500 text-[10px] font-black text-slate-900">
                           {initials}
                         </AvatarFallback>
                       </Avatar>
