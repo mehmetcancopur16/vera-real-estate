@@ -237,6 +237,8 @@ export default function AdminLayout({ children }) {
     "/admin": "Genel Bakış",
     "/admin/users": "Kullanıcı Yönetimi",
     "/admin/listings": "İlan Yönetimi",
+    "/admin/contacts": "İletişim Mesajları",
+    "/admin/newsletters": "Bülten Aboneleri",
   };
   const pageTitle = pageTitles[pathname] || "Admin Panel";
 

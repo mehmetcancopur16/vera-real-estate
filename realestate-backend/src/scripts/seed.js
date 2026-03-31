@@ -1,148 +1,613 @@
 import 'dotenv/config';
-import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import mongoose from 'mongoose';
 import { connectDB } from '../config/db.js';
-import logger from '../utils/logger.js';
 import User from '../models/User.model.js';
 import Property from '../models/Property.model.js';
+import Contact from '../models/Contact.model.js';
+import Newsletter from '../models/Newsletter.model.js';
 
-const imagePool = [
-  'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1400&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?q=80&w=1400&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?q=80&w=1400&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1400&auto=format&fit=crop',
+/* ─── Unsplash image pools ─── */
+const APARTMENT_IMGS = [
+  'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1400&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1400&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=1400&auto=format&fit=crop'
+  'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=1400&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=1400&auto=format&fit=crop',
+];
+const HOUSE_IMGS = [
+  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1400&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1568605114967-8130f3a36994?q=80&w=1400&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1576941089067-2de3c901e126?q=80&w=1400&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?q=80&w=1400&auto=format&fit=crop',
+];
+const COMMERCIAL_IMGS = [
+  'https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1400&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1400&auto=format&fit=crop',
+];
+const LAND_IMGS = [
+  'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1400&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?q=80&w=1400&auto=format&fit=crop',
 ];
 
-const seedProperties = [
-  {
-    title: 'Meram Baglari Manzarali 3+1 Daire',
-    description: 'Konya Meram bolgesinde genis balkonlu, aile yasamina uygun satilik daire.',
-    type: 'apartment',
-    listingType: 'sale',
-    price: 4650000,
-    size: 165,
-    features: { rooms: 3, bathrooms: 2, floor: 6, heating: 'Kombi' },
-    location: { city: 'Konya', district: 'Meram', address: 'Aydinlik Evler Mh. 125. Sk.' },
-    viewCount: 74
-  },
-  {
-    title: 'Selcuklu Tramvay Hattina Yakin 2+1',
-    description: 'Universiteye ve tramvaya yuruye mesafede kiralik modern daire.',
-    type: 'apartment',
-    listingType: 'rent',
-    price: 22000,
-    size: 105,
-    features: { rooms: 2, bathrooms: 1, floor: 3, heating: 'Merkezi' },
-    location: { city: 'Konya', district: 'Selcuklu', address: 'Yazir Mh. Kule Cd.' },
-    viewCount: 58
-  },
-  {
-    title: 'Karatayda Yatirimlik Ticari Dukkan',
-    description: 'Yaya trafiginin yuksek oldugu noktada, uzun donem kiracili ticari dukkan.',
-    type: 'commercial',
-    listingType: 'sale',
-    price: 7900000,
-    size: 210,
-    features: { rooms: 4, bathrooms: 1, floor: 0, heating: 'Klima' },
-    location: { city: 'Konya', district: 'Karatay', address: 'Aziziye Mh. Sehitler Cd.' },
-    viewCount: 41
-  },
-  {
-    title: 'Basaksehirde Akilli Ev Sistemli 4+1',
-    description: 'Istanbul Basaksehir bolgesinde site icinde, kapali otoparkli luks daire.',
-    type: 'apartment',
-    listingType: 'sale',
-    price: 12400000,
-    size: 220,
-    features: { rooms: 4, bathrooms: 2, floor: 8, heating: 'Merkezi' },
-    location: { city: 'Istanbul', district: 'Basaksehir', address: 'Kayasehir Bulvari No:24' },
-    viewCount: 126
-  },
-  {
-    title: 'Kadikoyde Deniz Manzarali Kiralik 1+1',
-    description: 'Moda sahiline yakin, yeni tadilatli ve esyali kiralik daire.',
-    type: 'apartment',
-    listingType: 'rent',
-    price: 39000,
-    size: 75,
-    features: { rooms: 1, bathrooms: 1, floor: 5, heating: 'Kombi' },
-    location: { city: 'Istanbul', district: 'Kadikoy', address: 'Caferaga Mh. Moda Cd.' },
-    viewCount: 89
-  },
-  {
-    title: 'Sariyerde Mustakil Bahceli Villa',
-    description: 'Bogaz hattina yakin, ozel havuzlu ve genis yasam alanli prestij villa.',
-    type: 'house',
-    listingType: 'sale',
-    price: 38500000,
-    size: 480,
-    features: { rooms: 6, bathrooms: 4, floor: 3, heating: 'Yerden Isitma' },
-    location: { city: 'Istanbul', district: 'Sariyer', address: 'Rumeli Hisari Yolu No:18' },
-    viewCount: 162
-  },
-  {
-    title: 'Konya Organize Yakin Lojistik Arsa',
-    description: 'Depolama ve sanayi yatirimlari icin uygun, ulasim avantaji yuksek arsa.',
-    type: 'land',
-    listingType: 'sale',
-    price: 11300000,
-    size: 1850,
-    features: { rooms: 0, bathrooms: 0, floor: 0, heating: 'Yok' },
-    location: { city: 'Konya', district: 'Selcuklu', address: 'OSB 4. Kisim Kavsagi' },
-    viewCount: 36
-  },
-  {
-    title: 'Besiktas Leventte A+ Plaza Ofisi',
-    description: 'Kurumsal firmalara uygun, otoparkli ve guvenlikli premium ofis kati.',
-    type: 'commercial',
-    listingType: 'rent',
-    price: 145000,
-    size: 320,
-    features: { rooms: 7, bathrooms: 2, floor: 12, heating: 'VRF' },
-    location: { city: 'Istanbul', district: 'Besiktas', address: 'Levent Buyukdere Cd. No:88' },
-    viewCount: 97
-  }
-];
-
-async function seed() {
-  try {
-    await connectDB();
-
-    await Promise.all([User.deleteMany({}), Property.deleteMany({})]);
-    logger.info('Mevcut User ve Property verileri temizlendi');
-
-    const hashedPassword = await bcrypt.hash('123456', 12);
-    const admin = await User.create({
-      name: 'Vera Admin',
-      email: 'admin@vera.com',
-      password: hashedPassword,
-      role: 'admin'
-    });
-
-    const payload = seedProperties.map((item, idx) => ({
-      ...item,
-      owner: admin._id,
-      currency: 'TRY',
-      isActive: true,
-      images: [imagePool[idx % imagePool.length], imagePool[(idx + 1) % imagePool.length]]
-    }));
-
-    await Property.insertMany(payload);
-    logger.info(`Seed tamamlandi: 1 admin + ${payload.length} ilan olusturuldu`);
-
-    await mongoose.connection.close();
-    process.exit(0);
-  } catch (error) {
-    logger.error(`Seed hatasi: ${error.message}`, { stack: error.stack });
-    try {
-      await mongoose.connection.close();
-    } catch {
-      // ignore close errors
-    }
-    process.exit(1);
-  }
+function imgs(pool, n = 2) {
+  return pool.slice(0, Math.min(n, pool.length));
 }
 
-seed();
+async function seed() {
+  await connectDB();
+  console.log('🌱 Seeding database…');
+
+  /* ─── Clear existing data ─── */
+  await Promise.all([
+    User.deleteMany({}),
+    Property.deleteMany({}),
+    Contact.deleteMany({}),
+    Newsletter.deleteMany({}),
+  ]);
+  console.log('✓ Cleared existing data');
+
+  /* ─── Create users ─── */
+  const hash = (pw) => bcrypt.hash(pw, 12);
+
+  const [adminUser, proUser, user1, user2] = await User.insertMany([
+    {
+      name: 'Vera Admin',
+      email: 'admin@vera.com',
+      password: await hash('123456'),
+      role: 'admin',
+      avatarUrl: 'https://ui-avatars.com/api/?name=Vera+Admin&background=0f172a&color=d4af37&size=128',
+      subscription: { plan: 'corporate', expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) },
+    },
+    {
+      name: 'Mehmet Çelik',
+      email: 'pro@vera.com',
+      password: await hash('123456'),
+      role: 'user',
+      avatarUrl: 'https://ui-avatars.com/api/?name=Mehmet+Celik&background=2563eb&color=fff&size=128',
+      subscription: { plan: 'professional', expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) },
+    },
+    {
+      name: 'Ali Yılmaz',
+      email: 'user1@vera.com',
+      password: await hash('123456'),
+      role: 'user',
+      avatarUrl: 'https://ui-avatars.com/api/?name=Ali+Yilmaz&background=16a34a&color=fff&size=128',
+      subscription: { plan: 'free', expiresAt: null },
+    },
+    {
+      name: 'Ayşe Kaya',
+      email: 'user2@vera.com',
+      password: await hash('123456'),
+      role: 'user',
+      avatarUrl: 'https://ui-avatars.com/api/?name=Ayse+Kaya&background=d97706&color=fff&size=128',
+      subscription: { plan: 'free', expiresAt: null },
+    },
+  ]);
+  console.log('✓ Created 4 users');
+
+  /* ─── Property definitions ─── */
+  const properties = [
+    /* ── Istanbul ── */
+    {
+      owner: proUser._id,
+      title: 'Beşiktaş\'ta Deniz Manzaralı Lüks Daire',
+      description: 'Boğaz manzarasına sahip, yüksek tavanlı, ebeveyn banyolu, güney cepheli prestijli daire. Tam donanımlı mutfak ve geniş balkon.',
+      type: 'apartment',
+      listingType: 'sale',
+      price: 12_500_000,
+      currency: 'TRY',
+      size: 185,
+      amenities: ['Asansör', 'Güvenlik', 'Otopark', 'Havuz', 'Spor Salonu', 'Balkon', 'Depolama'],
+      yearBuilt: 2019,
+      status: 'available',
+      deedStatus: 'freehold',
+      maintenanceFee: 4500,
+      totalFloors: 18,
+      parking: true,
+      furnished: true,
+      virtualTourUrl: 'https://kuula.co/share/collection/7lBXq',
+      isFeatured: true,
+      features: { rooms: 4, bathrooms: 2, floor: 12, heating: 'Kombi' },
+      location: { city: 'İstanbul', district: 'Beşiktaş', address: 'Yıldız Caddesi, No:42' },
+      viewCount: 842,
+      images: imgs(APARTMENT_IMGS, 4),
+      isActive: true,
+    },
+    {
+      owner: adminUser._id,
+      title: 'Kadıköy Moda\'da Butik Daire',
+      description: 'Tarihi Kadıköy\'ün kalbinde, yürüme mesafesinde her şey. Şık iç tasarım, yüksek tavan ve parke zemin.',
+      type: 'apartment',
+      listingType: 'rent',
+      price: 28_000,
+      currency: 'TRY',
+      size: 95,
+      amenities: ['Asansör', 'İnternet', 'Çamaşır Makinesi', 'Bulaşık Makinesi'],
+      yearBuilt: 2015,
+      status: 'available',
+      deedStatus: 'freehold',
+      maintenanceFee: 1200,
+      totalFloors: 6,
+      parking: false,
+      furnished: true,
+      virtualTourUrl: '',
+      isFeatured: true,
+      features: { rooms: 2, bathrooms: 1, floor: 3, heating: 'Merkezi' },
+      location: { city: 'İstanbul', district: 'Kadıköy', address: 'Moda Caddesi, No:15' },
+      viewCount: 1204,
+      images: imgs(APARTMENT_IMGS, 2),
+      isActive: true,
+    },
+    {
+      owner: proUser._id,
+      title: 'Sarıyer\'de Müstakil Villa',
+      description: 'Belgrad Ormanı\'na sıfır, özel havuzlu ve geniş bahçeli 5+2 villa. Sakin, prestijli lokasyon.',
+      type: 'house',
+      listingType: 'sale',
+      price: 28_000_000,
+      currency: 'TRY',
+      size: 450,
+      amenities: ['Özel Havuz', 'Bahçe', 'Otopark', 'Güvenlik', 'Jeneratör', 'Kapalı Garaj', 'Kamera Sistemi'],
+      yearBuilt: 2020,
+      status: 'available',
+      deedStatus: 'freehold',
+      maintenanceFee: 0,
+      totalFloors: 3,
+      parking: true,
+      furnished: false,
+      virtualTourUrl: '',
+      isFeatured: true,
+      features: { rooms: 5, bathrooms: 3, floor: 0, heating: 'Yerden Isıtma' },
+      location: { city: 'İstanbul', district: 'Sarıyer', address: 'Orman Yolu Sokak, No:8' },
+      viewCount: 673,
+      images: imgs(HOUSE_IMGS, 4),
+      isActive: true,
+    },
+    {
+      owner: adminUser._id,
+      title: 'Levent\'te Ofis Katı',
+      description: '4. Levent\'te A+ ofis katı. Açık plan, panoramik cam cephe, yükseltilmiş zemin, tüm altyapı hazır.',
+      type: 'commercial',
+      listingType: 'rent',
+      price: 185_000,
+      currency: 'TRY',
+      size: 620,
+      amenities: ['Akıllı Bina', 'Güvenlik', '7/24 Giriş', 'Fiber İnternet', 'Yedek Güç', 'Toplantı Odası'],
+      yearBuilt: 2017,
+      status: 'available',
+      deedStatus: 'freehold',
+      maintenanceFee: 18000,
+      totalFloors: 22,
+      parking: true,
+      furnished: false,
+      virtualTourUrl: '',
+      isFeatured: false,
+      features: { rooms: 0, bathrooms: 4, floor: 14, heating: 'VRV Klima' },
+      location: { city: 'İstanbul', district: 'Levent', address: '4. Levent Plaza, Kat:14' },
+      viewCount: 389,
+      images: imgs(COMMERCIAL_IMGS, 2),
+      isActive: true,
+    },
+    {
+      owner: user1._id,
+      title: 'Başakşehir\'de Sıfır 3+1 Daire',
+      description: 'Sıfır, içinden çıkmamış, site içinde, bol sosyal donatılı. Akıllı ev sistemi entegre.',
+      type: 'apartment',
+      listingType: 'sale',
+      price: 4_850_000,
+      currency: 'TRY',
+      size: 130,
+      amenities: ['Güvenlik', 'Kapalı Otopark', 'Havuz', 'Oyun Parkı', 'Yeşil Alan', 'Spor Salonu'],
+      yearBuilt: 2024,
+      status: 'available',
+      deedStatus: 'freehold',
+      maintenanceFee: 2800,
+      totalFloors: 10,
+      parking: true,
+      furnished: false,
+      virtualTourUrl: '',
+      isFeatured: false,
+      features: { rooms: 3, bathrooms: 2, floor: 5, heating: 'Doğalgaz Kombi' },
+      location: { city: 'İstanbul', district: 'Başakşehir', address: 'Güneşli Evler Sitesi, Blok:C' },
+      viewCount: 521,
+      images: imgs(APARTMENT_IMGS, 2),
+      isActive: true,
+    },
+
+    /* ── Ankara ── */
+    {
+      owner: adminUser._id,
+      title: 'Çankaya\'da 4+1 Dubleks Daire',
+      description: 'Ankara\'nın en prestijli semtinde, üst katta dubleks, muhteşem şehir manzarası, yüksek kalite yapı malzemeleri.',
+      type: 'apartment',
+      listingType: 'sale',
+      price: 7_200_000,
+      currency: 'TRY',
+      size: 220,
+      amenities: ['Asansör', 'Güvenlik', 'Kapalı Otopark', 'Çift Banyo', 'Ebeveyn Banyosu', 'Balkon'],
+      yearBuilt: 2021,
+      status: 'available',
+      deedStatus: 'freehold',
+      maintenanceFee: 3500,
+      totalFloors: 14,
+      parking: true,
+      furnished: false,
+      virtualTourUrl: '',
+      isFeatured: true,
+      features: { rooms: 4, bathrooms: 3, floor: 13, heating: 'Kombi' },
+      location: { city: 'Ankara', district: 'Çankaya', address: 'Kavaklıdere Caddesi, No:88' },
+      viewCount: 447,
+      images: imgs(APARTMENT_IMGS, 3),
+      isActive: true,
+    },
+    {
+      owner: proUser._id,
+      title: 'Yenimahalle\'de Kiralık Daire',
+      description: '2+1 özenle dizayn edilmiş, metro yürüme mesafesinde, eşyalı kiralık daire. Ev sahibi akar arıyor.',
+      type: 'apartment',
+      listingType: 'rent',
+      price: 14_500,
+      currency: 'TRY',
+      size: 80,
+      amenities: ['Asansör', 'İnternet', 'Çamaşır Makinesi', 'Buzdolabı'],
+      yearBuilt: 2012,
+      status: 'available',
+      deedStatus: 'freehold',
+      maintenanceFee: 800,
+      totalFloors: 8,
+      parking: false,
+      furnished: true,
+      virtualTourUrl: '',
+      isFeatured: false,
+      features: { rooms: 2, bathrooms: 1, floor: 4, heating: 'Merkezi' },
+      location: { city: 'Ankara', district: 'Yenimahalle', address: 'İvedik Caddesi, No:33' },
+      viewCount: 287,
+      images: imgs(APARTMENT_IMGS, 2),
+      isActive: true,
+    },
+    {
+      owner: user2._id,
+      title: 'Etimesgut\'ta Arsa',
+      description: 'İmar planı onaylı, konut alanı, köşe parsel. Bölge hızla değerleniyor, yatırıma uygun.',
+      type: 'land',
+      listingType: 'sale',
+      price: 3_800_000,
+      currency: 'TRY',
+      size: 500,
+      amenities: [],
+      yearBuilt: null,
+      status: 'available',
+      deedStatus: 'freehold',
+      maintenanceFee: 0,
+      totalFloors: 0,
+      parking: false,
+      furnished: false,
+      virtualTourUrl: '',
+      isFeatured: false,
+      features: { rooms: 0, bathrooms: 0, floor: 0, heating: '' },
+      location: { city: 'Ankara', district: 'Etimesgut', address: 'Bağlıca Mahallesi, 2345 Ada' },
+      viewCount: 198,
+      images: imgs(LAND_IMGS, 2),
+      isActive: true,
+    },
+
+    /* ── İzmir ── */
+    {
+      owner: adminUser._id,
+      title: 'Alsancak\'ta Deniz Manzaralı Residence',
+      description: 'İzmir körfezi manzaralı, otel konseptinde yönetilen residence. Concierge hizmeti, spa ve yüzme havuzu.',
+      type: 'apartment',
+      listingType: 'sale',
+      price: 9_900_000,
+      currency: 'TRY',
+      size: 140,
+      amenities: ['Concierge', 'Spa', 'Havuz', 'Fitness', 'Otopark', 'Vale', 'Oda Servisi'],
+      yearBuilt: 2022,
+      status: 'available',
+      deedStatus: 'freehold',
+      maintenanceFee: 6000,
+      totalFloors: 20,
+      parking: true,
+      furnished: true,
+      virtualTourUrl: 'https://kuula.co/share/collection/7lBXq',
+      isFeatured: true,
+      features: { rooms: 3, bathrooms: 2, floor: 16, heating: 'VRV' },
+      location: { city: 'İzmir', district: 'Alsancak', address: 'Kordon Boyu, No:12' },
+      viewCount: 934,
+      images: imgs(APARTMENT_IMGS, 4),
+      isActive: true,
+    },
+    {
+      owner: proUser._id,
+      title: 'Karşıyaka\'da Bahçeli Müstakil Ev',
+      description: 'Karşıyaka\'nın sakin mahallelerinde, bakımlı bahçesi ve garajı ile satılık tam müstakil ev.',
+      type: 'house',
+      listingType: 'sale',
+      price: 6_500_000,
+      currency: 'TRY',
+      size: 230,
+      amenities: ['Bahçe', 'Garaj', 'Teras', 'Depolama', 'Güneş Paneli'],
+      yearBuilt: 2008,
+      status: 'available',
+      deedStatus: 'freehold',
+      maintenanceFee: 0,
+      totalFloors: 2,
+      parking: true,
+      furnished: false,
+      virtualTourUrl: '',
+      isFeatured: false,
+      features: { rooms: 4, bathrooms: 2, floor: 0, heating: 'Doğalgaz Kombisi' },
+      location: { city: 'İzmir', district: 'Karşıyaka', address: 'Bostanlı Sokak, No:7' },
+      viewCount: 356,
+      images: imgs(HOUSE_IMGS, 3),
+      isActive: true,
+    },
+    {
+      owner: user1._id,
+      title: 'Bornova\'da Ticari Dükkan',
+      description: 'Yoğun yaya trafiği olan köşe başı dükkan. Genişletilebilir, devir yok.',
+      type: 'commercial',
+      listingType: 'rent',
+      price: 22_000,
+      currency: 'TRY',
+      size: 75,
+      amenities: ['Depo', 'WC', 'Güvenlik Kamerası'],
+      yearBuilt: 2005,
+      status: 'available',
+      deedStatus: 'leasehold',
+      maintenanceFee: 500,
+      totalFloors: 1,
+      parking: false,
+      furnished: false,
+      virtualTourUrl: '',
+      isFeatured: false,
+      features: { rooms: 0, bathrooms: 1, floor: 0, heating: 'Klima' },
+      location: { city: 'İzmir', district: 'Bornova', address: 'Adnan Menderes Bulvarı, No:112' },
+      viewCount: 174,
+      images: imgs(COMMERCIAL_IMGS, 2),
+      isActive: true,
+    },
+
+    /* ── Bursa ── */
+    {
+      owner: adminUser._id,
+      title: 'Nilüfer\'de 3+1 Sıfır Daire',
+      description: 'Bursa\'nın yükselen semti Nilüfer\'de, şehre yakın konumlu, sıfır inşaat kalitesinde daire.',
+      type: 'apartment',
+      listingType: 'sale',
+      price: 3_200_000,
+      currency: 'TRY',
+      size: 125,
+      amenities: ['Asansör', 'Otopark', 'Güvenlik', 'Çocuk Oyun Parkı', 'Jeneratör'],
+      yearBuilt: 2023,
+      status: 'available',
+      deedStatus: 'freehold',
+      maintenanceFee: 1800,
+      totalFloors: 12,
+      parking: true,
+      furnished: false,
+      virtualTourUrl: '',
+      isFeatured: false,
+      features: { rooms: 3, bathrooms: 1, floor: 7, heating: 'Doğalgaz Kombi' },
+      location: { city: 'Bursa', district: 'Nilüfer', address: 'Beşevler Caddesi, No:56' },
+      viewCount: 312,
+      images: imgs(APARTMENT_IMGS, 2),
+      isActive: true,
+    },
+    {
+      owner: proUser._id,
+      title: 'Osmangazi\'de Devren Satılık Restoran',
+      description: 'Merkezi konumda, tam donanımlı mutfak ve 60 kişilik kapasiteyle devren satılık restoran.',
+      type: 'commercial',
+      listingType: 'sale',
+      price: 4_200_000,
+      currency: 'TRY',
+      size: 180,
+      amenities: ['Endüstriyel Mutfak', 'Depo', 'WC', 'Havalandırma', 'Şofben'],
+      yearBuilt: 2010,
+      status: 'available',
+      deedStatus: 'leasehold',
+      maintenanceFee: 3000,
+      totalFloors: 1,
+      parking: false,
+      furnished: true,
+      virtualTourUrl: '',
+      isFeatured: false,
+      features: { rooms: 0, bathrooms: 2, floor: 0, heating: 'Kombi' },
+      location: { city: 'Bursa', district: 'Osmangazi', address: 'Setbaşı Caddesi, No:22' },
+      viewCount: 263,
+      images: imgs(COMMERCIAL_IMGS, 2),
+      isActive: true,
+    },
+    {
+      owner: user2._id,
+      title: 'Mudanya\'da Yatırımlık Villa Arsası',
+      description: 'Marmara\'ya sıfır, deniz manzaralı, 1500 m² villa arsası. İmar durumu müstakil villa.',
+      type: 'land',
+      listingType: 'sale',
+      price: 5_800_000,
+      currency: 'TRY',
+      size: 1500,
+      amenities: [],
+      yearBuilt: null,
+      status: 'available',
+      deedStatus: 'shared',
+      maintenanceFee: 0,
+      totalFloors: 0,
+      parking: false,
+      furnished: false,
+      virtualTourUrl: '',
+      isFeatured: false,
+      features: { rooms: 0, bathrooms: 0, floor: 0, heating: '' },
+      location: { city: 'Bursa', district: 'Mudanya', address: 'Sahil Yolu, Parsel:4512' },
+      viewCount: 445,
+      images: imgs(LAND_IMGS, 2),
+      isActive: true,
+    },
+
+    /* ── Konya ── */
+    {
+      owner: adminUser._id,
+      title: 'Selçuklu\'da 2+1 Kiralık Daire',
+      description: 'Selçuklu\'nun gelişen bölgesinde, metro yakını, tüm ihtiyaçlara yürüme mesafesinde ferah daire.',
+      type: 'apartment',
+      listingType: 'rent',
+      price: 11_000,
+      currency: 'TRY',
+      size: 90,
+      amenities: ['Asansör', 'Otopark', 'Güvenlik'],
+      yearBuilt: 2016,
+      status: 'available',
+      deedStatus: 'freehold',
+      maintenanceFee: 600,
+      totalFloors: 7,
+      parking: true,
+      furnished: false,
+      virtualTourUrl: '',
+      isFeatured: false,
+      features: { rooms: 2, bathrooms: 1, floor: 3, heating: 'Kombi' },
+      location: { city: 'Konya', district: 'Selçuklu', address: 'Nalçacı Caddesi, No:44' },
+      viewCount: 189,
+      images: imgs(APARTMENT_IMGS, 2),
+      isActive: true,
+    },
+    {
+      owner: user1._id,
+      title: 'Meram\'da Müstakil Bağ Evi',
+      description: 'Konya\'nın yeşil semti Meram\'da, bağ ve bahçesi olan geleneksel Konya evi. Huzurlu, sakin konum.',
+      type: 'house',
+      listingType: 'sale',
+      price: 2_800_000,
+      currency: 'TRY',
+      size: 200,
+      amenities: ['Bahçe', 'Bağ', 'Kiler', 'Depo', 'Sundurma'],
+      yearBuilt: 1998,
+      status: 'available',
+      deedStatus: 'freehold',
+      maintenanceFee: 0,
+      totalFloors: 2,
+      parking: true,
+      furnished: false,
+      virtualTourUrl: '',
+      isFeatured: false,
+      features: { rooms: 4, bathrooms: 2, floor: 0, heating: 'Kömür + Soba' },
+      location: { city: 'Konya', district: 'Meram', address: 'Harman Sokak, No:3' },
+      viewCount: 142,
+      images: imgs(HOUSE_IMGS, 2),
+      isActive: false,
+    },
+    {
+      owner: proUser._id,
+      title: 'Karatay\'da Sanayi Arsası',
+      description: 'OSB sınırında, yolu ve altyapısı hazır sanayi arsası. Fabrika veya depo yapımına uygun.',
+      type: 'land',
+      listingType: 'sale',
+      price: 6_500_000,
+      currency: 'TRY',
+      size: 3000,
+      amenities: [],
+      yearBuilt: null,
+      status: 'available',
+      deedStatus: 'freehold',
+      maintenanceFee: 0,
+      totalFloors: 0,
+      parking: false,
+      furnished: false,
+      virtualTourUrl: '',
+      isFeatured: false,
+      features: { rooms: 0, bathrooms: 0, floor: 0, heating: '' },
+      location: { city: 'Konya', district: 'Karatay', address: 'OSB Bölgesi, 3. Cadde' },
+      viewCount: 231,
+      images: imgs(LAND_IMGS, 2),
+      isActive: true,
+    },
+    {
+      owner: user2._id,
+      title: 'Beyşehir\'de Göl Manzaralı Tatil Evi',
+      description: 'Beyşehir Gölü kenarında, özel iskelesi olan yazlık ev. Yaz aylarında da kışın da yaşanabilir.',
+      type: 'house',
+      listingType: 'sale',
+      price: 3_500_000,
+      currency: 'TRY',
+      size: 160,
+      amenities: ['Özel İskele', 'Bahçe', 'Barbekü', 'Sundurma', 'Güneş Paneli'],
+      yearBuilt: 2014,
+      status: 'available',
+      deedStatus: 'freehold',
+      maintenanceFee: 0,
+      totalFloors: 2,
+      parking: true,
+      furnished: true,
+      virtualTourUrl: '',
+      isFeatured: true,
+      features: { rooms: 3, bathrooms: 2, floor: 0, heating: 'Güneş Enerjisi + Kombi' },
+      location: { city: 'Konya', district: 'Beyşehir', address: 'Göl Kenarı Caddesi, No:18' },
+      viewCount: 578,
+      images: imgs(HOUSE_IMGS, 3),
+      isActive: true,
+    },
+    {
+      owner: adminUser._id,
+      title: 'Ereğli\'de Kiralık Ofis',
+      description: 'Ereğli merkezi iş bölgesinde kiralık ofis katı. Yeni bina, asansörlü, otoparklı.',
+      type: 'commercial',
+      listingType: 'rent',
+      price: 35_000,
+      currency: 'TRY',
+      size: 250,
+      amenities: ['Asansör', 'Otopark', 'Güvenlik', 'Fiber İnternet', 'Klima'],
+      yearBuilt: 2020,
+      status: 'available',
+      deedStatus: 'freehold',
+      maintenanceFee: 5000,
+      totalFloors: 6,
+      parking: true,
+      furnished: false,
+      virtualTourUrl: '',
+      isFeatured: false,
+      features: { rooms: 0, bathrooms: 2, floor: 3, heating: 'VRV Klima' },
+      location: { city: 'Konya', district: 'Ereğli', address: 'Cumhuriyet Caddesi, No:64' },
+      viewCount: 117,
+      images: imgs(COMMERCIAL_IMGS, 2),
+      isActive: true,
+    },
+  ];
+
+  await Property.insertMany(properties);
+  console.log(`✓ Created ${properties.length} properties`);
+
+  /* ─── Sample contacts ─── */
+  await Contact.insertMany([
+    { name: 'Fatma Demir', email: 'fatma@example.com', phone: '+905321234567', message: 'Beşiktaş\'taki daire hakkında bilgi almak istiyorum. Müsait misiniz?', isRead: false },
+    { name: 'Kemal Arslan', email: 'kemal@example.com', phone: '+905419876543', message: 'İzmir residence için randevu talep ediyorum.', isRead: false },
+    { name: 'Zeynep Şahin', email: 'zeynep@example.com', phone: '', message: 'Genel bilgi almak istiyorum, sizi sitede buldum.', isRead: true },
+  ]);
+  console.log('✓ Created 3 sample contacts');
+
+  /* ─── Sample newsletter subscribers ─── */
+  await Newsletter.insertMany([
+    { email: 'abone1@example.com', isActive: true },
+    { email: 'abone2@example.com', isActive: true },
+    { email: 'abone3@example.com', isActive: true },
+    { email: 'abone4@example.com', isActive: false },
+    { email: 'abone5@example.com', isActive: true },
+  ]);
+  console.log('✓ Created 5 newsletter subscribers');
+
+  console.log('\n✅ Seed completed successfully!\n');
+  console.log('─────────────────────────────────────');
+  console.log('Test credentials:');
+  console.log('  Admin:        admin@vera.com  /  123456');
+  console.log('  Professional: pro@vera.com    /  123456');
+  console.log('  User 1:       user1@vera.com  /  123456');
+  console.log('  User 2:       user2@vera.com  /  123456');
+  console.log('─────────────────────────────────────\n');
+
+  await mongoose.connection.close();
+  process.exit(0);
+}
+
+seed().catch((err) => {
+  console.error('❌ Seed failed:', err.message);
+  process.exit(1);
+});

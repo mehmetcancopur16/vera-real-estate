@@ -22,6 +22,7 @@ import {
   Dot,
   Edit,
   Eye,
+  EyeOff,
   Grid2X2,
   LayoutList,
   Loader2,
@@ -79,7 +80,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { deleteMyProperty, getMyProperties } from "@/services/property.service";
+import { deleteMyProperty, getMyProperties, updateProperty } from "@/services/property.service";
 
 /* ─── helpers ─── */
 function formatTry(price) {
@@ -194,6 +195,15 @@ export default function MyListingsPage() {
     onError: (error) => {
       toast.error(error?.response?.data?.message || "Silme işlemi başarısız");
     },
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: ({ id, isActive }) => updateProperty(id, { isActive }),
+    onSuccess: (_, { isActive }) => {
+      toast.success(isActive ? "İlan aktif edildi" : "İlan pasife alındı");
+      queryClient.invalidateQueries({ queryKey: ["my-properties"] });
+    },
+    onError: () => toast.error("Durum güncellenemedi"),
   });
 
   const items = useMemo(() => data?.data || [], [data]);
@@ -645,6 +655,7 @@ export default function MyListingsPage() {
                 <PropertyCardGrid
                   property={property}
                   deleteMutation={deleteMutation}
+                  toggleMutation={toggleMutation}
                 />
               </div>
             ))}
@@ -659,6 +670,7 @@ export default function MyListingsPage() {
                 <PropertyCardList
                   property={property}
                   deleteMutation={deleteMutation}
+                  toggleMutation={toggleMutation}
                 />
               </div>
             ))}
@@ -670,7 +682,7 @@ export default function MyListingsPage() {
 }
 
 /* ─── Grid Card ─── */
-function PropertyCardGrid({ property, deleteMutation }) {
+function PropertyCardGrid({ property, deleteMutation, toggleMutation }) {
   const imageUrl =
     property.images?.[0] ||
     "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1400&auto=format&fit=crop";
@@ -749,6 +761,7 @@ function PropertyCardGrid({ property, deleteMutation }) {
             detailHref={detailHref}
             editHref={editHref}
             deleteMutation={deleteMutation}
+            toggleMutation={toggleMutation}
           />
         </div>
 
@@ -796,6 +809,27 @@ function PropertyCardGrid({ property, deleteMutation }) {
                 Önizle
               </Link>
             </Button>
+            <button
+              type="button"
+              title={isActive ? "Pasife Al" : "Aktif Et"}
+              disabled={toggleMutation.isPending}
+              onClick={() => toggleMutation.mutate({ id: property._id, isActive: !isActive })}
+              className={[
+                "inline-flex h-8 w-8 items-center justify-center rounded-lg border text-xs transition",
+                isActive
+                  ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
+                  : "border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100",
+                toggleMutation.isPending ? "opacity-50 cursor-not-allowed" : "",
+              ].join(" ")}
+            >
+              {toggleMutation.isPending && toggleMutation.variables?.id === property._id ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : isActive ? (
+                <EyeOff className="h-3.5 w-3.5" />
+              ) : (
+                <Eye className="h-3.5 w-3.5" />
+              )}
+            </button>
             <Button asChild size="sm" className="h-8 rounded-lg bg-gold-gradient text-xs text-primary hover:brightness-95">
               <Link href={editHref}>
                 <Edit className="mr-1 h-3 w-3" />
@@ -810,7 +844,7 @@ function PropertyCardGrid({ property, deleteMutation }) {
 }
 
 /* ─── List Card ─── */
-function PropertyCardList({ property, deleteMutation }) {
+function PropertyCardList({ property, deleteMutation, toggleMutation }) {
   const imageUrl =
     property.images?.[0] ||
     "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=400&auto=format&fit=crop";
@@ -892,6 +926,27 @@ function PropertyCardList({ property, deleteMutation }) {
               Önizle
             </Link>
           </Button>
+          <button
+            type="button"
+            title={isActive ? "Pasife Al" : "Aktif Et"}
+            disabled={toggleMutation.isPending}
+            onClick={() => toggleMutation.mutate({ id: property._id, isActive: !isActive })}
+            className={[
+              "inline-flex h-8 w-8 items-center justify-center rounded-lg border text-xs transition",
+              isActive
+                ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
+                : "border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100",
+              toggleMutation.isPending ? "opacity-50 cursor-not-allowed" : "",
+            ].join(" ")}
+          >
+            {toggleMutation.isPending && toggleMutation.variables?.id === property._id ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : isActive ? (
+              <EyeOff className="h-3.5 w-3.5" />
+            ) : (
+              <Eye className="h-3.5 w-3.5" />
+            )}
+          </button>
           <Button asChild size="sm" className="h-8 rounded-lg bg-gold-gradient text-xs text-primary hover:brightness-95">
             <Link href={editHref}>
               <Edit className="mr-1 h-3 w-3" />
@@ -955,8 +1010,9 @@ function DeleteButton({ property, deleteMutation }) {
 }
 
 /* ─── Actions Dropdown (for grid cards) ─── */
-function PropertyActionsMenu({ property, detailHref, editHref, deleteMutation }) {
+function PropertyActionsMenu({ property, detailHref, editHref, deleteMutation, toggleMutation }) {
   const router = useRouter();
+  const isActive = Boolean(property.isActive);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -965,7 +1021,7 @@ function PropertyActionsMenu({ property, detailHref, editHref, deleteMutation })
       >
         <MoreVertical className="h-4 w-4" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-44">
+      <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuGroup>
           <DropdownMenuLabel className="text-xs text-slate-500">İşlemler</DropdownMenuLabel>
         </DropdownMenuGroup>
@@ -978,6 +1034,22 @@ function PropertyActionsMenu({ property, detailHref, editHref, deleteMutation })
         <DropdownMenuItem onClick={() => router.push(editHref)}>
           <Edit className="mr-2 h-4 w-4 text-amber-500" />
           Düzenle
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          disabled={toggleMutation.isPending}
+          onClick={() => toggleMutation.mutate({ id: property._id, isActive: !isActive })}
+        >
+          {isActive ? (
+            <>
+              <EyeOff className="mr-2 h-4 w-4 text-orange-500" />
+              Pasife Al
+            </>
+          ) : (
+            <>
+              <Eye className="mr-2 h-4 w-4 text-emerald-500" />
+              Aktif Et
+            </>
+          )}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <AlertDialog>

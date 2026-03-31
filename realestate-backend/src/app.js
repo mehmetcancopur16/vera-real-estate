@@ -249,6 +249,47 @@ const swaggerUiOptions = {
 
     /* ── Focus ── */
     .swagger-ui *:focus-visible { outline: 2px solid #d4af37; outline-offset: 2px; }
+
+    /* ── Animations ── */
+    @keyframes swaggerFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .swagger-ui .opblock-body { animation: swaggerFadeIn 0.2s ease-out; }
+    .swagger-ui .model-box { animation: swaggerFadeIn 0.25s ease-out; }
+
+    /* ── Elevation levels on opblock ── */
+    .swagger-ui .opblock { box-shadow: 0 1px 3px rgba(15,23,42,0.06) !important; transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s !important; }
+    .swagger-ui .opblock:hover { box-shadow: 0 4px 14px rgba(212,175,55,0.18) !important; transform: translateY(-1px); }
+    .swagger-ui .opblock.is-open { box-shadow: 0 6px 24px rgba(15,23,42,0.10) !important; transform: none; }
+
+    /* ── Sticky thead in tables ── */
+    .swagger-ui table thead { position: sticky; top: 0; z-index: 2; }
+
+    /* ── Required field indicator ── */
+    .swagger-ui .parameter__name.required::after {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: #d97706;
+      border-radius: 50%;
+      margin-left: 5px;
+      vertical-align: middle;
+    }
+
+    /* ── Topbar min-height ── */
+    .swagger-ui .topbar { min-height: 54px !important; display: flex !important; align-items: center; }
+
+    /* ── Section wrapper max-width & spacing ── */
+    .swagger-ui .wrapper { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .swagger-ui .opblock-tag-section { margin-bottom: 8px; }
+
+    /* ── Response description ── */
+    .swagger-ui .response-col_description__inner p { font-size: 13px; color: #475569; line-height: 1.5; }
+
+    /* ── Loading indicator ── */
+    .swagger-ui .loading-container { padding: 40px; text-align: center; }
   `,
   swaggerOptions: {
     persistAuthorization: true,

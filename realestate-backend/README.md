@@ -1,305 +1,266 @@
-# Vera Real Estate — Backend API
+# Vera Real Estate — Backend
 
-> Express 5 tabanlı RESTful API. JWT kimlik doğrulama, Cloudinary görsel yönetimi, MongoDB veri katmanı ve kapsamlı güvenlik middleware'leri içerir.
-
-- **Base URL (local):** `http://localhost:5050/api`
-- **Swagger UI:** `http://localhost:5050/api-docs`
-- **Varsayılan port:** `5050` (`.env` ile değiştirilebilir)
+Express 5 REST API for the Vera Real Estate platform. Handles authentication, property management, subscriptions, admin operations, contact forms, and newsletter subscriptions.
 
 ---
 
-## Kurulum
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Express 5 |
+| Database | MongoDB + Mongoose |
+| Authentication | JWT (`jsonwebtoken`) + bcrypt |
+| Validation | Joi / Zod |
+| File Uploads | Multer (local storage → `uploads/`) |
+| Security | Helmet, express-rate-limit, HPP, CORS |
+| API Documentation | swagger-jsdoc + swagger-ui-express |
+| Environment | dotenv |
+
+---
+
+## Installation
 
 ```bash
-cd realestate-backend
 npm install
-
-# Env dosyasını hazırla
 cp .env.example .env
-# → .env içindeki değerleri doldur (aşağıya bakın)
+```
 
-# Geliştirme sunucusu (nodemon ile)
-npm run dev
+### `.env`
+```env
+PORT=5050
+MONGO_URI=mongodb://localhost:27017/vera-real-estate
+JWT_SECRET=your_very_secret_key
+JWT_EXPIRES_IN=7d
+NODE_ENV=development
+```
 
-# Prodüksiyon
-npm start
+### Run
+
+```bash
+npm run dev    # nodemon (hot reload)
+npm start      # production
+npm run seed   # seed database (4 users + 20 properties)
 ```
 
 ---
 
-## Ortam Değişkenleri
-
-Zorunlu değişkenleri ayarlamadan sunucu başlamaz.
-
-| Değişken | Zorunlu | Varsayılan | Açıklama |
-|----------|---------|------------|----------|
-| `MONGO_URI` | ✅ | — | MongoDB bağlantı URL'i (Atlas veya local) |
-| `JWT_SECRET` | ✅ | — | JWT imzalama anahtarı (min 32 karakter önerilir) |
-| `PORT` | — | `5050` | Sunucu portu |
-| `NODE_ENV` | — | `development` | Ortam modu |
-| `JWT_EXPIRES_IN` | — | `1d` | Token varsayılan geçerlilik süresi |
-| `CORS_ORIGINS` | — | `http://localhost:3000` | İzin verilen origin'ler (virgülle ayrılmış) |
-| `LOG_LEVEL` | — | `info` | Winston log seviyesi |
-| `CLOUDINARY_CLOUD_NAME` | — | — | Cloudinary cloud adı |
-| `CLOUDINARY_API_KEY` | — | — | Cloudinary API key |
-| `CLOUDINARY_API_SECRET` | — | — | Cloudinary API secret |
-
-> Cloudinary değişkenleri tanımlı değilse görsel yükleme endpoint'leri `500` döner. Diğer tüm endpoint'ler çalışmaya devam eder.
-
----
-
-## Proje Yapısı
+## Project Structure
 
 ```
 realestate-backend/
-├── server.js               # MongoDB bağlantısı + Express başlatma
-├── .env.example            # Örnek env dosyası
-└── src/
-    ├── app.js              # Middleware stack, route mount, hata handler
-    ├── config/
-    │   ├── db.js           # Mongoose bağlantısı
-    │   └── cloudinary.js   # Cloudinary SDK config
-    ├── controllers/
-    │   ├── auth.controller.js      # register, login, getMe, updateMe, ...
-    │   └── property.controller.js  # CRUD + images + view count
-    ├── middlewares/
-    │   ├── auth.middleware.js   # protect (JWT), isOwner
-    │   ├── upload.middleware.js # multer (memory storage)
-    │   ├── validate.middleware.js # Zod schema validation
-    │   └── error.middleware.js  # Global error handler
-    ├── models/
-    │   ├── User.model.js       # name, email, password (hashed), avatarUrl, role
-    │   └── Property.model.js   # title, type, price, location, features, images, ...
-    ├── routes/
-    │   ├── auth.routes.js      # /api/auth/*
-    │   └── property.routes.js  # /api/properties/*
-    ├── scripts/
-    │   └── seed.js             # Admin + örnek ilan oluştur
-    ├── utils/
-    │   ├── ApiError.js         # Custom hata sınıfı
-    │   └── logger.js           # Winston logger
-    └── validations/
-        ├── auth.validation.js      # register, login, updateMe, ... şemaları
-        └── property.validation.js  # createProperty, updateProperty şemaları
+├── src/
+│   ├── app.js                          # Express app, middleware, routes, Swagger
+│   ├── controllers/
+│   │   ├── auth.controller.js
+│   │   ├── property.controller.js
+│   │   ├── admin.controller.js
+│   │   ├── subscription.controller.js
+│   │   ├── contact.controller.js
+│   │   └── newsletter.controller.js
+│   ├── routes/
+│   │   ├── auth.routes.js
+│   │   ├── property.routes.js
+│   │   ├── admin.routes.js
+│   │   ├── subscription.routes.js
+│   │   ├── contact.routes.js
+│   │   └── newsletter.routes.js
+│   ├── models/
+│   │   ├── User.model.js
+│   │   ├── Property.model.js
+│   │   ├── Contact.model.js
+│   │   └── Newsletter.model.js
+│   ├── middlewares/
+│   │   ├── auth.middleware.js     # protect, restrictTo, isOwner
+│   │   ├── upload.middleware.js   # multer config
+│   │   ├── validate.middleware.js # Joi/Zod request validation
+│   │   └── error.middleware.js    # global error handler
+│   ├── validations/
+│   │   ├── auth.validation.js
+│   │   └── property.validation.js
+│   ├── utils/
+│   │   └── ApiError.js
+│   └── scripts/
+│       └── seed.js                # Database seeder
+└── uploads/                       # Uploaded images (gitignored)
 ```
 
 ---
 
-## API Endpoint Referansı
-
-Tüm endpoint'ler `Content-Type: application/json` döner.  
-Korumalı endpoint'ler için header: `Authorization: Bearer <token>`
-
-### Kimlik Doğrulama — `/api/auth`
-
-| Method | Path | Auth | Body | Açıklama |
-|--------|------|------|------|----------|
-| `POST` | `/register` | — | `name, email, password` | Yeni kullanıcı kaydı. `{ user, token }` döner. |
-| `POST` | `/login` | — | `email, password, rememberMe?` | Giriş. `rememberMe=true` → 30 günlük token. |
-| `GET` | `/me` | JWT | — | Giriş yapan kullanıcının profili |
-| `PATCH` | `/me` | JWT | `name?, email?` | Ad veya email güncelle |
-| `PATCH` | `/password` | JWT | `currentPassword, newPassword` | Şifre değiştir |
-| `POST` | `/avatar` | JWT | `multipart/form-data` → `avatar` | Avatar yükle (Cloudinary) |
-| `DELETE` | `/me` | JWT | `currentPassword` | Hesap + tüm ilanlar kalıcı silinir |
-
-### İlanlar — `/api/properties`
-
-| Method | Path | Auth | Açıklama |
-|--------|------|------|----------|
-| `GET` | `/` | — | Filtreli ilan listesi. Query: `city, type, listingType, minPrice, maxPrice, minRooms, page, limit, sort` |
-| `GET` | `/featured` | — | Öne çıkan 6 ilan (`isFeatured: true`) |
-| `GET` | `/my` | JWT | Giriş yapan kullanıcının ilanları. Query: `page, limit, includeInactive` |
-| `GET` | `/:id` | — | Tek ilan detayı (her istekte `viewCount++`) |
-| `POST` | `/` | JWT | Yeni ilan oluştur |
-| `PUT` | `/:id` | JWT + Owner | İlan güncelle |
-| `DELETE` | `/:id` | JWT + Owner | İlan sil |
-| `POST` | `/:id/images` | JWT + Owner | Görsel yükle (`images` field, max 5/istek, Cloudinary) |
-| `DELETE` | `/:id/images/:imgId` | JWT + Owner | Tek görsel sil (Cloudinary'den de silinir) |
-
-#### Filtreleme Parametreleri (`GET /api/properties`)
-
-```
-city=Istanbul
-type=apartment|house|land|commercial
-listingType=sale|rent
-minPrice=500000
-maxPrice=5000000
-minRooms=2
-page=1
-limit=12
-sort=newest|price_asc|price_desc|views
-```
-
-#### Örnek İlan Payload (`POST /api/properties`)
-
-```json
-{
-  "title": "Merkezi Konumda 3+1 Daire",
-  "description": "Şehir merkezine yürüme mesafesinde...",
-  "type": "apartment",
-  "listingType": "sale",
-  "price": 2500000,
-  "size": 120,
-  "location": {
-    "city": "İstanbul",
-    "district": "Kadıköy",
-    "address": "Moda Caddesi No:12"
-  },
-  "features": {
-    "rooms": 3,
-    "bathrooms": 1,
-    "floor": 3,
-    "heating": "kombi"
-  },
-  "amenities": ["Balkon", "Asansör", "Otopark"],
-  "yearBuilt": 2018,
-  "status": "ready",
-  "parking": true,
-  "furnished": false
-}
-```
-
----
-
-## Güvenlik Katmanları
-
-| Middleware | Paket | Açıklama |
-|------------|-------|----------|
-| HTTP Güvenlik Header | `helmet` | XSS, clickjacking, MIME sniff koruması |
-| CORS | `cors` | Whitelist tabanlı origin kontrolü |
-| Rate Limiting | `express-rate-limit` | 100 istek / 15 dakika / IP |
-| NoSQL Enjeksiyon | `express-mongo-sanitize` | `$` ve `.` içeren field'ları temizler |
-| HTTP Param Pollution | `hpp` | Duplicate query param saldırıları |
-| JWT Doğrulama | `jsonwebtoken` | Bearer token, `protect` middleware |
-| Owner Kontrolü | custom | `isOwner(Model)` — yalnızca ilanın sahibi düzenleyebilir |
-| Hata Maskeleme | custom | Production'da stack trace gizlenir |
-
----
-
-## Veri Modelleri
+## Models
 
 ### User
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | String | Full name |
+| `email` | String | Unique email |
+| `password` | String | bcrypt hash (select: false) |
+| `avatarUrl` | String | Profile image URL |
+| `role` | Enum | `user` / `admin` |
+| `subscription.plan` | Enum | `free` / `professional` / `corporate` |
+| `subscription.expiresAt` | Date | Plan expiry (null for free) |
 
-```
-_id, name, email, password (hashed), avatarUrl, role (user|admin)
-createdAt, updatedAt
-```
+Methods: `matchPassword(candidate)` · `toJSON` strips password.
 
 ### Property
+| Field | Type | Description |
+|-------|------|-------------|
+| `owner` | ObjectId | Ref: User |
+| `title` | String | Listing title |
+| `description` | String | Full description |
+| `type` | Enum | `apartment` / `house` / `land` / `commercial` |
+| `listingType` | Enum | `sale` / `rent` |
+| `price` | Number | Price |
+| `currency` | String | Default `TRY` |
+| `size` | Number | Area m² |
+| `amenities` | [String] | List of amenities |
+| `yearBuilt` | Number | Year of construction |
+| `status` | Enum | `available` / `sold` / `rented` |
+| `deedStatus` | Enum | `freehold` / `leasehold` / `shared` |
+| `maintenanceFee` | Number | Monthly fee |
+| `totalFloors` | Number | Floors in building |
+| `parking` | Boolean | Has parking |
+| `furnished` | Boolean | Is furnished |
+| `virtualTourUrl` | String | 360° tour link |
+| `isFeatured` | Boolean | Show on home page |
+| `features.rooms` | Number | Room count |
+| `features.bathrooms` | Number | Bathroom count |
+| `features.floor` | Number | Unit floor |
+| `features.heating` | String | Heating system |
+| `location.city` | String | City (required) |
+| `location.district` | String | District |
+| `location.address` | String | Street address |
+| `viewCount` | Number | View counter |
+| `images` | [String] | Image paths/URLs |
+| `isActive` | Boolean | Visible to public |
 
-```
-_id, owner (ref: User), title, description
-type (apartment|house|land|commercial)
-listingType (sale|rent)
-price, currency, size, yearBuilt, status (ready|under-construction)
-deedStatus, maintenanceFee, totalFloors
-parking, furnished, virtualTourUrl, isFeatured
-features: { rooms, bathrooms, floor, heating }
-location: { city, district, address }
-amenities: [String]
-images: [String] (Cloudinary URL'leri)
-viewCount, isActive
-createdAt, updatedAt
-```
+### Contact
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | String | Sender name |
+| `email` | String | Sender email |
+| `phone` | String | Phone number |
+| `message` | String | Message body |
+| `isRead` | Boolean | Read status |
+
+### Newsletter
+| Field | Type | Description |
+|-------|------|-------------|
+| `email` | String | Unique subscriber email |
+| `isActive` | Boolean | Active subscription |
 
 ---
 
-## Swagger API Dokümantasyonu
+## API Reference
 
-Tüm endpoint'ler OpenAPI 3.0 formatında dokümante edilmiştir.
+All routes are prefixed with `/api`.
 
-```
-http://localhost:5050/api-docs
-```
+### Auth — `/api/auth`
+| Method | Path | Middleware | Description |
+|--------|------|-----------|-------------|
+| POST | `/register` | validate | Register new user |
+| POST | `/login` | validate | Login, returns `{ token, user }` |
+| GET | `/me` | protect | Get current user |
+| PUT | `/update-profile` | protect | Update name, avatar |
+| PUT | `/change-password` | protect, validate | Change password |
 
-Development ortamında Swagger UI otomatik açılır. Production'da `NODE_ENV=production` olduğunda devre dışı bırakılabilir.
+### Properties — `/api/properties`
+| Method | Path | Middleware | Description |
+|--------|------|-----------|-------------|
+| GET | `/` | — | List all (filter: city, type, listingType, minPrice, maxPrice, rooms, minSize, search, page, limit) |
+| GET | `/featured` | — | Featured listings |
+| GET | `/my` | protect | Own listings (includes inactive) |
+| GET | `/:id` | — | Property detail (increments viewCount) |
+| POST | `/` | protect, validate | Create listing |
+| PUT | `/:id` | protect, isOwner, validate | Update listing |
+| DELETE | `/:id` | protect, isOwner | Delete listing |
+| POST | `/:id/images` | protect, isOwner, multer | Upload images (max 5) |
+| DELETE | `/:id/images/:imgId` | protect, isOwner | Delete image |
+
+### Subscription — `/api/subscription`
+| Method | Path | Middleware | Description |
+|--------|------|-----------|-------------|
+| GET | `/plans` | — | List plan definitions |
+| POST | `/upgrade` | protect | Upgrade plan `{ plan: "professional" \| "corporate" \| "free" }` |
+
+### Contact — `/api/contact`
+| Method | Path | Middleware | Description |
+|--------|------|-----------|-------------|
+| POST | `/` | — | Submit contact form |
+
+### Newsletter — `/api/newsletter`
+| Method | Path | Middleware | Description |
+|--------|------|-----------|-------------|
+| POST | `/subscribe` | — | Subscribe |
+| POST | `/unsubscribe` | — | Unsubscribe |
+
+### Admin — `/api/admin` (protect + restrictTo('admin'))
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/stats` | Aggregated platform stats |
+| GET | `/users` | Paginated user list (search, page, limit) |
+| PATCH | `/users/:id` | Update user role / subscription plan |
+| DELETE | `/users/:id` | Delete user |
+| GET | `/listings` | Paginated listing list (search, isActive, page, limit) |
+| PATCH | `/listings/:id/toggle` | Toggle listing `isActive` |
+| DELETE | `/listings/:id` | Delete any listing |
+| GET | `/contacts` | List contact messages |
+| PATCH | `/contacts/:id/read` | Mark contact as read |
+| DELETE | `/contacts/:id` | Delete contact message |
+| GET | `/newsletters` | List newsletter subscribers |
+| DELETE | `/newsletters/:id` | Delete subscriber |
 
 ---
 
-## Seed Script
+## Middlewares
 
-Veritabanını temizler, admin kullanıcı ve örnek ilanlar oluşturur.
+| File | Purpose |
+|------|---------|
+| `auth.middleware.js` | `protect` — validates JWT; `restrictTo(role)` — role guard; `isOwner(Model)` — resource ownership check |
+| `upload.middleware.js` | Multer config; accepts `images` field, stores in `uploads/`, limits to 5 files × 5 MB |
+| `validate.middleware.js` | Wraps Joi/Zod schemas, returns 400 with field-level errors |
+| `error.middleware.js` | Global error handler — formats `ApiError`, Mongoose errors, JWT errors |
+
+---
+
+## Seeder
 
 ```bash
-cd realestate-backend
 npm run seed
 ```
 
-**Oluşturulan veriler:**
-- Admin: `admin@vera.com` / `123456`
-- 6 örnek ilan (İstanbul + Konya, farklı tip ve fiyatlar)
+Creates **4 users** and **20 property listings** covering all model fields:
 
-> **Uyarı:** Seed script mevcut tüm `User` ve `Property` kayıtlarını siler.
+| User | Email | Password | Role | Plan |
+|------|-------|----------|------|------|
+| Vera Admin | admin@vera.com | 123456 | admin | corporate |
+| Pro Kullanıcı | pro@vera.com | 123456 | user | professional |
+| Ali Yılmaz | user1@vera.com | 123456 | user | free |
+| Ayşe Kaya | user2@vera.com | 123456 | user | free |
 
----
-
-## Hata Yanıt Formatı
-
-Tüm hata yanıtları aynı yapıyı izler:
-
-```json
-{
-  "success": false,
-  "message": "Hata açıklaması",
-  "statusCode": 400
-}
-```
-
-Validation hataları:
-
-```json
-{
-  "success": false,
-  "message": "Validasyon hatası",
-  "errors": [
-    { "field": "email", "message": "Geçerli bir e-posta adresi girin" }
-  ]
-}
-```
+Properties are spread across Istanbul, Ankara, Izmir, Konya, Bursa with varied types, listing types, deed status, amenities, and features.
 
 ---
 
-## Loglama
+## Swagger / API Docs
 
-Winston + Morgan kombinasyonu kullanılır.
+| URL | Description |
+|-----|-------------|
+| `http://localhost:5050/docs` | Swagger UI |
+| `http://localhost:5050/api-docs` | Swagger UI (alternate) |
+| `http://localhost:5050/docs.json` | OpenAPI JSON |
 
-- HTTP istekleri: Morgan → `combined` formatı
-- Uygulama logları: Winston → `logs/combined.log` + `logs/error.log`
-- Console renklendirme: Development modunda aktif
-
-Log seviyesi `LOG_LEVEL` env değişkeni ile kontrol edilir (`error`, `warn`, `info`, `debug`).
-
----
-
-## Admin API Endpointleri
-
-Tüm `/api/admin/*` rotaları `protect` + `restrictTo('admin')` middleware ile korunur.
-
-| Method | Endpoint | Açıklama |
-|--------|----------|----------|
-| GET | `/api/admin/stats` | Genel istatistikler (kullanıcı, ilan, plan dağılımı) |
-| GET | `/api/admin/users` | Paginated kullanıcı listesi (search, page, limit) |
-| PATCH | `/api/admin/users/:id` | Kullanıcı rol/plan güncelle |
-| DELETE | `/api/admin/users/:id` | Kullanıcı + ilanları sil |
-| GET | `/api/admin/listings` | Paginated ilan listesi (search, isActive, page, limit) |
-| PATCH | `/api/admin/listings/:id/toggle` | İlan aktif/pasif toggle |
-| DELETE | `/api/admin/listings/:id` | İlanı sil (force) |
+The Swagger UI uses a custom professional theme: dark navy topbar, color-coded HTTP badges, gold accent brand, JetBrains Mono for code, and smooth operation block animations.
 
 ---
 
-## Abonelik API Endpointleri
+## Security
 
-| Method | Endpoint | Auth | Açıklama |
-|--------|----------|------|----------|
-| GET | `/api/subscription/plans` | Public | Plan kataloğunu listele |
-| POST | `/api/subscription/upgrade` | Token | Planı yükselt (`{ plan: "professional" \| "corporate" \| "free" }`) |
-
-### Plan Limitleri
-
-| Plan | İlan Limiti |
-|------|-------------|
-| free | 3 |
-| professional | 7 |
-| corporate | Sınırsız |
-
-Limit aşıldığında `POST /api/properties` endpoint'i `403` döner.
+- **Helmet** — sets security headers
+- **express-rate-limit** — 100 req / 15 min per IP on `/api`
+- **HPP** — prevents HTTP parameter pollution
+- **CORS** — whitelist-based origin restriction
+- **bcrypt** — rounds 12 for password hashing
+- **JWT** — signed with `JWT_SECRET`, expires per `JWT_EXPIRES_IN`
+- **isOwner middleware** — prevents users from modifying other users' resources
+- Passwords are always excluded from API responses (`select: false`)
