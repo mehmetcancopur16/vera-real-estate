@@ -4,13 +4,17 @@ import Property from '../models/Property.model.js';
 import Contact from '../models/Contact.model.js';
 import Newsletter from '../models/Newsletter.model.js';
 import { ApiError } from '../utils/ApiError.js';
-import { PLAN_LIMITS } from './property.controller.js';
+
+function escapeRegex(input = '') {
+  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 /* ── Stats ── */
 export async function getStats(req, res, next) {
   try {
     const [
       totalUsers,
+      totalAdmins,
       totalListings,
       activeListings,
       inactiveListings,
@@ -21,6 +25,7 @@ export async function getStats(req, res, next) {
       unreadContacts
     ] = await Promise.all([
       User.countDocuments(),
+      User.countDocuments({ role: 'admin' }),
       Property.countDocuments(),
       Property.countDocuments({ isActive: true }),
       Property.countDocuments({ isActive: false }),
@@ -38,6 +43,7 @@ export async function getStats(req, res, next) {
       success: true,
       data: {
         totalUsers,
+        totalAdmins,
         totalListings,
         activeListings,
         inactiveListings,
@@ -152,21 +158,19 @@ export async function updateUser(req, res, next) {
     const { id } = req.params;
     if (!mongoose.isValidObjectId(id)) throw new ApiError(400, 'Geçersiz kullanıcı ID');
 
-    const allowed = ['role', 'subscription'];
     const payload = {};
-    for (const key of allowed) {
-      if (req.body[key] !== undefined) payload[key] = req.body[key];
+    if (req.body.role !== undefined) {
+      payload.role = req.body.role;
     }
-
-    // Allow changing just subscription.plan
     if (req.body['subscription.plan'] !== undefined) {
       payload['subscription.plan'] = req.body['subscription.plan'];
-      if (['professional', 'corporate'].includes(req.body['subscription.plan'])) {
-        payload['subscription.expiresAt'] = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-      } else {
-        payload['subscription.expiresAt'] = null;
-      }
-      delete payload.subscription;
+      payload['subscription.expiresAt'] =
+        ['professional', 'corporate'].includes(req.body['subscription.plan'])
+          ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          : null;
+    }
+    if (Object.keys(payload).length === 0) {
+      throw new ApiError(400, 'Guncellenecek alan bulunamadi');
     }
 
     const updated = await User.findByIdAndUpdate(id, { $set: payload }, { new: true, runValidators: true }).lean();
@@ -205,9 +209,31 @@ export async function getListings(req, res, next) {
     const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 20));
     const skip = (page - 1) * limit;
     const search = req.query.search ? String(req.query.search).trim() : '';
+    const ownerId = req.query.ownerId ? String(req.query.ownerId).trim() : '';
 
     const filter = {};
-    if (search) filter.$text = { $search: search };
+    if (ownerId) {
+      if (!mongoose.isValidObjectId(ownerId)) throw new ApiError(400, 'Gecersiz ownerId');
+      filter.owner = ownerId;
+    }
+    if (search) {
+      const safe = escapeRegex(search);
+      const searchRegex = new RegExp(safe, 'i');
+      const ownerMatches = await User.find({
+        $or: [{ name: searchRegex }, { email: searchRegex }]
+      })
+        .select('_id')
+        .limit(50)
+        .lean();
+      const ownerIds = ownerMatches.map((item) => item._id);
+      filter.$or = [
+        { title: searchRegex },
+        { description: searchRegex },
+        { 'location.city': searchRegex },
+        { 'location.district': searchRegex },
+        ...(ownerIds.length ? [{ owner: { $in: ownerIds } }] : [])
+      ];
+    }
     if (req.query.isActive !== undefined && req.query.isActive !== '') {
       filter.isActive = req.query.isActive === 'true';
     }

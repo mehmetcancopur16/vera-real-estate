@@ -33,6 +33,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -328,6 +329,7 @@ export default function AdminLayout({ children }) {
                 </span>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-64 p-1.5">
+              <DropdownMenuGroup>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex items-center gap-3 rounded-lg bg-slate-50 p-2.5">
                     <Avatar className="h-10 w-10">
@@ -340,8 +342,9 @@ export default function AdminLayout({ children }) {
                       <p className="truncate text-sm font-bold text-slate-900">{user?.name}</p>
                       <p className="truncate text-xs text-slate-500">{user?.email}</p>
                     </div>
-                  </div>
+                    </div>
                 </DropdownMenuLabel>
+              </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => router.push("/profile")}>
                   <CircleUserRound className="mr-2 h-4 w-4 text-violet-600" />

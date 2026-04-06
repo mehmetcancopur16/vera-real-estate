@@ -381,6 +381,7 @@ Tüm hata yanıtları aynı formattadır: \`{ success: false, message: "..." }\`
           type: 'object',
           properties: {
             totalUsers: { type: 'integer', example: 248 },
+            totalAdmins: { type: 'integer', example: 3 },
             totalListings: { type: 'integer', example: 512 },
             activeListings: { type: 'integer', example: 430 },
             inactiveListings: { type: 'integer', example: 82 },
@@ -396,13 +397,57 @@ Tüm hata yanıtları aynı formattadır: \`{ success: false, message: "..." }\`
             },
             recentUsers: {
               type: 'array',
-              items: { $ref: '#/components/schemas/User' }
+              items: { $ref: '#/components/schemas/AdminRecentUser' }
             },
             recentListings: {
               type: 'array',
-              items: { $ref: '#/components/schemas/Property' }
+              items: { $ref: '#/components/schemas/AdminListingItem' }
             }
           }
+        },
+        AdminRecentUser: {
+          type: 'object',
+          properties: {
+            _id: { $ref: '#/components/schemas/ObjectId' },
+            name: { type: 'string', example: 'Ayse Yilmaz' },
+            email: { type: 'string', format: 'email', example: 'ayse@example.com' },
+            role: { type: 'string', enum: ['user', 'admin'], example: 'user' },
+            avatarUrl: { type: 'string', nullable: true },
+            subscription: {
+              type: 'object',
+              properties: {
+                plan: { $ref: '#/components/schemas/SubscriptionPlan' },
+                expiresAt: { type: 'string', format: 'date-time', nullable: true }
+              }
+            },
+            createdAt: { type: 'string', format: 'date-time' }
+          }
+        },
+        AdminListingOwner: {
+          type: 'object',
+          properties: {
+            _id: { $ref: '#/components/schemas/ObjectId' },
+            name: { type: 'string', example: 'Ayse Yilmaz' },
+            email: { type: 'string', format: 'email', example: 'ayse@example.com' },
+            subscription: {
+              type: 'object',
+              properties: {
+                plan: { $ref: '#/components/schemas/SubscriptionPlan' },
+                expiresAt: { type: 'string', format: 'date-time', nullable: true }
+              }
+            }
+          }
+        },
+        AdminListingItem: {
+          allOf: [
+            { $ref: '#/components/schemas/Property' },
+            {
+              type: 'object',
+              properties: {
+                owner: { $ref: '#/components/schemas/AdminListingOwner' }
+              }
+            }
+          ]
         },
 
         /* ── Health ── */

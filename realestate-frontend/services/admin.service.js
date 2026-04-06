@@ -27,7 +27,10 @@ export async function deleteAdminUser(id) {
 
 /* ── Admin Listings ── */
 export async function getAdminListings(params = {}) {
-  const { data } = await api.get("/admin/listings", { params });
+  const normalized = Object.fromEntries(
+    Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== "")
+  );
+  const { data } = await api.get("/admin/listings", { params: normalized });
   return data;
 }
 
@@ -43,7 +46,10 @@ export async function deleteAdminListing(id) {
 
 /* ── Admin Contacts ── */
 export async function getAdminContacts(params = {}) {
-  const { data } = await api.get("/admin/contacts", { params });
+  const normalized = Object.fromEntries(
+    Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== "")
+  );
+  const { data } = await api.get("/admin/contacts", { params: normalized });
   return data;
 }
 
@@ -59,7 +65,10 @@ export async function deleteAdminContact(id) {
 
 /* ── Admin Newsletters ── */
 export async function getAdminNewsletters(params = {}) {
-  const { data } = await api.get("/admin/newsletters", { params });
+  const normalized = Object.fromEntries(
+    Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== "")
+  );
+  const { data } = await api.get("/admin/newsletters", { params: normalized });
   return data;
 }
 

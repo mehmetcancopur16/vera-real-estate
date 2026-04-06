@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { protect } from '../middlewares/auth.middleware.js';
 import { restrictTo } from '../middlewares/auth.middleware.js';
+import { validate } from '../middlewares/validate.middleware.js';
 import {
   getStats,
   getUsers,
@@ -15,6 +16,13 @@ import {
   getNewsletters,
   deleteNewsletter
 } from '../controllers/admin.controller.js';
+import {
+  adminContactsQuerySchema,
+  adminListingsQuerySchema,
+  adminNewslettersQuerySchema,
+  adminUpdateUserBodySchema,
+  adminUsersQuerySchema
+} from '../validations/admin.validation.js';
 
 const router = Router();
 
@@ -124,12 +132,14 @@ router.get('/stats', getStats);
  *                     $ref: '#/components/schemas/UserWithListingCount'
  *                 pagination:
  *                   $ref: '#/components/schemas/Pagination'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
  *         $ref: '#/components/responses/Forbidden'
  */
-router.get('/users', getUsers);
+router.get('/users', validate(adminUsersQuerySchema, 'query'), getUsers);
 
 /**
  * @openapi
@@ -181,7 +191,7 @@ router.get('/users', getUsers);
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
-router.patch('/users/:id', updateUser);
+router.patch('/users/:id', validate(adminUpdateUserBodySchema), updateUser);
 
 /**
  * @openapi
@@ -245,6 +255,11 @@ router.delete('/users/:id', deleteUser);
  *         description: Aktif/pasif filtresi
  *         schema:
  *           type: boolean
+ *       - name: ownerId
+ *         in: query
+ *         description: Belirli bir kullanıcıya ait ilanları filtreler
+ *         schema:
+ *           $ref: '#/components/schemas/ObjectId'
  *     responses:
  *       200:
  *         description: İlan listesi
@@ -259,15 +274,17 @@ router.delete('/users/:id', deleteUser);
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Property'
+ *                     $ref: '#/components/schemas/AdminListingItem'
  *                 pagination:
  *                   $ref: '#/components/schemas/Pagination'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
  *         $ref: '#/components/responses/Forbidden'
  */
-router.get('/listings', getListings);
+router.get('/listings', validate(adminListingsQuerySchema, 'query'), getListings);
 
 /**
  * @openapi
@@ -297,7 +314,9 @@ router.get('/listings', getListings);
  *                   type: string
  *                   example: İlan aktif yapıldı
  *                 data:
- *                   $ref: '#/components/schemas/Property'
+ *                   $ref: '#/components/schemas/AdminListingItem'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
@@ -334,6 +353,8 @@ router.patch('/listings/:id/toggle', toggleListing);
  *                 message:
  *                   type: string
  *                   example: İlan silindi
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
@@ -384,12 +405,14 @@ router.delete('/listings/:id', deleteAnyListing);
  *                     $ref: '#/components/schemas/Contact'
  *                 pagination:
  *                   $ref: '#/components/schemas/Pagination'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
  *         $ref: '#/components/responses/Forbidden'
  */
-router.get('/contacts', getContacts);
+router.get('/contacts', validate(adminContactsQuerySchema, 'query'), getContacts);
 
 /**
  * @openapi
@@ -417,6 +440,8 @@ router.get('/contacts', getContacts);
  *                   example: true
  *                 data:
  *                   $ref: '#/components/schemas/Contact'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
@@ -453,6 +478,8 @@ router.patch('/contacts/:id/read', markContactRead);
  *                 message:
  *                   type: string
  *                   example: Mesaj silindi
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
@@ -479,7 +506,14 @@ router.delete('/contacts/:id', deleteContact);
  *       - bearerAuth: []
  *     parameters:
  *       - $ref: '#/components/parameters/PageParam'
- *       - $ref: '#/components/parameters/LimitParam'
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Sayfa başına kayıt sayısı
  *       - $ref: '#/components/parameters/SearchParam'
  *       - name: isActive
  *         in: query
@@ -503,12 +537,14 @@ router.delete('/contacts/:id', deleteContact);
  *                     $ref: '#/components/schemas/Newsletter'
  *                 pagination:
  *                   $ref: '#/components/schemas/Pagination'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
  *         $ref: '#/components/responses/Forbidden'
  */
-router.get('/newsletters', getNewsletters);
+router.get('/newsletters', validate(adminNewslettersQuerySchema, 'query'), getNewsletters);
 
 /**
  * @openapi
@@ -537,6 +573,8 @@ router.get('/newsletters', getNewsletters);
  *                 message:
  *                   type: string
  *                   example: Abone silindi
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
