@@ -189,7 +189,8 @@ Tüm hata yanıtları aynı formattadır: \`{ success: false, message: "..." }\`
             {
               type: 'object',
               properties: {
-                listingCount: { type: 'integer', example: 3 }
+                listingCount: { type: 'integer', example: 3 },
+                activeListingCount: { type: 'integer', example: 2 }
               }
             }
           ]

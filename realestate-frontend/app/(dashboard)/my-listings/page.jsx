@@ -1013,81 +1013,89 @@ function DeleteButton({ property, deleteMutation }) {
 function PropertyActionsMenu({ property, detailHref, editHref, deleteMutation, toggleMutation }) {
   const router = useRouter();
   const isActive = Boolean(property.isActive);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        aria-label="more"
-        className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
-      >
-        <MoreVertical className="h-4 w-4" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuGroup>
-          <DropdownMenuLabel className="text-xs text-slate-500">İşlemler</DropdownMenuLabel>
-        </DropdownMenuGroup>
-        <DropdownMenuItem
-          onClick={() => window.open(detailHref, "_blank", "noopener,noreferrer")}
+    <>
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogMedia className="text-red-500">
+              <AlertCircle className="animate-bounce" />
+            </AlertDialogMedia>
+            <AlertDialogTitle>İlanı Silmek İstediğinize Emin Misiniz?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong className="text-slate-800">&ldquo;{property.title}&rdquo;</strong> kalıcı olarak silinecektir.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>İptal</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={() => {
+                setDeleteOpen(false);
+                deleteMutation.mutate(property._id);
+              }}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Siliniyor...</>
+              ) : (
+                "Evet, Sil"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          aria-label="more"
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
         >
-          <Eye className="mr-2 h-4 w-4 text-blue-500" />
-          Önizle
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push(editHref)}>
-          <Edit className="mr-2 h-4 w-4 text-amber-500" />
-          Düzenle
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          disabled={toggleMutation.isPending}
-          onClick={() => toggleMutation.mutate({ id: property._id, isActive: !isActive })}
-        >
-          {isActive ? (
-            <>
-              <EyeOff className="mr-2 h-4 w-4 text-orange-500" />
-              Pasife Al
-            </>
-          ) : (
-            <>
-              <Eye className="mr-2 h-4 w-4 text-emerald-500" />
-              Aktif Et
-            </>
-          )}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <AlertDialog>
-          <AlertDialogTrigger
-            render={<DropdownMenuItem variant="destructive" />}
+          <MoreVertical className="h-4 w-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuGroup>
+            <DropdownMenuLabel className="text-xs text-slate-500">İşlemler</DropdownMenuLabel>
+          </DropdownMenuGroup>
+          <DropdownMenuItem
+            onClick={() => window.open(detailHref, "_blank", "noopener,noreferrer")}
+          >
+            <Eye className="mr-2 h-4 w-4 text-blue-500" />
+            Önizle
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push(editHref)}>
+            <Edit className="mr-2 h-4 w-4 text-amber-500" />
+            Düzenle
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            disabled={toggleMutation.isPending}
+            onClick={() => toggleMutation.mutate({ id: property._id, isActive: !isActive })}
+          >
+            {isActive ? (
+              <>
+                <EyeOff className="mr-2 h-4 w-4 text-orange-500" />
+                Pasife Al
+              </>
+            ) : (
+              <>
+                <Eye className="mr-2 h-4 w-4 text-emerald-500" />
+                Aktif Et
+              </>
+            )}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            variant="destructive"
             disabled={deleteMutation.isPending}
+            onClick={() => setDeleteOpen(true)}
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Sil
-          </AlertDialogTrigger>
-
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogMedia className="text-red-500">
-                <AlertCircle className="animate-bounce" />
-              </AlertDialogMedia>
-              <AlertDialogTitle>İlanı Silmek İstediğinize Emin Misiniz?</AlertDialogTitle>
-              <AlertDialogDescription>
-                <strong className="text-slate-800">&ldquo;{property.title}&rdquo;</strong> kalıcı olarak silinecektir.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>İptal</AlertDialogCancel>
-              <AlertDialogAction
-                className="bg-red-600 text-white hover:bg-red-700"
-                onClick={() => deleteMutation.mutate(property._id)}
-                disabled={deleteMutation.isPending}
-              >
-                {deleteMutation.isPending ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Siliniyor...</>
-                ) : (
-                  "Evet, Sil"
-                )}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
   );
 }

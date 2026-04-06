@@ -7,6 +7,7 @@ import {
   BarChart3,
   Building2,
   ChevronRight,
+  CircleUserRound,
   Home,
   LayoutDashboard,
   List,
@@ -21,6 +22,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -28,6 +30,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const ADMIN_NAV = [
   {
@@ -288,10 +298,80 @@ export default function AdminLayout({ children }) {
 
           {/* Right */}
           <div className="flex items-center gap-2">
+            <Button
+              asChild
+              size="sm"
+              className="hidden bg-violet-600 text-white hover:bg-violet-700 md:inline-flex"
+            >
+              <Link href="/admin/listings">
+                <Building2 className="mr-1 h-3.5 w-3.5" />
+                İlanlara Git
+              </Link>
+            </Button>
             <div className="inline-flex items-center gap-1.5 rounded-full border border-violet-700 bg-violet-900/40 px-2.5 py-1 text-[11px] font-semibold text-violet-300">
               <Shield className="h-3 w-3" />
               Admin
             </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                aria-label="Admin kullanıcı menüsü"
+                className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 py-1.5 pl-1.5 pr-2 text-white transition hover:bg-white/20 focus:outline-none"
+              >
+                <Avatar className="h-7 w-7">
+                  <AvatarImage src={user?.avatarUrl || ""} alt={user?.name} />
+                  <AvatarFallback className="bg-violet-700 text-[10px] font-black text-white">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="hidden max-w-[110px] truncate text-xs font-semibold text-white/90 md:block">
+                  {user?.name || "Admin"}
+                </span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64 p-1.5">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex items-center gap-3 rounded-lg bg-slate-50 p-2.5">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={user?.avatarUrl || ""} alt={user?.name} />
+                      <AvatarFallback className="bg-violet-700 text-xs font-black text-white">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold text-slate-900">{user?.name}</p>
+                      <p className="truncate text-xs text-slate-500">{user?.email}</p>
+                    </div>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push("/profile")}>
+                  <CircleUserRound className="mr-2 h-4 w-4 text-violet-600" />
+                  Profil Ayarları
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/admin/users")}>
+                  <Users className="mr-2 h-4 w-4 text-blue-600" />
+                  Kullanıcı Yönetimi
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/admin/listings")}>
+                  <List className="mr-2 h-4 w-4 text-emerald-600" />
+                  İlan Yönetimi
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/my-listings")}>
+                  <Home className="mr-2 h-4 w-4 text-slate-600" />
+                  Kullanıcı Paneli
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => {
+                    logout();
+                    router.push("/login");
+                  }}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Çıkış Yap
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Crown,
+  Filter,
   Loader2,
   RefreshCw,
   Search,
@@ -32,7 +33,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
   Select,
@@ -86,15 +86,45 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [planFilter, setPlanFilter] = useState("all");
+  const [listingFilter, setListingFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const { data, isLoading, isFetching, refetch } = useQuery({
-    queryKey: ["admin-users", page, debouncedSearch],
-    queryFn: () => getAdminUsers({ page, limit: 20, search: debouncedSearch }),
+    queryKey: ["admin-users", page, debouncedSearch, roleFilter, planFilter, listingFilter, sortBy, sortOrder],
+    queryFn: () =>
+      getAdminUsers({
+        page,
+        limit: 20,
+        search: debouncedSearch || undefined,
+        role: roleFilter !== "all" ? roleFilter : undefined,
+        plan: planFilter !== "all" ? planFilter : undefined,
+        hasListings: listingFilter !== "all" ? listingFilter : undefined,
+        sortBy,
+        sortOrder,
+      }),
     staleTime: 15_000,
   });
 
   const users = data?.data || [];
   const pagination = data?.pagination || {};
+  const totals = useMemo(() => {
+    const adminCount = users.filter((u) => u.role === "admin").length;
+    const proCount = users.filter((u) => (u.subscription?.plan || "free") !== "free").length;
+    const withListingCount = users.filter((u) => (u.listingCount || 0) > 0).length;
+    return { adminCount, proCount, withListingCount };
+  }, [users]);
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }) => updateAdminUser(id, payload),
@@ -120,15 +150,6 @@ export default function AdminUsersPage() {
     },
   });
 
-  function handleSearch(e) {
-    setSearch(e.target.value);
-    clearTimeout(window._adminUserSearchTimer);
-    window._adminUserSearchTimer = setTimeout(() => {
-      setDebouncedSearch(e.target.value);
-      setPage(1);
-    }, 400);
-  }
-
   function handlePlanChange(userId, plan) {
     updateMutation.mutate({ id: userId, payload: { "subscription.plan": plan } });
   }
@@ -137,31 +158,110 @@ export default function AdminUsersPage() {
     updateMutation.mutate({ id: userId, payload: { role } });
   }
 
+  function clearFilters() {
+    setSearch("");
+    setDebouncedSearch("");
+    setRoleFilter("all");
+    setPlanFilter("all");
+    setListingFilter("all");
+    setSortBy("createdAt");
+    setSortOrder("desc");
+    setPage(1);
+  }
+
+  function confirmDelete() {
+    if (!deleteTarget?._id) return;
+    deleteMutation.mutate(deleteTarget._id, {
+      onSuccess: () => setDeleteTarget(null),
+    });
+  }
+
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-extrabold text-slate-900">Kullanıcılar</h1>
-          <p className="mt-0.5 text-sm text-slate-500">
-            {pagination?.total != null ? `${pagination.total} kayıtlı kullanıcı` : "Tüm üyeler"}
-          </p>
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-extrabold text-slate-900">Kullanıcılar</h1>
+            <p className="mt-0.5 text-sm text-slate-500">
+              {pagination?.total != null ? `${pagination.total} kayıtlı kullanıcı` : "Tüm üyeler"}
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} className="gap-2 self-start">
+            <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+            Yenile
+          </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} className="gap-2 self-start">
-          <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
-          Yenile
-        </Button>
+        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <div className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">Admin Kullanıcı: <span className="font-extrabold text-slate-900">{totals.adminCount}</span></div>
+          <div className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">Pro/Corp Plan: <span className="font-extrabold text-slate-900">{totals.proCount}</span></div>
+          <div className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">İlanı Olan: <span className="font-extrabold text-slate-900">{totals.withListingCount}</span></div>
+        </div>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-        <Input
-          placeholder="İsim veya e-posta ara..."
-          value={search}
-          onChange={handleSearch}
-          className="pl-9"
-        />
+      {/* Filters */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="mb-3 flex items-center gap-2">
+          <Filter className="h-4 w-4 text-slate-500" />
+          <p className="text-sm font-bold text-slate-800">Filtreler ve Sıralama</p>
+        </div>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-6">
+          <div className="relative xl:col-span-2">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              placeholder="İsim veya e-posta ara..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Select value={roleFilter} onValueChange={(v) => { setRoleFilter(v); setPage(1); }}>
+            <SelectTrigger className="h-10"><SelectValue placeholder="Rol" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tüm Roller</SelectItem>
+              <SelectItem value="user">Üye</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={planFilter} onValueChange={(v) => { setPlanFilter(v); setPage(1); }}>
+            <SelectTrigger className="h-10"><SelectValue placeholder="Plan" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tüm Planlar</SelectItem>
+              <SelectItem value="free">Free</SelectItem>
+              <SelectItem value="professional">Professional</SelectItem>
+              <SelectItem value="corporate">Corporate</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={listingFilter} onValueChange={(v) => { setListingFilter(v); setPage(1); }}>
+            <SelectTrigger className="h-10"><SelectValue placeholder="İlan Durumu" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tümü</SelectItem>
+              <SelectItem value="true">İlanı Olan</SelectItem>
+              <SelectItem value="false">İlanı Olmayan</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="flex gap-2">
+            <Select value={sortBy} onValueChange={(v) => { setSortBy(v); setPage(1); }}>
+              <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="createdAt">Kayıt Tarihi</SelectItem>
+                <SelectItem value="name">İsim</SelectItem>
+                <SelectItem value="email">E-posta</SelectItem>
+                <SelectItem value="listingCount">İlan Sayısı</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sortOrder} onValueChange={(v) => { setSortOrder(v); setPage(1); }}>
+              <SelectTrigger className="h-10 w-[110px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="desc">Azalan</SelectItem>
+                <SelectItem value="asc">Artan</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="mt-3">
+          <Button variant="outline" size="sm" onClick={clearFilters}>Filtreleri Temizle</Button>
+        </div>
       </div>
 
       {/* Table */}
@@ -280,35 +380,15 @@ export default function AdminUsersPage() {
 
                     {/* Actions */}
                     <td className="px-4 py-3 text-right">
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 text-slate-400 hover:bg-red-50 hover:text-red-600"
-                            disabled={deleteMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Kullanıcıyı sil</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              <strong>{u.name}</strong> adlı kullanıcı ve tüm ilanları kalıcı olarak silinecek. Bu işlem geri alınamaz.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>İptal</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-red-600 text-white hover:bg-red-700"
-                              onClick={() => deleteMutation.mutate(u._id)}
-                            >
-                              Sil
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                        disabled={deleteMutation.isPending}
+                        onClick={() => setDeleteTarget(u)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </td>
                   </tr>
                 ))
@@ -344,6 +424,34 @@ export default function AdminUsersPage() {
           </div>
         )}
       </div>
+
+      <AlertDialog open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Kullanıcıyı sil</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{deleteTarget?.name}</strong> adlı kullanıcı ve tüm ilanları kalıcı olarak silinecek. Bu işlem geri alınamaz.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>İptal</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={confirmDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Siliniyor
+                </span>
+              ) : (
+                "Sil"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

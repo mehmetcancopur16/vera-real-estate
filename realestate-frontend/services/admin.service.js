@@ -8,7 +8,10 @@ export async function getAdminStats() {
 
 /* ── Admin Users ── */
 export async function getAdminUsers(params = {}) {
-  const { data } = await api.get("/admin/users", { params });
+  const normalized = Object.fromEntries(
+    Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== "")
+  );
+  const { data } = await api.get("/admin/users", { params: normalized });
   return data;
 }
 

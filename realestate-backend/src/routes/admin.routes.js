@@ -76,6 +76,37 @@ router.get('/stats', getStats);
  *       - $ref: '#/components/parameters/PageParam'
  *       - $ref: '#/components/parameters/LimitParam'
  *       - $ref: '#/components/parameters/SearchParam'
+ *       - name: role
+ *         in: query
+ *         description: Kullanıcı rolüne göre filtre
+ *         schema:
+ *           type: string
+ *           enum: [user, admin]
+ *       - name: plan
+ *         in: query
+ *         description: Abonelik planına göre filtre
+ *         schema:
+ *           type: string
+ *           enum: [free, professional, corporate]
+ *       - name: hasListings
+ *         in: query
+ *         description: İlanı olan/olmayan kullanıcıları filtreler
+ *         schema:
+ *           type: boolean
+ *       - name: sortBy
+ *         in: query
+ *         description: Sıralama alanı
+ *         schema:
+ *           type: string
+ *           enum: [createdAt, name, email, listingCount, activeListingCount]
+ *           default: createdAt
+ *       - name: sortOrder
+ *         in: query
+ *         description: Sıralama yönü
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
  *     responses:
  *       200:
  *         description: Kullanıcı listesi

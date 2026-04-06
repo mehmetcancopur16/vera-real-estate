@@ -63,27 +63,79 @@ export async function getUsers(req, res, next) {
     const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 20));
     const skip = (page - 1) * limit;
     const search = req.query.search ? String(req.query.search).trim() : '';
+    const role = req.query.role ? String(req.query.role).trim() : '';
+    const plan = req.query.plan ? String(req.query.plan).trim() : '';
+    const hasListings = req.query.hasListings;
+    const sortBy = req.query.sortBy ? String(req.query.sortBy).trim() : 'createdAt';
+    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
 
-    const filter = search
-      ? { $or: [
-          { name: { $regex: search, $options: 'i' } },
-          { email: { $regex: search, $options: 'i' } }
-        ] }
-      : {};
+    const match = {};
+    if (search) {
+      match.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+    if (['user', 'admin'].includes(role)) {
+      match.role = role;
+    }
+    if (['free', 'professional', 'corporate'].includes(plan)) {
+      match['subscription.plan'] = plan;
+    }
 
-    const [users, total] = await Promise.all([
-      User.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-      User.countDocuments(filter)
-    ]);
+    const sortableFields = new Set(['createdAt', 'name', 'email', 'listingCount', 'activeListingCount']);
+    const safeSortBy = sortableFields.has(sortBy) ? sortBy : 'createdAt';
+    const sortStage = { [safeSortBy]: sortOrder, _id: -1 };
 
-    // Attach listing counts
-    const userIds = users.map((u) => u._id);
-    const listingCounts = await Property.aggregate([
-      { $match: { owner: { $in: userIds } } },
-      { $group: { _id: '$owner', count: { $sum: 1 } } }
-    ]);
-    const countMap = Object.fromEntries(listingCounts.map((l) => [l._id.toString(), l.count]));
-    const enriched = users.map((u) => ({ ...u, listingCount: countMap[u._id.toString()] || 0 }));
+    const pipeline = [
+      { $match: match },
+      {
+        $lookup: {
+          from: 'properties',
+          localField: '_id',
+          foreignField: 'owner',
+          as: 'listingDocs'
+        }
+      },
+      {
+        $addFields: {
+          listingCount: { $size: '$listingDocs' },
+          activeListingCount: {
+            $size: {
+              $filter: {
+                input: '$listingDocs',
+                as: 'listing',
+                cond: { $eq: ['$$listing.isActive', true] }
+              }
+            }
+          }
+        }
+      }
+    ];
+
+    if (hasListings === 'true') {
+      pipeline.push({ $match: { listingCount: { $gt: 0 } } });
+    } else if (hasListings === 'false') {
+      pipeline.push({ $match: { listingCount: 0 } });
+    }
+
+    pipeline.push({ $sort: sortStage });
+    pipeline.push({
+      $facet: {
+        data: [
+          { $skip: skip },
+          { $limit: limit },
+          { $project: { listingDocs: 0 } }
+        ],
+        totalCount: [
+          { $count: 'count' }
+        ]
+      }
+    });
+
+    const [agg] = await User.aggregate(pipeline);
+    const enriched = agg?.data || [];
+    const total = agg?.totalCount?.[0]?.count || 0;
 
     res.json({
       success: true,

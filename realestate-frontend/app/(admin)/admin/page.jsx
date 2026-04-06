@@ -214,17 +214,28 @@ export default function AdminOverviewPage() {
             </span>
             <h1 className="mt-3 text-2xl font-extrabold md:text-3xl">Genel Bakış</h1>
             <p className="mt-1 text-sm text-slate-400">Tüm platform verilerini buradan takip edin.</p>
+            <p className="mt-2 text-xs text-slate-500">
+              Son güncelleme: {new Date().toLocaleTimeString("tr-TR")}
+            </p>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => refetch()}
-            disabled={isFetching}
-            className="border-white/20 bg-white/10 text-white hover:bg-white/20 shrink-0 self-start sm:self-auto"
-          >
-            <RefreshCw className={`mr-2 h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} />
-            Yenile
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild size="sm" variant="outline" className="border-white/20 bg-white/10 text-white hover:bg-white/20">
+              <Link href="/admin/users">
+                <Users className="mr-2 h-3.5 w-3.5" />
+                Kullanıcılar
+              </Link>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="border-white/20 bg-white/10 text-white hover:bg-white/20 shrink-0 self-start sm:self-auto"
+            >
+              <RefreshCw className={`mr-2 h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} />
+              Yenile
+            </Button>
+          </div>
         </div>
       </div>
 

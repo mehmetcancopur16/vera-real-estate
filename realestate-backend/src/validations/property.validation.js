@@ -36,4 +36,6 @@ export const createPropertySchema = z.object({
   images: z.array(z.string().url()).optional()
 });
 
-export const updatePropertySchema = createPropertySchema.partial();
+export const updatePropertySchema = createPropertySchema.partial().extend({
+  isActive: z.boolean().optional(),
+});
