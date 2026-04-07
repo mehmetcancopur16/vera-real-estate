@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Mail, RefreshCw, Search, Trash2, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, Filter, Mail, RefreshCw, Search, Sparkles, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { deleteAdminNewsletter, getAdminNewsletters } from "@/services/admin.service";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,7 +25,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 function formatDate(dateString) {
@@ -41,6 +42,7 @@ export default function AdminNewslettersPage() {
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [isActiveFilter, setIsActiveFilter] = useState("all");
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const isActiveQuery = isActiveFilter === "all" ? undefined : isActiveFilter;
 
@@ -59,6 +61,13 @@ export default function AdminNewslettersPage() {
   const subscribers = data?.data || [];
   const pagination = data?.pagination || {};
   const activeCount = subscribers.filter((s) => s.isActive).length;
+  const passiveCount = Math.max(subscribers.length - activeCount, 0);
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (search) count += 1;
+    if (isActiveFilter !== "all") count += 1;
+    return count;
+  }, [search, isActiveFilter]);
 
   const deleteMutation = useMutation({
     mutationFn: deleteAdminNewsletter,
@@ -76,41 +85,88 @@ export default function AdminNewslettersPage() {
     setPage(1);
   }
 
+  function clearFilters() {
+    setSearch("");
+    setSearchInput("");
+    setIsActiveFilter("all");
+    setPage(1);
+  }
+
+  function confirmDelete() {
+    if (!deleteTarget?._id) return;
+    deleteMutation.mutate(deleteTarget._id, {
+      onSuccess: () => setDeleteTarget(null),
+    });
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-6 pb-6">
+      <div className="rounded-3xl border border-violet-200/60 bg-gradient-to-br from-white via-violet-50 to-indigo-50 p-5 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-2xl font-extrabold text-slate-900">Newsletter Aboneleri</h1>
-            <p className="mt-0.5 text-sm text-slate-500">
+            <p className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2.5 py-1 text-[11px] font-semibold text-violet-700">
+              <Sparkles className="h-3.5 w-3.5" />
+              Bulten Operasyon Merkezi
+            </p>
+            <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
+              Newsletter Aboneleri
+            </h1>
+            <p className="mt-1 text-sm text-slate-600">
+              E-posta abonelerini filtreleyin, kalite kontrolu yapin ve listeyi temiz tutun.
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
               {pagination.total != null ? `Toplam ${pagination.total} abone` : "Yukleniyor..."}
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} className="gap-2 self-start">
-            <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
-            Yenile
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} className="gap-2 border-violet-200 bg-white/80 hover:bg-violet-50">
+              <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+              Yenile
+            </Button>
+            <Button size="sm" className="gap-2 bg-violet-600 text-white hover:bg-violet-700" asChild>
+              <Link href="/admin/contacts">
+                <Mail className="h-4 w-4" />
+                Mesajlar
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
 
-      {!isLoading && pagination.total > 0 && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-xs font-semibold text-slate-500">Toplam Abone</p>
-            <p className="mt-1 text-2xl font-extrabold text-slate-900">{pagination.total}</p>
-          </div>
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
-            <p className="text-xs font-semibold text-emerald-700">Bu Sayfada Aktif</p>
-            <p className="mt-1 text-2xl font-extrabold text-emerald-800">{activeCount}</p>
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-xs font-semibold text-slate-500">Sayfa</p>
-            <p className="mt-1 text-2xl font-extrabold text-slate-900">{pagination.page} / {pagination.pages || 1}</p>
-          </div>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Bu sayfa</p>
+          <p className="mt-1 text-2xl font-extrabold text-slate-900">{subscribers.length}</p>
+          <p className="mt-1 text-xs text-slate-500">Listelenen abone</p>
         </div>
-      )}
+        <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Aktif</p>
+          <p className="mt-1 text-2xl font-extrabold text-emerald-900">{activeCount}</p>
+          <p className="mt-1 text-xs text-emerald-700/80">E-posta acik aboneler</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Pasif</p>
+          <p className="mt-1 text-2xl font-extrabold text-slate-800">{passiveCount}</p>
+          <p className="mt-1 text-xs text-slate-500">Kapali aboneler</p>
+        </div>
+        <div className="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">Toplam</p>
+          <p className="mt-1 text-2xl font-extrabold text-blue-900">{pagination.total || 0}</p>
+          <p className="mt-1 text-xs text-blue-700/80">Tum veritabani</p>
+        </div>
+      </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <p className="inline-flex items-center gap-2 text-sm font-bold text-slate-800">
+            <Filter className="h-4 w-4 text-violet-500" />
+            Filtreleme ve Arama
+          </p>
+          <Badge variant={activeFilterCount > 0 ? "default" : "secondary"} className="text-[10px] uppercase tracking-wide">
+            {activeFilterCount > 0 ? `${activeFilterCount} aktif filtre` : "Varsayilan"}
+          </Badge>
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row">
         <form onSubmit={handleSearch} className="flex flex-1 gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -139,6 +195,8 @@ export default function AdminNewslettersPage() {
             <SelectItem value="false">Pasif</SelectItem>
           </SelectContent>
         </Select>
+          <Button variant="outline" size="sm" onClick={clearFilters}>Temizle</Button>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -162,7 +220,7 @@ export default function AdminNewslettersPage() {
         ) : (
           <div className="divide-y divide-slate-100">
             {subscribers.map((sub) => (
-              <div key={sub._id} className="flex items-center gap-4 px-5 py-3.5 transition hover:bg-slate-50">
+              <div key={sub._id} className="flex items-center gap-4 px-5 py-3.5 transition hover:bg-violet-50/40">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-pink-50">
                   <Mail className="h-4 w-4 text-pink-500" />
                 </div>
@@ -174,34 +232,14 @@ export default function AdminNewslettersPage() {
                   {sub.isActive ? "Aktif" : "Pasif"}
                 </span>
                 <span className="hidden shrink-0 text-xs text-slate-400 sm:block">{formatDate(sub.createdAt)}</span>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <button
-                      type="button"
-                      disabled={deleteMutation.isPending}
-                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-red-200 text-red-500 transition hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Aboneyi sil</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        <strong>{sub.email}</strong> kalici olarak silinecek. Bu islem geri alinamaz.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Iptal</AlertDialogCancel>
-                      <AlertDialogAction
-                        className="bg-red-600 text-white hover:bg-red-700"
-                        onClick={() => deleteMutation.mutate(sub._id)}
-                      >
-                        Sil
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <button
+                  type="button"
+                  disabled={deleteMutation.isPending}
+                  onClick={() => setDeleteTarget(sub)}
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-red-200 text-red-500 transition hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
               </div>
             ))}
           </div>
@@ -209,9 +247,9 @@ export default function AdminNewslettersPage() {
       </div>
 
       {pagination.pages > 1 && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3">
           <p className="text-sm text-slate-500">
-            Sayfa {pagination.page} / {pagination.pages} ({pagination.total} abone)
+            Sayfa <span className="font-semibold text-slate-700">{pagination.page} / {pagination.pages}</span> ({pagination.total} abone)
           </p>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" disabled={pagination.page <= 1} onClick={() => setPage((p) => p - 1)} className="gap-1">
@@ -225,6 +263,30 @@ export default function AdminNewslettersPage() {
           </div>
         </div>
       )}
+
+      <AlertDialog open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Aboneyi sil</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{deleteTarget?.email}</strong> kalici olarak silinecek. Bu islem geri alinamaz.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>Iptal</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={(e) => {
+                e.preventDefault();
+                confirmDelete();
+              }}
+              disabled={deleteMutation.isPending}
+            >
+              Sil
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

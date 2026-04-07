@@ -9,9 +9,11 @@ import {
   ExternalLink,
   Eye,
   EyeOff,
+  Filter,
   Loader2,
   RefreshCw,
   Search,
+  Sparkles,
   Trash2,
   UserRoundSearch,
 } from "lucide-react";
@@ -21,6 +23,7 @@ import {
   getAdminListings,
   toggleAdminListing,
 } from "@/services/admin.service";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,11 +35,24 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 const LISTING_TYPES = { apartment: "Daire", house: "Villa", land: "Arsa", commercial: "Ticari" };
 const SALE_TYPES = { sale: "Satilik", rent: "Kiralik" };
+
+function formatMoney(price, currency) {
+  if (price == null) return "-";
+  return `${Number(price).toLocaleString("tr-TR")} ${currency || "TRY"}`;
+}
+
+function formatDate(value) {
+  if (!value) return "-";
+  return new Date(value).toLocaleDateString("tr-TR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
 
 export default function AdminListingsPage() {
   const queryClient = useQueryClient();
@@ -50,6 +66,8 @@ export default function AdminListingsPage() {
   const [ownerId, setOwnerId] = useState(urlOwnerId);
   const [page, setPage] = useState(1);
   const [activeFilter, setActiveFilter] = useState("");
+  const [toggleTargetId, setToggleTargetId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   useEffect(() => {
     setSearch(urlSearchQ);
@@ -86,6 +104,13 @@ export default function AdminListingsPage() {
     const active = listings.filter((i) => i.isActive).length;
     return { active, passive: Math.max(listings.length - active, 0) };
   }, [listings]);
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (debouncedSearch) count += 1;
+    if (ownerId) count += 1;
+    if (activeFilter) count += 1;
+    return count;
+  }, [debouncedSearch, ownerId, activeFilter]);
 
   const toggleMutation = useMutation({
     mutationFn: toggleAdminListing,
@@ -107,81 +132,147 @@ export default function AdminListingsPage() {
     onError: (err) => toast.error(err?.response?.data?.message || "Silme basarisiz"),
   });
 
+  function clearFilters() {
+    setSearch("");
+    setDebouncedSearch("");
+    setOwnerId("");
+    setActiveFilter("");
+    setPage(1);
+  }
+
+  function handleToggle(listingId) {
+    setToggleTargetId(listingId);
+    toggleMutation.mutate(listingId, {
+      onSettled: () => setToggleTargetId(null),
+    });
+  }
+
+  function confirmDelete() {
+    if (!deleteTarget?._id) return;
+    deleteMutation.mutate(deleteTarget._id, {
+      onSuccess: () => setDeleteTarget(null),
+    });
+  }
+
   return (
-    <div className="space-y-5">
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-5 pb-6">
+      <div className="rounded-3xl border border-violet-200/60 bg-gradient-to-br from-white via-violet-50 to-indigo-50 p-5 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-2xl font-extrabold text-slate-900">Ilan Yonetimi</h1>
-            <p className="mt-0.5 text-sm text-slate-500">
-              {pagination?.total != null ? `${pagination.total} ilan` : "Tum ilanlar"}
+            <p className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2.5 py-1 text-[11px] font-semibold text-violet-700">
+              <Sparkles className="h-3.5 w-3.5" />
+              Smart Moderasyon Alani
             </p>
-            {(ownerId || debouncedSearch) && (
-              <p className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-violet-700">
-                <UserRoundSearch className="h-3.5 w-3.5" />
-                Ozel filtre aktif
-              </p>
-            )}
+            <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
+              Ilan Yonetimi
+            </h1>
+            <p className="mt-1 text-sm text-slate-600">
+              Tum ilanlarin gorunurluk, kalite ve aktiflik durumunu tek ekrandan yonetin.
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              {pagination?.total != null ? `${pagination.total} ilan bulundu` : "Tum ilanlar"}
+            </p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} className="gap-2 self-start">
-            <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
-            Yenile
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="gap-2 border-violet-200 bg-white/80 hover:bg-violet-50"
+            >
+              <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+              Yenile
+            </Button>
+            <Button size="sm" className="gap-2 bg-violet-600 text-white hover:bg-violet-700" asChild>
+              <Link href="/admin/users">
+                <UserRoundSearch className="h-4 w-4" />
+                Kullanicilar
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs text-slate-500">Bu sayfa</p>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Bu sayfa</p>
           <p className="mt-1 text-2xl font-extrabold text-slate-900">{listings.length}</p>
+          <p className="mt-1 text-xs text-slate-500">Listelenen kayitlar</p>
         </div>
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
-          <p className="text-xs text-emerald-700">Aktif</p>
+        <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Aktif</p>
           <p className="mt-1 text-2xl font-extrabold text-emerald-900">{summary.active}</p>
+          <p className="mt-1 text-xs text-emerald-700/80">Yayinda olan ilanlar</p>
         </div>
-        <div className="rounded-2xl border border-orange-200 bg-orange-50 p-4 shadow-sm">
-          <p className="text-xs text-orange-700">Pasif</p>
+        <div className="rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-orange-700">Pasif</p>
           <p className="mt-1 text-2xl font-extrabold text-orange-900">{summary.passive}</p>
+          <p className="mt-1 text-xs text-orange-700/80">Inceleme/kapali ilanlar</p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-xs text-slate-500">Toplam sayfa</p>
+        <div className="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">Toplam sayfa</p>
           <p className="mt-1 text-2xl font-extrabold text-slate-900">{pagination.pages || 0}</p>
+          <p className="mt-1 text-xs text-blue-700/80">Navigasyon kapsamasi</p>
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <div className="relative max-w-sm flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <Input
-            placeholder="Baslik, sehir, ilce, owner..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <p className="inline-flex items-center gap-2 text-sm font-bold text-slate-800">
+            <Filter className="h-4 w-4 text-violet-500" />
+            Filtreleme ve Kontrol
+          </p>
+          <div className="flex items-center gap-2">
+            <Badge variant={activeFilterCount > 0 ? "default" : "secondary"} className="text-[10px] uppercase tracking-wide">
+              {activeFilterCount > 0 ? `${activeFilterCount} aktif filtre` : "Varsayilan"}
+            </Badge>
+            {(ownerId || debouncedSearch) && (
+              <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
+                <UserRoundSearch className="mr-1 h-3 w-3" />
+                Ozel filtre
+              </Badge>
+            )}
+          </div>
         </div>
-        <div className="flex gap-2">
-          {[
-            { value: "", label: "Tumu" },
-            { value: "true", label: "Aktif" },
-            { value: "false", label: "Pasif" },
-          ].map((f) => (
-            <button
-              key={f.value}
-              type="button"
-              onClick={() => {
-                setActiveFilter(f.value);
-                setPage(1);
-              }}
-              className={[
-                "rounded-xl border px-3 py-1.5 text-xs font-semibold transition",
-                activeFilter === f.value
-                  ? "border-slate-900 bg-slate-900 text-white"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-slate-400",
-              ].join(" ")}
-            >
-              {f.label}
-            </button>
-          ))}
+
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="relative max-w-md flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              placeholder="Baslik, sehir, ilce, owner..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-10 rounded-xl border-slate-200 bg-white pl-9"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: "", label: "Tumu" },
+              { value: "true", label: "Aktif" },
+              { value: "false", label: "Pasif" },
+            ].map((f) => (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => {
+                  setActiveFilter(f.value);
+                  setPage(1);
+                }}
+                className={[
+                  "rounded-xl border px-3 py-1.5 text-xs font-semibold transition",
+                  activeFilter === f.value
+                    ? "border-violet-600 bg-violet-600 text-white"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-400",
+                ].join(" ")}
+              >
+                {f.label}
+              </button>
+            ))}
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              Temizle
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -217,10 +308,10 @@ export default function AdminListingsPage() {
                 </tr>
               ) : (
                 listings.map((listing) => (
-                  <tr key={listing._id} className="transition hover:bg-slate-50/60">
+                  <tr key={listing._id} className="transition hover:bg-violet-50/40">
                     <td className="max-w-[220px] px-4 py-3">
                       <p className="truncate font-semibold text-slate-900">{listing.title}</p>
-                      <p className="truncate text-xs text-slate-400">
+                      <p className="truncate text-xs text-slate-500">
                         {listing.location?.city}
                         {listing.location?.district ? `, ${listing.location.district}` : ""}
                       </p>
@@ -236,7 +327,7 @@ export default function AdminListingsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right font-semibold text-slate-900">
-                      {listing.price != null ? `${Number(listing.price).toLocaleString("tr-TR")} ${listing.currency || "TRY"}` : "-"}
+                      {formatMoney(listing.price, listing.currency)}
                     </td>
                     <td className="px-4 py-3 text-xs">
                       <p className="font-semibold text-slate-700">{listing.owner?.name || "-"}</p>
@@ -250,9 +341,7 @@ export default function AdminListingsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-500">
-                      {listing.createdAt
-                        ? new Date(listing.createdAt).toLocaleDateString("tr-TR", { day: "2-digit", month: "short", year: "numeric" })
-                        : "-"}
+                      {formatDate(listing.createdAt)}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1.5">
@@ -260,46 +349,32 @@ export default function AdminListingsPage() {
                           variant="ghost"
                           size="sm"
                           className="h-8 w-8 p-0 text-slate-400 hover:bg-blue-50 hover:text-blue-600"
-                          onClick={() => toggleMutation.mutate(listing._id)}
+                          onClick={() => handleToggle(listing._id)}
                           disabled={toggleMutation.isPending}
                           title={listing.isActive ? "Pasif yap" : "Aktif yap"}
                         >
-                          {toggleMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : listing.isActive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          {toggleMutation.isPending && toggleTargetId === listing._id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : listing.isActive ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
                         </Button>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400 hover:bg-slate-100" asChild>
                           <Link href={`/properties/${listing._id}`} target="_blank">
                             <ExternalLink className="h-4 w-4" />
                           </Link>
                         </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 text-slate-400 hover:bg-red-50 hover:text-red-600"
-                              disabled={deleteMutation.isPending}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Ilani sil</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                <strong>{listing.title}</strong> ilani kalici olarak silinecek. Bu islem geri alinamaz.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Iptal</AlertDialogCancel>
-                              <AlertDialogAction
-                                className="bg-red-600 text-white hover:bg-red-700"
-                                onClick={() => deleteMutation.mutate(listing._id)}
-                              >
-                                Sil
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                          disabled={deleteMutation.isPending}
+                          onClick={() => setDeleteTarget(listing)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -311,7 +386,9 @@ export default function AdminListingsPage() {
 
         {pagination?.pages > 1 && (
           <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3">
-            <p className="text-xs text-slate-500">Sayfa {pagination.page} / {pagination.pages}</p>
+            <p className="text-xs text-slate-500">
+              Sayfa <span className="font-semibold text-slate-700">{pagination.page} / {pagination.pages}</span>
+            </p>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
                 Onceki
@@ -323,6 +400,37 @@ export default function AdminListingsPage() {
           </div>
         )}
       </div>
+
+      <AlertDialog open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ilani sil</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{deleteTarget?.title}</strong> ilani kalici olarak silinecek. Bu islem geri alinamaz.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>Iptal</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={(e) => {
+                e.preventDefault();
+                confirmDelete();
+              }}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Siliniyor
+                </span>
+              ) : (
+                "Sil"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

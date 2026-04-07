@@ -1,5 +1,18 @@
 import api from "@/lib/axios";
 
+function buildAdminParams(params = {}) {
+  return Object.fromEntries(
+    Object.entries(params)
+      .filter(([, value]) => value !== undefined && value !== null && value !== "")
+      .map(([key, value]) => {
+        if (typeof value === "boolean") {
+          return [key, value ? "true" : "false"];
+        }
+        return [key, value];
+      })
+  );
+}
+
 /* ── Admin Stats ── */
 export async function getAdminStats() {
   const { data } = await api.get("/admin/stats");
@@ -8,9 +21,7 @@ export async function getAdminStats() {
 
 /* ── Admin Users ── */
 export async function getAdminUsers(params = {}) {
-  const normalized = Object.fromEntries(
-    Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== "")
-  );
+  const normalized = buildAdminParams(params);
   const { data } = await api.get("/admin/users", { params: normalized });
   return data;
 }
@@ -27,9 +38,7 @@ export async function deleteAdminUser(id) {
 
 /* ── Admin Listings ── */
 export async function getAdminListings(params = {}) {
-  const normalized = Object.fromEntries(
-    Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== "")
-  );
+  const normalized = buildAdminParams(params);
   const { data } = await api.get("/admin/listings", { params: normalized });
   return data;
 }
@@ -46,9 +55,7 @@ export async function deleteAdminListing(id) {
 
 /* ── Admin Contacts ── */
 export async function getAdminContacts(params = {}) {
-  const normalized = Object.fromEntries(
-    Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== "")
-  );
+  const normalized = buildAdminParams(params);
   const { data } = await api.get("/admin/contacts", { params: normalized });
   return data;
 }
@@ -65,9 +72,7 @@ export async function deleteAdminContact(id) {
 
 /* ── Admin Newsletters ── */
 export async function getAdminNewsletters(params = {}) {
-  const normalized = Object.fromEntries(
-    Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== "")
-  );
+  const normalized = buildAdminParams(params);
   const { data } = await api.get("/admin/newsletters", { params: normalized });
   return data;
 }

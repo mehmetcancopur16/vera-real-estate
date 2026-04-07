@@ -7,6 +7,7 @@ import {
   BarChart3,
   Building2,
   ChevronRight,
+  Clock3,
   CircleUserRound,
   Home,
   LayoutDashboard,
@@ -96,6 +97,7 @@ export default function AdminLayout({ children }) {
   const { isAuthenticated, isLoading, checkAuth, logout, user } = useAuthStore();
   const [authChecked, setAuthChecked] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [clock, setClock] = useState("");
 
   useEffect(() => {
     checkAuth().finally(() => setAuthChecked(true));
@@ -110,6 +112,17 @@ export default function AdminLayout({ children }) {
       }
     }
   }, [authChecked, isAuthenticated, isLoading, user, router]);
+
+  useEffect(() => {
+    const formatNow = () =>
+      new Date().toLocaleTimeString("tr-TR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    setClock(formatNow());
+    const timer = setInterval(() => setClock(formatNow()), 30_000);
+    return () => clearInterval(timer);
+  }, []);
 
   if (!authChecked || isLoading) {
     return (
@@ -254,7 +267,7 @@ export default function AdminLayout({ children }) {
   const pageTitle = pageTitles[pathname] || "Admin Panel";
 
   return (
-    <div className="min-h-screen bg-slate-100 text-foreground">
+    <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-50 text-foreground">
       {/* Fixed top header */}
       <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-slate-800 bg-slate-950/95 shadow-lg backdrop-blur-xl">
         <div className="flex h-full items-center gap-3 px-4 md:px-6">
@@ -299,6 +312,10 @@ export default function AdminLayout({ children }) {
 
           {/* Right */}
           <div className="flex items-center gap-2">
+            <div className="hidden items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-slate-300 lg:inline-flex">
+              <Clock3 className="h-3 w-3 text-violet-300" />
+              {clock || "--:--"}
+            </div>
             <Button
               asChild
               size="sm"

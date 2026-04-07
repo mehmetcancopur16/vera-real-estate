@@ -43,6 +43,7 @@ router.use(protect, restrictTo('admin'));
  *     description: |
  *       Dashboard için toplam kullanıcı, ilan, aktif/pasif ilan, plan dağılımı,
  *       okunmamış mesaj sayısı, newsletter abone sayısı ve son kayıtları döner.
+ *       Admin panelindeki `/admin` sayfası bu endpointi (`/api/admin/stats`) kullanır.
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -100,7 +101,9 @@ router.get('/stats', getStats);
  *         in: query
  *         description: İlanı olan/olmayan kullanıcıları filtreler
  *         schema:
- *           type: boolean
+ *           type: string
+ *           enum: ["true", "false"]
+ *           example: "true"
  *       - name: sortBy
  *         in: query
  *         description: Sıralama alanı
@@ -169,6 +172,11 @@ router.get('/users', validate(adminUsersQuerySchema, 'query'), getUsers);
  *               summary: Planı yükselt
  *               value:
  *                 subscription.plan: professional
+ *             changePlanNested:
+ *               summary: Planı yükselt (nested body)
+ *               value:
+ *                 subscription:
+ *                   plan: professional
  *     responses:
  *       200:
  *         description: Güncellendi
@@ -254,7 +262,9 @@ router.delete('/users/:id', deleteUser);
  *         in: query
  *         description: Aktif/pasif filtresi
  *         schema:
- *           type: boolean
+ *           type: string
+ *           enum: ["true", "false"]
+ *           example: "false"
  *       - name: ownerId
  *         in: query
  *         description: Belirli bir kullanıcıya ait ilanları filtreler
@@ -387,7 +397,9 @@ router.delete('/listings/:id', deleteAnyListing);
  *         in: query
  *         description: Okunma durumu filtresi
  *         schema:
- *           type: boolean
+ *           type: string
+ *           enum: ["true", "false"]
+ *           example: "false"
  *     responses:
  *       200:
  *         description: Mesaj listesi
@@ -519,7 +531,9 @@ router.delete('/contacts/:id', deleteContact);
  *         in: query
  *         description: Aktif/pasif abone filtresi
  *         schema:
- *           type: boolean
+ *           type: string
+ *           enum: ["true", "false"]
+ *           example: "true"
  *     responses:
  *       200:
  *         description: Abone listesi

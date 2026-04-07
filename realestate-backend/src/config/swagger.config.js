@@ -374,7 +374,19 @@ Tüm hata yanıtları aynı formattadır: \`{ success: false, message: "..." }\`
           type: 'object',
           properties: {
             role: { type: 'string', enum: ['user', 'admin'], example: 'admin' },
-            'subscription.plan': { type: 'string', enum: ['free', 'professional', 'corporate'], example: 'professional' }
+            'subscription.plan': { type: 'string', enum: ['free', 'professional', 'corporate'], example: 'professional' },
+            subscription: {
+              type: 'object',
+              properties: {
+                plan: { type: 'string', enum: ['free', 'professional', 'corporate'], example: 'corporate' }
+              }
+            }
+          },
+          example: {
+            role: 'admin',
+            subscription: {
+              plan: 'professional'
+            }
           }
         },
         AdminStats: {
