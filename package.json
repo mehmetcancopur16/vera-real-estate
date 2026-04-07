@@ -7,7 +7,8 @@
     "dev:backend": "npm run dev --prefix realestate-backend",
     "dev:frontend": "npm run dev --prefix realestate-frontend",
     "dev": "concurrently --kill-others-on-fail -c \"cyan.bold,magenta.bold\" -n \"BACKEND,FRONTEND\" --prefix \"[{name}]\" \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "install:all": "npm install && npm install --prefix realestate-backend && npm install --prefix realestate-frontend"
+    "install:all": "npm install && npm install --prefix realestate-backend && npm install --prefix realestate-frontend",
+    "seed": "npm run seed --prefix realestate-backend"
   },
   "repository": {
     "type": "git",

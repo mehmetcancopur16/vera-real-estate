@@ -237,7 +237,7 @@ export default async function BlogDetailPage({ params }) {
               className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-accent hover:bg-accent/5 hover:text-accent"
             >
               <ArrowLeft className="h-4 w-4" />
-              Blog'a Dön
+              Blog&apos;a Dön
             </Link>
             <div className="flex items-center gap-3">
               <p className="text-sm text-slate-500">Makaleyi paylaş:</p>
@@ -265,7 +265,7 @@ export default async function BlogDetailPage({ params }) {
                 </div>
               </div>
               <p className="mt-3 text-xs leading-relaxed text-slate-500">
-                Vera editör ekibi, Türkiye'nin önde gelen gayrimenkul uzmanlarından oluşur.
+                Vera editör ekibi, Türkiye&apos;nin önde gelen gayrimenkul uzmanlarından oluşur.
               </p>
             </div>
           </div>

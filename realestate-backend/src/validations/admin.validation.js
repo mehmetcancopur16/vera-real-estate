@@ -23,8 +23,16 @@ export const adminUsersQuerySchema = z.object({
 
 export const adminUpdateUserBodySchema = z.object({
   role: z.enum(['user', 'admin']).optional(),
-  'subscription.plan': z.enum(['free', 'professional', 'corporate']).optional()
-}).refine((value) => value.role !== undefined || value['subscription.plan'] !== undefined, {
+  'subscription.plan': z.enum(['free', 'professional', 'corporate']).optional(),
+  subscription: z.object({
+    plan: z.enum(['free', 'professional', 'corporate'])
+  }).optional()
+}).refine((value) => {
+  const hasPlan =
+    value['subscription.plan'] !== undefined ||
+    value.subscription?.plan !== undefined;
+  return value.role !== undefined || hasPlan;
+}, {
   message: "En az bir alan gonderilmelidir (role veya subscription.plan)"
 });
 

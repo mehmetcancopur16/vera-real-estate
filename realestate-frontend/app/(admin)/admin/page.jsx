@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -356,10 +357,15 @@ export default function AdminOverviewPage() {
             {(stats?.recentListings || []).slice(0, 5).map((l) => (
               <div key={l._id} className="flex items-center gap-3 px-5 py-3 transition hover:bg-slate-50/50">
                 <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-100">
-                  {l.images?.[0] && (
-                    <img src={l.images[0]} alt={l.title} className="h-full w-full object-cover" />
-                  )}
-                  {!l.images?.[0] && (
+                  {l.images?.[0] ? (
+                    <Image
+                      src={l.images[0]}
+                      alt={l.title}
+                      fill
+                      sizes="64px"
+                      className="object-cover"
+                    />
+                  ) : (
                     <div className="flex h-full items-center justify-center">
                       <Building2 className="h-5 w-5 text-slate-300" />
                     </div>

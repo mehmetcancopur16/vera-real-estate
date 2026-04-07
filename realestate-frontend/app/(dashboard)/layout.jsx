@@ -375,6 +375,9 @@ export default function DashboardLayout({ children }) {
     "Yeni İlan Ekle": "4 adımlı sihirbaz ile profesyonel ilan oluşturun",
     "Profil": "Hesap bilgilerinizi ve güvenliğinizi yönetin",
     "İlan Düzenle": "Mevcut ilanınızın bilgilerini güncelleyin",
+    "Plan Yükselt": "Abonelik planınızı karşılaştırın ve yükseltme yapın",
+    "Ödeme": "Güvenli ödeme ile planınızı aktifleştirin",
+    "Başarılı": "Planınız başarıyla yükseltildi",
   }[pageTitle] || "";
 
   useEffect(() => {
@@ -763,10 +766,17 @@ export default function DashboardLayout({ children }) {
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
                 Oturum Aktif
               </div>
-              <div className="hidden items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 md:inline-flex">
-                <Sparkles className="h-2.5 w-2.5 text-accent" />
-                Premium
-              </div>
+              {user?.subscription?.plan && user.subscription.plan !== "free" ? (
+                <div className="hidden items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 md:inline-flex">
+                  <Sparkles className="h-2.5 w-2.5 text-accent" />
+                  {user.subscription.plan === "corporate" ? "Corporate" : "Premium"}
+                </div>
+              ) : (
+                <div className="hidden items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-500 md:inline-flex">
+                  <Zap className="h-2.5 w-2.5" />
+                  Free Plan
+                </div>
+              )}
             </div>
           </div>
         </div>

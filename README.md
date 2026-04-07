@@ -29,7 +29,7 @@ vera-real-estate/
 └── realestate-backend/    # Express 5 REST API
 ```
 
-The frontend communicates with the backend via a shared Axios instance. JWT tokens are stored in `localStorage` and sent in the `Authorization` header.
+The frontend communicates with the backend via a shared Axios instance. JWT tokens are stored in `localStorage` and sent in the `Authorization: Bearer <token>` header.
 
 ---
 
@@ -39,23 +39,24 @@ The frontend communicates with the backend via a shared Axios instance. JWT toke
 | Layer | Technology |
 |-------|-----------|
 | Framework | Next.js 15 (App Router, React 19) |
-| Language | TypeScript / JSX |
+| Language | JSX |
 | Styling | Tailwind CSS v4, Shadcn UI |
 | State | Zustand (`useAuthStore`, `usePropertyStore`) |
 | Data Fetching | TanStack React Query v5 |
 | Forms | React Hook Form + Zod |
 | Maps | Leaflet + react-leaflet |
 | Icons | lucide-react |
+| Notifications | sonner (toast) |
 
 ### Backend
 | Layer | Technology |
 |-------|-----------|
 | Framework | Express 5 |
 | Database | MongoDB + Mongoose |
-| Auth | JWT + bcrypt |
-| Validation | Joi / Zod |
-| File Uploads | Multer |
-| Security | Helmet, express-rate-limit, HPP |
+| Auth | JWT (`jsonwebtoken`) + bcryptjs (rounds 12) |
+| Validation | Zod |
+| File Uploads | Multer (local disk → `uploads/`) |
+| Security | Helmet, express-rate-limit, HPP, CORS |
 | API Docs | swagger-jsdoc + swagger-ui-express |
 
 ---
@@ -63,21 +64,22 @@ The frontend communicates with the backend via a shared Axios instance. JWT toke
 ## Features
 
 ### Public
-- Browse and filter property listings (type, listing type, city, price, rooms, size)
-- Property detail pages with gallery, map, virtual tour link, and all field data
+- Browse and filter property listings (type, listing type, city, price, rooms, size, sortBy)
+- Property detail pages with gallery, Leaflet map, virtual tour link, and all field data
 - Featured properties on the home page
 - Contact form, blog, about, and static pages
+- Newsletter subscription
 
 ### Authenticated Users
 - Dashboard with listing management (create, edit, delete, toggle active/inactive)
-- Profile management (avatar, password, notification preferences)
+- Profile management (name, email, avatar upload, password change, account deletion)
 - Subscription plan selection (Free / Professional / Corporate)
 - Listing limit enforcement per plan
 
-### Admin Panel
+### Admin Panel (`/admin`)
 - Overview dashboard with animated metrics, plan distribution, recent users & listings
-- User management (list, update role/plan, delete)
-- Listing management (list all, toggle active, delete any)
+- User management (list, search, update role/plan, delete)
+- Listing management (list, filter by active status, toggle active, delete any)
 - Contact messages (list, mark as read, delete)
 - Newsletter subscribers (list, delete)
 
@@ -96,8 +98,8 @@ The frontend communicates with the backend via a shared Axios instance. JWT toke
 | `size` | Number | Area in m² |
 | `amenities` | [String] | List of amenities |
 | `yearBuilt` | Number | Construction year |
-| `status` | Enum | `available` / `sold` / `rented` |
-| `deedStatus` | Enum | `freehold` / `leasehold` / `shared` |
+| `status` | Enum | `ready` / `under-construction` |
+| `deedStatus` | String | e.g. `freehold`, `leasehold`, `shared` |
 | `maintenanceFee` | Number | Monthly maintenance fee |
 | `totalFloors` | Number | Total floors in building |
 | `parking` | Boolean | Parking available |
@@ -107,12 +109,12 @@ The frontend communicates with the backend via a shared Axios instance. JWT toke
 | `features.rooms` | Number | Number of rooms |
 | `features.bathrooms` | Number | Number of bathrooms |
 | `features.floor` | Number | Floor number |
-| `features.heating` | String | Heating type |
+| `features.heating` | String | Heating type (free text) |
 | `location.city` | String | City (required) |
 | `location.district` | String | District |
 | `location.address` | String | Full address |
 | `viewCount` | Number | View counter |
-| `images` | [String] | Image URLs |
+| `images` | [String] | Image URLs (served from `/uploads/`) |
 | `isActive` | Boolean | Listing visibility |
 | `owner` | ObjectId | Ref to User |
 
@@ -124,7 +126,9 @@ The frontend communicates with the backend via a shared Axios instance. JWT toke
 |------|-------|--------------|--------------|
 | Free | Free | 3 | Basic visibility, email support |
 | Professional | ₺299/mo | 7 | Featured listings, stats, priority support, profile badge |
-| Corporate | ₺799/mo | Unlimited | All Professional features + API access, dedicated account manager, advanced analytics |
+| Corporate | ₺799/mo | Unlimited | All Professional features + advanced analytics, dedicated account manager |
+
+> **Note:** This is a demo platform; no real payments are processed.
 
 ---
 
@@ -161,10 +165,10 @@ vera-real-estate/
 │   │   └── (admin)/
 │   │       ├── layout.jsx
 │   │       ├── admin/page.jsx            # Overview dashboard
-│   │       ├── users/page.jsx
-│   │       ├── listings/page.jsx
-│   │       ├── contacts/page.jsx
-│   │       └── newsletters/page.jsx
+│   │       ├── admin/users/page.jsx
+│   │       ├── admin/listings/page.jsx
+│   │       ├── admin/contacts/page.jsx
+│   │       └── admin/newsletters/page.jsx
 │   ├── components/
 │   │   ├── layout/
 │   │   │   ├── Navbar.jsx
@@ -185,34 +189,15 @@ vera-real-estate/
 │
 └── realestate-backend/
     ├── src/
-    │   ├── app.js                        # Express app + Swagger
+    │   ├── app.js                        # Express app + Swagger + rate limiting
     │   ├── controllers/
-    │   │   ├── auth.controller.js
-    │   │   ├── property.controller.js
-    │   │   ├── admin.controller.js
-    │   │   ├── subscription.controller.js
-    │   │   ├── contact.controller.js
-    │   │   └── newsletter.controller.js
     │   ├── routes/
-    │   │   ├── auth.routes.js
-    │   │   ├── property.routes.js
-    │   │   ├── admin.routes.js
-    │   │   ├── subscription.routes.js
-    │   │   ├── contact.routes.js
-    │   │   └── newsletter.routes.js
     │   ├── models/
-    │   │   ├── User.model.js
-    │   │   ├── Property.model.js
-    │   │   ├── Contact.model.js
-    │   │   └── Newsletter.model.js
     │   ├── middlewares/
-    │   │   ├── auth.middleware.js
-    │   │   ├── upload.middleware.js
-    │   │   ├── validate.middleware.js
-    │   │   └── error.middleware.js
+    │   ├── validations/
     │   └── scripts/
     │       └── seed.js
-    └── uploads/
+    └── uploads/                          # Uploaded property images (gitignored)
 ```
 
 ---
@@ -230,24 +215,24 @@ vera-real-estate/
 git clone <repo-url>
 cd vera-real-estate
 
-# Install all dependencies
-npm install          # installs both workspaces
+# Install all dependencies (both workspaces)
+npm run install:all
 
-# Backend
+# Backend setup
 cd realestate-backend
-cp .env.example .env   # fill in values
-npm run seed           # seed 4 users + 20 properties
+cp .env.example .env   # fill in MONGO_URI and JWT_SECRET
+npm run seed           # seed 6 users + 23 properties + 8 contacts + 12 newsletter subscribers
 
-# Frontend
+# Frontend setup
 cd ../realestate-frontend
-cp .env.example .env.local   # fill in values
+cp .env.example .env.local   # fill in NEXT_PUBLIC_API_URL
 ```
 
 ### Development
 
 ```bash
-# From root
-npm run dev            # starts both frontend (3000) and backend (5050)
+# From root — starts both frontend (3000) and backend (5050) concurrently
+npm run dev
 
 # Or individually:
 cd realestate-backend && npm run dev
@@ -265,6 +250,8 @@ MONGO_URI=mongodb://localhost:27017/vera-real-estate
 JWT_SECRET=your_very_secret_key
 JWT_EXPIRES_IN=7d
 NODE_ENV=development
+# Optional: comma-separated origins for production CORS
+CORS_ORIGINS=https://your-frontend.vercel.app
 ```
 
 ### Frontend (`realestate-frontend/.env.local`)
@@ -279,30 +266,32 @@ NEXT_PUBLIC_API_URL=http://localhost:5050/api
 ### Auth — `/api/auth`
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/register` | — | Register new user |
-| POST | `/login` | — | Login, returns JWT |
+| POST | `/register` | — | Register new user (rate-limited: 10 req/15 min) |
+| POST | `/login` | — | Login, returns JWT (rate-limited: 10 req/15 min) |
 | GET | `/me` | JWT | Get current user |
-| PUT | `/update-profile` | JWT | Update profile |
-| PUT | `/change-password` | JWT | Change password |
+| PATCH | `/update-profile` | JWT | Update name / email |
+| PATCH | `/change-password` | JWT | Change password |
+| POST | `/upload-avatar` | JWT | Upload profile avatar |
+| DELETE | `/me` | JWT | Delete own account |
 
 ### Properties — `/api/properties`
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/` | — | List all properties (filterable) |
+| GET | `/` | — | List all properties (filter: city, type, listingType, minPrice, maxPrice, rooms, minSize, search, sortBy, page, limit) |
 | GET | `/featured` | — | Get featured properties |
 | GET | `/my` | JWT | Get own properties (includes inactive) |
-| GET | `/:id` | — | Get property by ID |
+| GET | `/:id` | — | Get property by ID (increments viewCount) |
 | POST | `/` | JWT | Create property |
-| PUT | `/:id` | JWT + Owner | Update property (incl. `isActive`) |
+| PUT | `/:id` | JWT + Owner | Update property |
 | DELETE | `/:id` | JWT + Owner | Delete property |
-| POST | `/:id/images` | JWT + Owner | Upload images |
-| DELETE | `/:id/images/:imgId` | JWT + Owner | Delete image |
+| POST | `/:id/images` | JWT + Owner | Upload images (max 5, stored to disk) |
+| DELETE | `/:id/images/:imgId` | JWT + Owner | Delete image from disk and DB |
 
 ### Subscription — `/api/subscription`
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/plans` | — | List available plans |
-| POST | `/upgrade` | JWT | Upgrade to a plan `{ plan }` |
+| POST | `/upgrade` | JWT | Upgrade plan `{ plan: "free" \| "professional" \| "corporate" }` |
 
 ### Contact — `/api/contact`
 | Method | Path | Auth | Description |
@@ -313,22 +302,26 @@ NEXT_PUBLIC_API_URL=http://localhost:5050/api
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | POST | `/subscribe` | — | Subscribe to newsletter |
-| POST | `/unsubscribe` | — | Unsubscribe |
+
+### System
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/health` | Health check — returns service status and timestamp |
 
 ### Admin — `/api/admin` (JWT + role:admin)
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/stats` | Platform stats (users, listings, plans, contacts, newsletters) |
-| GET | `/users` | List all users (paginated, searchable) |
-| PATCH | `/users/:id` | Update user (role, plan) |
+| GET | `/users` | List all users (paginated, searchable, filterable by hasListings, isActive) |
+| PATCH | `/users/:id` | Update user (role, subscription plan) |
 | DELETE | `/users/:id` | Delete user |
-| GET | `/listings` | List all listings (paginated, filterable) |
+| GET | `/listings` | List all listings (paginated, filterable by isActive) |
 | PATCH | `/listings/:id/toggle` | Toggle listing active/inactive |
 | DELETE | `/listings/:id` | Delete any listing |
-| GET | `/contacts` | List contact messages |
+| GET | `/contacts` | List contact messages (filterable by isRead) |
 | PATCH | `/contacts/:id/read` | Mark contact as read |
 | DELETE | `/contacts/:id` | Delete contact message |
-| GET | `/newsletters` | List newsletter subscribers |
+| GET | `/newsletters` | List newsletter subscribers (filterable by isActive) |
 | DELETE | `/newsletters/:id` | Delete subscriber |
 
 ---
@@ -349,7 +342,7 @@ Admin pages are protected by the `(admin)/layout.jsx` which redirects non-admin 
 
 ## Swagger / API Docs
 
-The backend exposes an interactive API documentation at:
+The backend exposes interactive API documentation at:
 
 | URL | Description |
 |-----|-------------|
@@ -357,7 +350,7 @@ The backend exposes an interactive API documentation at:
 | `http://localhost:5050/api-docs` | Swagger UI (alternate) |
 | `http://localhost:5050/docs.json` | OpenAPI JSON spec |
 
-The Swagger UI features a custom professional theme with color-coded HTTP method badges, JetBrains Mono for code, and a sticky dark navbar.
+The Swagger UI features a custom dark professional theme with color-coded HTTP method badges, JetBrains Mono for code blocks, and gold accent branding.
 
 ---
 
@@ -373,6 +366,6 @@ vercel --prod
 ### Backend — Render / Railway
 ```bash
 # Set env vars in dashboard:
-# MONGO_URI, JWT_SECRET, JWT_EXPIRES_IN, NODE_ENV=production
+# PORT, MONGO_URI, JWT_SECRET, JWT_EXPIRES_IN, NODE_ENV=production, CORS_ORIGINS
 npm start
 ```

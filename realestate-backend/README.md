@@ -9,10 +9,11 @@ Express 5 REST API for the Vera Real Estate platform. Handles authentication, pr
 | Layer | Technology |
 |-------|-----------|
 | Framework | Express 5 |
+| Entry Point | `src/app.js` (imported by `server.js` at root of package) |
 | Database | MongoDB + Mongoose |
-| Authentication | JWT (`jsonwebtoken`) + bcrypt |
-| Validation | Joi / Zod |
-| File Uploads | Multer (local storage → `uploads/`) |
+| Authentication | JWT (`jsonwebtoken`) + bcryptjs (rounds 12) |
+| Validation | Zod |
+| File Uploads | Multer (local disk storage → `uploads/`) |
 | Security | Helmet, express-rate-limit, HPP, CORS |
 | API Documentation | swagger-jsdoc + swagger-ui-express |
 | Environment | dotenv |
@@ -33,14 +34,16 @@ MONGO_URI=mongodb://localhost:27017/vera-real-estate
 JWT_SECRET=your_very_secret_key
 JWT_EXPIRES_IN=7d
 NODE_ENV=development
+# Optional: comma-separated allowed origins for production CORS
+CORS_ORIGINS=https://your-frontend.vercel.app
 ```
 
 ### Run
 
 ```bash
-npm run dev    # nodemon (hot reload)
+npm run dev    # nodemon with hot reload
 npm start      # production
-npm run seed   # seed database (4 users + 20 properties)
+npm run seed   # seed database (6 users + 23 properties + 8 contacts + 12 newsletter subscribers)
 ```
 
 ---
@@ -50,7 +53,7 @@ npm run seed   # seed database (4 users + 20 properties)
 ```
 realestate-backend/
 ├── src/
-│   ├── app.js                          # Express app, middleware, routes, Swagger
+│   ├── app.js                          # Express app, middleware, routes, Swagger setup
 │   ├── controllers/
 │   │   ├── auth.controller.js
 │   │   ├── property.controller.js
@@ -71,18 +74,26 @@ realestate-backend/
 │   │   ├── Contact.model.js
 │   │   └── Newsletter.model.js
 │   ├── middlewares/
-│   │   ├── auth.middleware.js     # protect, restrictTo, isOwner
-│   │   ├── upload.middleware.js   # multer config
-│   │   ├── validate.middleware.js # Joi/Zod request validation
-│   │   └── error.middleware.js    # global error handler
+│   │   ├── auth.middleware.js         # protect, restrictTo, isOwner
+│   │   ├── upload.middleware.js       # multer config (images, max 5 × 5 MB)
+│   │   ├── validate.middleware.js     # Zod request validation wrapper
+│   │   ├── error.middleware.js        # global error handler
+│   │   └── mongo-sanitize.middleware.js
 │   ├── validations/
 │   │   ├── auth.validation.js
-│   │   └── property.validation.js
+│   │   ├── property.validation.js
+│   │   ├── admin.validation.js
+│   │   ├── contact.validation.js
+│   │   └── subscription.validation.js
+│   ├── config/
+│   │   ├── db.js                      # Mongoose connection
+│   │   └── swagger.config.js          # Swagger JSDoc options + schemas
 │   ├── utils/
-│   │   └── ApiError.js
+│   │   ├── ApiError.js
+│   │   └── logger.js
 │   └── scripts/
-│       └── seed.js                # Database seeder
-└── uploads/                       # Uploaded images (gitignored)
+│       └── seed.js                    # Database seeder
+└── uploads/                           # Uploaded property images (gitignored)
 ```
 
 ---
@@ -94,7 +105,7 @@ realestate-backend/
 |-------|------|-------------|
 | `name` | String | Full name |
 | `email` | String | Unique email |
-| `password` | String | bcrypt hash (select: false) |
+| `password` | String | bcryptjs hash (select: false) |
 | `avatarUrl` | String | Profile image URL |
 | `role` | Enum | `user` / `admin` |
 | `subscription.plan` | Enum | `free` / `professional` / `corporate` |
@@ -115,8 +126,8 @@ Methods: `matchPassword(candidate)` · `toJSON` strips password.
 | `size` | Number | Area m² |
 | `amenities` | [String] | List of amenities |
 | `yearBuilt` | Number | Year of construction |
-| `status` | Enum | `available` / `sold` / `rented` |
-| `deedStatus` | Enum | `freehold` / `leasehold` / `shared` |
+| `status` | Enum | `ready` / `under-construction` |
+| `deedStatus` | String | Free text (e.g. `freehold`, `leasehold`, `shared`) |
 | `maintenanceFee` | Number | Monthly fee |
 | `totalFloors` | Number | Floors in building |
 | `parking` | Boolean | Has parking |
@@ -126,12 +137,12 @@ Methods: `matchPassword(candidate)` · `toJSON` strips password.
 | `features.rooms` | Number | Room count |
 | `features.bathrooms` | Number | Bathroom count |
 | `features.floor` | Number | Unit floor |
-| `features.heating` | String | Heating system |
+| `features.heating` | String | Heating system (free text) |
 | `location.city` | String | City (required) |
 | `location.district` | String | District |
 | `location.address` | String | Street address |
 | `viewCount` | Number | View counter |
-| `images` | [String] | Image paths/URLs |
+| `images` | [String] | Image paths served from `/uploads/` |
 | `isActive` | Boolean | Visible to public |
 
 ### Contact
@@ -139,15 +150,15 @@ Methods: `matchPassword(candidate)` · `toJSON` strips password.
 |-------|------|-------------|
 | `name` | String | Sender name |
 | `email` | String | Sender email |
-| `phone` | String | Phone number |
+| `phone` | String | Phone number (optional) |
 | `message` | String | Message body |
-| `isRead` | Boolean | Read status |
+| `isRead` | Boolean | Read status (default: false) |
 
 ### Newsletter
 | Field | Type | Description |
 |-------|------|-------------|
 | `email` | String | Unique subscriber email |
-| `isActive` | Boolean | Active subscription |
+| `isActive` | Boolean | Active subscription (default: true) |
 
 ---
 
@@ -156,32 +167,36 @@ Methods: `matchPassword(candidate)` · `toJSON` strips password.
 All routes are prefixed with `/api`.
 
 ### Auth — `/api/auth`
+> **Rate limited:** `/register` and `/login` are limited to 10 requests per 15 minutes per IP (failed requests only).
+
 | Method | Path | Middleware | Description |
 |--------|------|-----------|-------------|
-| POST | `/register` | validate | Register new user |
-| POST | `/login` | validate | Login, returns `{ token, user }` |
+| POST | `/register` | validate, authLimiter | Register new user |
+| POST | `/login` | validate, authLimiter | Login, returns `{ token, user }` |
 | GET | `/me` | protect | Get current user |
-| PUT | `/update-profile` | protect | Update name, avatar |
-| PUT | `/change-password` | protect, validate | Change password |
+| PATCH | `/update-profile` | protect, validate | Update name, email |
+| PATCH | `/change-password` | protect, validate | Change password |
+| POST | `/upload-avatar` | protect, multer | Upload profile avatar |
+| DELETE | `/me` | protect, validate | Delete own account (requires password) |
 
 ### Properties — `/api/properties`
 | Method | Path | Middleware | Description |
 |--------|------|-----------|-------------|
-| GET | `/` | — | List all (filter: city, type, listingType, minPrice, maxPrice, rooms, minSize, search, page, limit) |
-| GET | `/featured` | — | Featured listings |
+| GET | `/` | — | List all (filter: `city`, `type`, `listingType`, `minPrice`, `maxPrice`, `rooms`, `minSize`, `search`, `sortBy`, `page`, `limit`) |
+| GET | `/featured` | — | Featured listings (isFeatured: true) |
 | GET | `/my` | protect | Own listings (includes inactive) |
 | GET | `/:id` | — | Property detail (increments viewCount) |
 | POST | `/` | protect, validate | Create listing |
 | PUT | `/:id` | protect, isOwner, validate | Update listing |
-| DELETE | `/:id` | protect, isOwner | Delete listing |
-| POST | `/:id/images` | protect, isOwner, multer | Upload images (max 5) |
-| DELETE | `/:id/images/:imgId` | protect, isOwner | Delete image |
+| DELETE | `/:id` | protect, isOwner | Delete listing + disk images |
+| POST | `/:id/images` | protect, isOwner, multer | Upload images to disk (max 5) |
+| DELETE | `/:id/images/:imgId` | protect, isOwner | Delete image from disk and DB |
 
 ### Subscription — `/api/subscription`
 | Method | Path | Middleware | Description |
 |--------|------|-----------|-------------|
 | GET | `/plans` | — | List plan definitions |
-| POST | `/upgrade` | protect | Upgrade plan `{ plan: "professional" \| "corporate" \| "free" }` |
+| POST | `/upgrade` | protect, validate | Upgrade plan `{ plan: "free" \| "professional" \| "corporate" }` |
 
 ### Contact — `/api/contact`
 | Method | Path | Middleware | Description |
@@ -191,24 +206,30 @@ All routes are prefixed with `/api`.
 ### Newsletter — `/api/newsletter`
 | Method | Path | Middleware | Description |
 |--------|------|-----------|-------------|
-| POST | `/subscribe` | — | Subscribe |
-| POST | `/unsubscribe` | — | Unsubscribe |
+| POST | `/subscribe` | — | Subscribe with email |
+
+### System
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/health` | Returns `{ success, message, service, timestamp }` |
 
 ### Admin — `/api/admin` (protect + restrictTo('admin'))
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/stats` | Aggregated platform stats |
-| GET | `/users` | Paginated user list (search, page, limit) |
+| GET | `/users` | Paginated user list (query: `search`, `hasListings`, `isActive`, `page`, `limit`) |
 | PATCH | `/users/:id` | Update user role / subscription plan |
 | DELETE | `/users/:id` | Delete user |
-| GET | `/listings` | Paginated listing list (search, isActive, page, limit) |
+| GET | `/listings` | Paginated listing list (query: `search`, `isActive`, `page`, `limit`) |
 | PATCH | `/listings/:id/toggle` | Toggle listing `isActive` |
 | DELETE | `/listings/:id` | Delete any listing |
-| GET | `/contacts` | List contact messages |
+| GET | `/contacts` | List contact messages (query: `isRead`, `page`, `limit`) |
 | PATCH | `/contacts/:id/read` | Mark contact as read |
 | DELETE | `/contacts/:id` | Delete contact message |
-| GET | `/newsletters` | List newsletter subscribers |
+| GET | `/newsletters` | List newsletter subscribers (query: `isActive`, `page`, `limit`) |
 | DELETE | `/newsletters/:id` | Delete subscriber |
+
+> **Note:** `hasListings` and `isActive` query parameters must be sent as string `"true"` or `"false"`.
 
 ---
 
@@ -218,8 +239,9 @@ All routes are prefixed with `/api`.
 |------|---------|
 | `auth.middleware.js` | `protect` — validates JWT; `restrictTo(role)` — role guard; `isOwner(Model)` — resource ownership check |
 | `upload.middleware.js` | Multer config; accepts `images` field, stores in `uploads/`, limits to 5 files × 5 MB |
-| `validate.middleware.js` | Wraps Joi/Zod schemas, returns 400 with field-level errors |
+| `validate.middleware.js` | Wraps Zod schemas, returns 400 with field-level errors on validation failure |
 | `error.middleware.js` | Global error handler — formats `ApiError`, Mongoose errors, JWT errors |
+| `mongo-sanitize.middleware.js` | Sanitizes request body/query to prevent NoSQL injection |
 
 ---
 
@@ -229,16 +251,22 @@ All routes are prefixed with `/api`.
 npm run seed
 ```
 
-Creates **4 users** and **20 property listings** covering all model fields:
+Creates test data:
 
 | User | Email | Password | Role | Plan |
 |------|-------|----------|------|------|
 | Vera Admin | admin@vera.com | 123456 | admin | corporate |
-| Pro Kullanıcı | pro@vera.com | 123456 | user | professional |
+| Mehmet Çelik | pro@vera.com | 123456 | user | professional |
+| Emre Doğan | corp@vera.com | 123456 | user | corporate |
 | Ali Yılmaz | user1@vera.com | 123456 | user | free |
 | Ayşe Kaya | user2@vera.com | 123456 | user | free |
+| Selin Arslan | user3@vera.com | 123456 | user | free |
 
-Properties are spread across Istanbul, Ankara, Izmir, Konya, Bursa with varied types, listing types, deed status, amenities, and features.
+**Properties:** 23 listings across Istanbul, Ankara, Izmir, Bursa, Konya, and Antalya — covering all types (`apartment`, `house`, `land`, `commercial`), both `status` values (`ready`, `under-construction`), active and inactive listings.
+
+**Contacts:** 8 messages with mixed read/unread status.
+
+**Newsletter:** 12 subscribers with mixed active/inactive status.
 
 ---
 
@@ -246,21 +274,25 @@ Properties are spread across Istanbul, Ankara, Izmir, Konya, Bursa with varied t
 
 | URL | Description |
 |-----|-------------|
-| `http://localhost:5050/docs` | Swagger UI |
+| `http://localhost:5050/docs` | Swagger UI (primary) |
 | `http://localhost:5050/api-docs` | Swagger UI (alternate) |
-| `http://localhost:5050/docs.json` | OpenAPI JSON |
+| `http://localhost:5050/docs.json` | OpenAPI JSON spec |
 
-The Swagger UI uses a custom professional theme: dark navy topbar, color-coded HTTP badges, gold accent brand, JetBrains Mono for code, and smooth operation block animations.
+The Swagger UI uses a custom dark professional theme: navy topbar, color-coded HTTP method badges, gold accent branding, JetBrains Mono for code blocks, and smooth operation animations.
 
 ---
 
 ## Security
 
-- **Helmet** — sets security headers
-- **express-rate-limit** — 100 req / 15 min per IP on `/api`
-- **HPP** — prevents HTTP parameter pollution
-- **CORS** — whitelist-based origin restriction
-- **bcrypt** — rounds 12 for password hashing
-- **JWT** — signed with `JWT_SECRET`, expires per `JWT_EXPIRES_IN`
-- **isOwner middleware** — prevents users from modifying other users' resources
-- Passwords are always excluded from API responses (`select: false`)
+| Measure | Details |
+|---------|---------|
+| **Helmet** | Strict security headers (CSP relaxed only for Swagger routes) |
+| **express-rate-limit (global)** | 100 req / 15 min per IP on all `/api` routes |
+| **express-rate-limit (auth)** | 10 req / 15 min per IP on `/api/auth/login` and `/api/auth/register` (failed requests only) |
+| **HPP** | Prevents HTTP parameter pollution |
+| **CORS** | Whitelist-based origin restriction; extend via `CORS_ORIGINS` env var |
+| **bcryptjs** | Rounds 12 for password hashing |
+| **JWT** | Signed with `JWT_SECRET`, expires per `JWT_EXPIRES_IN` |
+| **isOwner middleware** | Prevents users from modifying other users' resources |
+| **Zod validation** | All mutating endpoints validate request body before controller |
+| **select: false on password** | Password hash is never returned in API responses |

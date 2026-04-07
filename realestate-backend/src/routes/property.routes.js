@@ -267,7 +267,7 @@ router.put('/:id', protect, isOwner(Property), validate(updatePropertySchema), p
  *     tags:
  *       - Properties
  *     summary: İlanı sil (sadece sahip)
- *     description: İlan sahibi ilanını kalıcı olarak siler. Cloudinary'deki görseller de temizlenir.
+ *     description: İlan sahibi ilanını kalıcı olarak siler. Sunucudaki görsel dosyaları da temizlenir.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -295,10 +295,10 @@ router.delete('/:id', protect, isOwner(Property), propertyController.deletePrope
  *     operationId: uploadPropertyImages
  *     tags:
  *       - Properties
- *     summary: İlana görsel yükle (Cloudinary, maks 5)
+ *     summary: İlana görsel yükle (disk, maks 5)
  *     description: |
  *       İlan sahibi ilana en fazla 5 görsel yükleyebilir.
- *       Görseller Cloudinary'ye yüklenir, URL'ler ilana eklenir.
+ *       Görseller sunucu diskine (Multer) yüklenir, `/uploads/` altında saklanır ve URL'ler ilana eklenir.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -351,7 +351,7 @@ router.post('/:id/images', protect, isOwner(Property), upload.array('images', 5)
  *     tags:
  *       - Properties
  *     summary: İlandaki tek görseli sil
- *     description: Cloudinary'den ve veritabanından belirtilen görseli siler.
+ *     description: Sunucu diskinden ve veritabanından belirtilen görseli siler.
  *     security:
  *       - bearerAuth: []
  *     parameters:

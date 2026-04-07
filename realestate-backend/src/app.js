@@ -43,6 +43,16 @@ const limiter = rateLimit({
   message: { success: false, message: 'Çok fazla istek gönderdiniz. Lütfen daha sonra tekrar deneyin.' }
 });
 
+// Stricter rate limit for auth endpoints to prevent brute-force attacks
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  message: { success: false, message: 'Çok fazla giriş denemesi. 15 dakika sonra tekrar deneyin.' }
+});
+
 app.set('trust proxy', 1);
 
 // Serve uploaded files
@@ -715,6 +725,8 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/properties', propertyRoutes);
 app.use('/api/contact', contactRoutes);

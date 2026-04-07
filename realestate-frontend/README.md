@@ -9,7 +9,7 @@ Next.js 15 frontend for the Vera Real Estate platform. Built with the App Router
 | Layer | Technology |
 |-------|-----------|
 | Framework | Next.js 15 (App Router) |
-| Language | TypeScript / JSX |
+| Language | JSX |
 | Styling | Tailwind CSS v4, Shadcn UI, class-variance-authority |
 | State Management | Zustand |
 | Data Fetching | TanStack React Query v5 |
@@ -18,7 +18,7 @@ Next.js 15 frontend for the Vera Real Estate platform. Built with the App Router
 | Maps | Leaflet + react-leaflet |
 | Icons | lucide-react |
 | Notifications | sonner (toast) |
-| Animation | tw-animate-css + custom keyframes |
+| Animation | tw-animate-css + custom keyframes in `globals.css` |
 
 ---
 
@@ -37,9 +37,18 @@ NEXT_PUBLIC_API_URL=http://localhost:5050/api
 ### Run
 
 ```bash
-npm run dev   # http://localhost:3000
-npm run build
-npm start
+npm run dev     # http://localhost:3000
+npm run build   # production build
+npm start       # serve production build
+npm run lint    # ESLint check
+```
+
+### Run from Monorepo Root
+
+```bash
+# From vera-real-estate/ root directory:
+npm run install:all  # installs all workspace dependencies
+npm run dev          # starts both frontend (3000) and backend (5050)
 ```
 
 ---
@@ -48,40 +57,41 @@ npm start
 
 ```
 app/
-├── globals.css                    # Custom keyframes, utility classes
-├── layout.jsx                     # Root layout (providers, fonts)
+├── globals.css                     # Custom CSS tokens, keyframes, utility classes
+├── layout.jsx                      # Root layout (providers, fonts)
 │
 ├── (auth)/
 │   ├── login/page.jsx
 │   └── register/page.jsx
 │
 ├── (public)/
-│   ├── page.jsx                   # Home — hero, featured, how-it-works, why Vera
-│   ├── properties/page.jsx        # Listing browser with filters and grid/list toggle
-│   ├── properties/[id]/page.jsx   # Full property detail
+│   ├── page.jsx                    # Home — hero, featured, how-it-works, why Vera
+│   ├── properties/page.jsx         # Listing browser with filters and grid/list toggle
+│   ├── properties/[id]/page.jsx    # Full property detail with gallery and map
 │   ├── contact/page.jsx
 │   ├── about/page.jsx
 │   ├── blog/page.jsx
+│   ├── blog/[slug]/page.jsx        # Static blog post detail
 │   ├── terms-of-service/page.jsx
 │   └── privacy-policy/page.jsx
 │
 ├── (dashboard)/
-│   ├── layout.jsx                 # Dark header + sidebar (auth guard)
-│   ├── my-listings/page.jsx       # Manage own listings (toggle, edit, delete)
-│   ├── add-listing/page.jsx       # Create new listing
-│   ├── edit-listing/[id]/page.jsx # Edit existing listing
-│   ├── profile/page.jsx           # Account, security, notifications, subscription
-│   ├── upgrade/page.jsx           # Plan pricing page
-│   ├── upgrade/checkout/page.jsx  # Upgrade confirmation
-│   └── upgrade/success/page.jsx   # Post-upgrade success
+│   ├── layout.jsx                  # Dark header + sidebar (auth guard → /login)
+│   ├── my-listings/page.jsx        # Manage own listings (toggle, edit, delete)
+│   ├── add-listing/page.jsx        # Create new listing (multi-step form)
+│   ├── edit-listing/[id]/page.jsx  # Edit existing listing
+│   ├── profile/page.jsx            # Account, security, notifications, subscription
+│   ├── upgrade/page.jsx            # Plan pricing comparison page
+│   ├── upgrade/checkout/page.jsx   # Upgrade confirmation
+│   └── upgrade/success/page.jsx    # Post-upgrade success with confetti
 │
 └── (admin)/
-    ├── layout.jsx                  # Dark sidebar auth guard (admin role only)
-    ├── admin/page.jsx              # Overview — metrics, plan distribution, activity
-    ├── users/page.jsx              # User management
-    ├── listings/page.jsx           # Listing management
-    ├── contacts/page.jsx           # Contact messages
-    └── newsletters/page.jsx        # Newsletter subscribers
+    ├── layout.jsx                   # Dark header (auth guard → /my-listings for non-admins)
+    ├── admin/page.jsx               # Overview — metrics, plan distribution, activity
+    ├── admin/users/page.jsx         # User management
+    ├── admin/listings/page.jsx      # Listing management
+    ├── admin/contacts/page.jsx      # Contact messages
+    └── admin/newsletters/page.jsx   # Newsletter subscribers
 ```
 
 ---
@@ -91,7 +101,7 @@ app/
 ### Layout
 | Component | Description |
 |-----------|-------------|
-| `components/layout/Navbar.jsx` | Public top navigation with auth state |
+| `components/layout/Navbar.jsx` | Public top navigation with auth state, animated on scroll |
 | `components/layout/Footer.jsx` | Footer with social links and scroll-to-top |
 
 ### Property
@@ -99,10 +109,10 @@ app/
 |-----------|-------------|
 | `components/property/PropertyCard.jsx` | Grid card for public listings |
 | `components/property/PropertyCardList.jsx` | Horizontal list card |
-| `components/property/PropertyForm.jsx` | Multi-step create/edit form |
+| `components/property/PropertyForm.jsx` | Multi-step create/edit form (6 steps) |
 
 ### UI (Shadcn)
-Located in `components/ui/` — Button, Input, Card, Dialog, Select, Tabs, Badge, Avatar, Skeleton, Switch, AlertDialog, DropdownMenu, Sheet, and more.
+Located in `components/ui/` — AlertDialog, Avatar, Badge, Button, Card, Checkbox, Dialog, DropdownMenu, Input, Select, Separator, Sheet, Skeleton, Sonner, Switch, Tabs, Textarea, and more.
 
 ---
 
@@ -110,7 +120,7 @@ Located in `components/ui/` — Button, Input, Card, Dialog, Select, Tabs, Badge
 
 | File | Backend Endpoints |
 |------|------------------|
-| `services/auth.service.js` | `/api/auth/*` — register, login, me, update, password |
+| `services/auth.service.js` | `/api/auth/*` — register, login, me, update-profile, change-password, upload-avatar, delete-me |
 | `services/property.service.js` | `/api/properties/*` — CRUD, images, my listings |
 | `services/admin.service.js` | `/api/admin/*` — stats, users, listings, contacts, newsletters |
 | `services/subscription.service.js` | `/api/subscription/plans`, `/api/subscription/upgrade` |
@@ -121,9 +131,10 @@ Located in `components/ui/` — Button, Input, Card, Dialog, Select, Tabs, Badge
 ## State Management
 
 ### `store/useAuthStore.js`
-- `user` — current user object (includes `subscription.plan`, `subscription.expiresAt`)
+- `user` — current user object (includes `subscription.plan`, `subscription.expiresAt`, `role`)
 - `isAuthenticated`, `isLoading`
 - `checkAuth()` — validates token on mount
+- `login(token)` — sets token and fetches user
 - `logout()` — clears user and token
 
 ### `store/usePropertyStore.js`
@@ -140,11 +151,11 @@ Located in `components/ui/` — Button, Input, Card, Dialog, Select, Tabs, Badge
   ├── checkAuth() on mount
   ├── isLoading  → show spinner
   ├── !isAuthenticated → redirect /login
-  └── render layout (header + sidebar + children)
+  └── render layout (dark header + sidebar + children)
 
 (admin)/layout.jsx
   │
-  ├── same checks +
+  ├── same auth checks +
   ├── user.role !== 'admin' → redirect /my-listings
   └── render admin layout
 ```
@@ -174,17 +185,39 @@ Located in `components/ui/` — Button, Input, Card, Dialog, Select, Tabs, Badge
 
 ---
 
+## `next.config.ts` — External Image Domains
+
+The following remote image hostnames are whitelisted for `next/image`:
+
+- `images.unsplash.com`
+- `ui-avatars.com`
+- `localhost` (port 5050 for uploaded images)
+
+---
+
 ## Tailwind Theme Highlights
 
-Custom variables in `globals.css`:
-- `--header`: dark navbar background color
-- `--accent`: gold (`#d4af37`)
-- `.gradient-text-shimmer`: animated gold shimmer text
-- `.glass-card`: frosted-glass card
-- `.card-entrance`: fade + slide-up entrance animation
-- `.hover-lift-sm`: subtle hover elevation
-- `.bg-gold-gradient`: gold gradient background
-- `.premium-ring`: decorative ring effect
+Custom variables and utilities in `app/globals.css`:
+
+| Token / Class | Description |
+|---------------|-------------|
+| `--accent` | Gold (`#d4af37`) — primary brand color |
+| `--muted-foreground` | Readable dark grey (`#64748b`) for placeholders and muted text |
+| `--header` | Dark navbar background color |
+| `.bg-gold-gradient` | Gold gradient background |
+| `.text-gradient-gold` | Transparent gold gradient text |
+| `.gradient-text-shimmer` | Animated shimmer gold text |
+| `.glass-card` | Frosted-glass card with backdrop-filter |
+| `.card-entrance` | Fade + slide-up entrance animation |
+| `.hover-lift-sm` | Subtle hover elevation |
+| `.premium-ring` | Decorative ring glow effect |
+| `.animate-shimmer` | Skeleton loading sweep animation |
+| `.animate-float` | Floating orb animation |
+| `.btn-press` | Active scale-down button feedback |
+| `.status-dot-active` | Animated green dot indicator |
+| `.page-transition` | Page enter animation |
+| `.delay-{100-800}` | Animation delay helpers |
+| Scrollbar styling | Custom thin scrollbar for table/sidebar areas |
 
 ---
 
@@ -196,4 +229,4 @@ vercel --prod
 
 Set environment variable `NEXT_PUBLIC_API_URL` to your production backend URL.
 
-Image domains must be added to `next.config.js` under `images.domains` if using external image sources.
+Add any additional external image domains to `next.config.ts` under `images.remotePatterns` as needed.

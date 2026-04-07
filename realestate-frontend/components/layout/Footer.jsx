@@ -80,7 +80,7 @@ export default function Footer() {
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs font-semibold text-white/60">
             <Sparkles className="h-3.5 w-3.5 text-accent" />
-            <span>Türkiye'nin Premium Gayrimenkul Platformu</span>
+            <span>Türkiye&apos;nin Premium Gayrimenkul Platformu</span>
           </div>
           <div className="hidden items-center gap-4 text-xs text-white/40 sm:flex">
             <span>7/24 Destek</span>

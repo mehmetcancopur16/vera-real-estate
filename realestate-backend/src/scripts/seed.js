@@ -49,7 +49,7 @@ async function seed() {
   /* ─── Create users ─── */
   const hash = (pw) => bcrypt.hash(pw, 12);
 
-  const [adminUser, proUser, user1, user2] = await User.insertMany([
+  const [adminUser, proUser, user1, user2, corpUser, passiveUser] = await User.insertMany([
     {
       name: 'Vera Admin',
       email: 'admin@vera.com',
@@ -82,8 +82,24 @@ async function seed() {
       avatarUrl: 'https://ui-avatars.com/api/?name=Ayse+Kaya&background=d97706&color=fff&size=128',
       subscription: { plan: 'free', expiresAt: null },
     },
+    {
+      name: 'Emre Doğan',
+      email: 'corp@vera.com',
+      password: await hash('123456'),
+      role: 'user',
+      avatarUrl: 'https://ui-avatars.com/api/?name=Emre+Dogan&background=7c3aed&color=fff&size=128',
+      subscription: { plan: 'corporate', expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000) },
+    },
+    {
+      name: 'Selin Arslan',
+      email: 'user3@vera.com',
+      password: await hash('123456'),
+      role: 'user',
+      avatarUrl: 'https://ui-avatars.com/api/?name=Selin+Arslan&background=db2777&color=fff&size=128',
+      subscription: { plan: 'free', expiresAt: null },
+    },
   ]);
-  console.log('✓ Created 4 users');
+  console.log('✓ Created 6 users');
 
   /* ─── Property definitions ─── */
   const properties = [
@@ -557,7 +573,7 @@ async function seed() {
       size: 250,
       amenities: ['Asansör', 'Otopark', 'Güvenlik', 'Fiber İnternet', 'Klima'],
       yearBuilt: 2020,
-      status: 'available',
+      status: 'ready',
       deedStatus: 'freehold',
       maintenanceFee: 5000,
       totalFloors: 6,
@@ -571,37 +587,162 @@ async function seed() {
       images: imgs(COMMERCIAL_IMGS, 2),
       isActive: true,
     },
+
+    /* ── Antalya ── */
+    {
+      owner: corpUser._id,
+      title: 'Lara\'da Denize Sıfır Lüks Daire',
+      description: 'Antalya Lara sahilinde, denize sıfır komplekste satılık 3+1 daire. Özel plaj erişimi, marina ve spa.',
+      type: 'apartment',
+      listingType: 'sale',
+      price: 15_000_000,
+      currency: 'TRY',
+      size: 170,
+      amenities: ['Özel Plaj', 'Marina', 'Spa', 'Fitness', 'Havuz', 'Güvenlik', 'Vale', 'Otopark'],
+      yearBuilt: 2023,
+      status: 'ready',
+      deedStatus: 'freehold',
+      maintenanceFee: 7500,
+      totalFloors: 15,
+      parking: true,
+      furnished: true,
+      virtualTourUrl: '',
+      isFeatured: true,
+      features: { rooms: 3, bathrooms: 2, floor: 8, heating: 'VRV Klima' },
+      location: { city: 'Antalya', district: 'Lara', address: 'Sahil Bulvarı, No:77' },
+      viewCount: 621,
+      images: imgs(APARTMENT_IMGS, 4),
+      isActive: true,
+    },
+
+    /* ── Under-construction listings ── */
+    {
+      owner: corpUser._id,
+      title: 'Ataşehir\'de Yeni Proje — Teslim 2026',
+      description: 'Ataşehir\'de inşaat aşamasındaki prestijli proje. 2026 yılı sonunda teslim. Erken alıcılara özel fiyat.',
+      type: 'apartment',
+      listingType: 'sale',
+      price: 8_500_000,
+      currency: 'TRY',
+      size: 155,
+      amenities: ['Havuz', 'Spor Salonu', 'Çocuk Kulübü', 'Kapalı Otopark', 'Güvenlik', 'Sosyal Tesis'],
+      yearBuilt: 2026,
+      status: 'under-construction',
+      deedStatus: 'freehold',
+      maintenanceFee: 3000,
+      totalFloors: 20,
+      parking: true,
+      furnished: false,
+      virtualTourUrl: '',
+      isFeatured: true,
+      features: { rooms: 3, bathrooms: 2, floor: 10, heating: 'Kombi' },
+      location: { city: 'İstanbul', district: 'Ataşehir', address: 'Atatürk Mahallesi, Proje Caddesi No:1' },
+      viewCount: 743,
+      images: imgs(APARTMENT_IMGS, 3),
+      isActive: true,
+    },
+    {
+      owner: proUser._id,
+      title: 'Çeşme\'de İnşaat Halinde Villa Projesi',
+      description: 'Çeşme Ilıca\'da butik villa projesi, 2025 sonu teslim. 3 adet villa kaldı. Kişiselleştirme imkânı.',
+      type: 'house',
+      listingType: 'sale',
+      price: 22_000_000,
+      currency: 'TRY',
+      size: 380,
+      amenities: ['Özel Havuz', 'Bahçe', 'Garaj', 'Akıllı Ev', 'Güvenlik Kamerası'],
+      yearBuilt: 2025,
+      status: 'under-construction',
+      deedStatus: 'freehold',
+      maintenanceFee: 0,
+      totalFloors: 2,
+      parking: true,
+      furnished: false,
+      virtualTourUrl: '',
+      isFeatured: false,
+      features: { rooms: 4, bathrooms: 3, floor: 0, heating: 'Yerden Isıtma' },
+      location: { city: 'İzmir', district: 'Çeşme', address: 'Ilıca Mahallesi, Villa Caddesi No:12' },
+      viewCount: 398,
+      images: imgs(HOUSE_IMGS, 3),
+      isActive: true,
+    },
+
+    /* ── Passive listing ── */
+    {
+      owner: passiveUser._id,
+      title: 'Üsküdar\'da 2+1 Daire (Pasif)',
+      description: 'Güzel konumda, bakımlı daire. İlan şu an pasif durumdadır.',
+      type: 'apartment',
+      listingType: 'rent',
+      price: 18_000,
+      currency: 'TRY',
+      size: 85,
+      amenities: ['Asansör', 'İnternet'],
+      yearBuilt: 2010,
+      status: 'ready',
+      deedStatus: 'freehold',
+      maintenanceFee: 700,
+      totalFloors: 5,
+      parking: false,
+      furnished: false,
+      virtualTourUrl: '',
+      isFeatured: false,
+      features: { rooms: 2, bathrooms: 1, floor: 2, heating: 'Merkezi' },
+      location: { city: 'İstanbul', district: 'Üsküdar', address: 'Çengelköy Caddesi, No:9' },
+      viewCount: 44,
+      images: imgs(APARTMENT_IMGS, 2),
+      isActive: false,
+    },
   ];
 
-  await Property.insertMany(properties);
-  console.log(`✓ Created ${properties.length} properties`);
+  const normalizedProperties = properties.map((property) => ({
+    ...property,
+    status: ['ready', 'under-construction'].includes(property.status) ? property.status : 'ready',
+  }));
+
+  await Property.insertMany(normalizedProperties);
+  console.log(`✓ Created ${normalizedProperties.length} properties`);
 
   /* ─── Sample contacts ─── */
   await Contact.insertMany([
-    { name: 'Fatma Demir', email: 'fatma@example.com', phone: '+905321234567', message: 'Beşiktaş\'taki daire hakkında bilgi almak istiyorum. Müsait misiniz?', isRead: false },
-    { name: 'Kemal Arslan', email: 'kemal@example.com', phone: '+905419876543', message: 'İzmir residence için randevu talep ediyorum.', isRead: false },
-    { name: 'Zeynep Şahin', email: 'zeynep@example.com', phone: '', message: 'Genel bilgi almak istiyorum, sizi sitede buldum.', isRead: true },
+    { name: 'Fatma Demir',    email: 'fatma@example.com',    phone: '+905321234567', message: 'Beşiktaş\'taki daire hakkında bilgi almak istiyorum. Müsait misiniz?',                    isRead: false },
+    { name: 'Kemal Arslan',   email: 'kemal@example.com',    phone: '+905419876543', message: 'İzmir residence için randevu talep ediyorum.',                                             isRead: false },
+    { name: 'Zeynep Şahin',   email: 'zeynep@example.com',   phone: '',              message: 'Genel bilgi almak istiyorum, sizi sitede buldum.',                                         isRead: true  },
+    { name: 'Can Öztürk',     email: 'can@example.com',      phone: '+905334455667', message: 'Antalya Lara\'daki daire hakkında fiyat teklifi almak istiyorum.',                        isRead: false },
+    { name: 'Elif Yıldız',    email: 'elif@example.com',     phone: '+905559988776', message: 'Ataşehir proje için ön kayıt yaptırmak istiyorum. Kaç daireniz kaldı?',                   isRead: false },
+    { name: 'Burak Koç',      email: 'burak@example.com',    phone: '+905322221144', message: 'Kadıköy kiralık daire için bugün görüşme yapabilir miyiz?',                               isRead: true  },
+    { name: 'Merve Aydın',    email: 'merve@example.com',    phone: '',              message: 'Çeşme villa projesi hakkında brochure gönderebilir misiniz?',                             isRead: false },
+    { name: 'Hasan Polat',    email: 'hasan@example.com',    phone: '+905441122334', message: 'Sitenizdeki ilanları çok beğendim, portföyünüzü görmek için randevu alabilir miyim?',     isRead: true  },
   ]);
-  console.log('✓ Created 3 sample contacts');
+  console.log('✓ Created 8 sample contacts');
 
   /* ─── Sample newsletter subscribers ─── */
   await Newsletter.insertMany([
-    { email: 'abone1@example.com', isActive: true },
-    { email: 'abone2@example.com', isActive: true },
-    { email: 'abone3@example.com', isActive: true },
-    { email: 'abone4@example.com', isActive: false },
-    { email: 'abone5@example.com', isActive: true },
+    { email: 'abone1@example.com',       isActive: true  },
+    { email: 'abone2@example.com',       isActive: true  },
+    { email: 'abone3@example.com',       isActive: true  },
+    { email: 'abone4@example.com',       isActive: false },
+    { email: 'abone5@example.com',       isActive: true  },
+    { email: 'abone6@example.com',       isActive: true  },
+    { email: 'abone7@example.com',       isActive: false },
+    { email: 'abone8@example.com',       isActive: true  },
+    { email: 'haber1@test.com',          isActive: true  },
+    { email: 'haber2@test.com',          isActive: true  },
+    { email: 'emlak_takip@test.com',     isActive: false },
+    { email: 'yatirimci@business.com',   isActive: true  },
   ]);
-  console.log('✓ Created 5 newsletter subscribers');
+  console.log('✓ Created 12 newsletter subscribers');
 
   console.log('\n✅ Seed completed successfully!\n');
-  console.log('─────────────────────────────────────');
+  console.log('─────────────────────────────────────────');
   console.log('Test credentials:');
   console.log('  Admin:        admin@vera.com  /  123456');
   console.log('  Professional: pro@vera.com    /  123456');
+  console.log('  Corporate:    corp@vera.com   /  123456');
   console.log('  User 1:       user1@vera.com  /  123456');
   console.log('  User 2:       user2@vera.com  /  123456');
-  console.log('─────────────────────────────────────\n');
+  console.log('  User 3:       user3@vera.com  /  123456');
+  console.log('─────────────────────────────────────────\n');
 
   await mongoose.connection.close();
   process.exit(0);

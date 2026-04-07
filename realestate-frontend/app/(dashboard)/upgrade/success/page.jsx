@@ -59,17 +59,18 @@ function SuccessContent() {
   const [confetti, setConfetti] = useState([]);
   const [mounted, setMounted] = useState(false);
 
+  const confettiColors = plan.confettiColors;
   useEffect(() => {
     setMounted(true);
     const pieces = Array.from({ length: 28 }, (_, i) => ({
       id: i,
-      color: plan.confettiColors[i % plan.confettiColors.length],
+      color: confettiColors[i % confettiColors.length],
       left: `${Math.random() * 90 + 5}%`,
       delay: `${Math.random() * 0.8}s`,
       rotate: `${Math.random() * 360}deg`,
     }));
     setConfetti(pieces);
-  }, []);
+  }, [confettiColors]);
 
   return (
     <>

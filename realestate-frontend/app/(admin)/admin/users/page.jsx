@@ -7,6 +7,7 @@ import {
   ArrowUpDown,
   BadgeCheck,
   Building2,
+  CalendarClock,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -231,7 +232,8 @@ export default function AdminUsersPage() {
         search: debouncedSearch || undefined,
         role: roleFilter !== "all" ? roleFilter : undefined,
         plan: planFilter !== "all" ? planFilter : undefined,
-        hasListings: listingFilter !== "all" ? listingFilter : undefined,
+        hasListings:
+          listingFilter === "all" ? undefined : listingFilter === "true",
         sortBy,
         sortOrder,
       }),
@@ -252,6 +254,16 @@ export default function AdminUsersPage() {
     const activeListingUsers = users.filter((u) => (u.activeListingCount || 0) > 0).length;
     return { adminCount, proCorpCount, activeListingUsers };
   }, [users]);
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (debouncedSearch) count += 1;
+    if (roleFilter !== "all") count += 1;
+    if (planFilter !== "all") count += 1;
+    if (listingFilter !== "all") count += 1;
+    if (sortBy !== "createdAt" || sortOrder !== "desc") count += 1;
+    if (limit !== 20) count += 1;
+    return count;
+  }, [debouncedSearch, roleFilter, planFilter, listingFilter, sortBy, sortOrder, limit]);
 
   const detailUser = useMemo(
     () => users.find((u) => u._id === detailUserId) || null,
@@ -309,7 +321,7 @@ export default function AdminUsersPage() {
 
   function handlePlanChange(userId, plan) {
     updateMutation.mutate(
-      { id: userId, payload: { "subscription.plan": plan } },
+      { id: userId, payload: { subscription: { plan } } },
       { onSuccess: () => toast.success("Plan guncellendi") }
     );
   }
@@ -384,7 +396,7 @@ export default function AdminUsersPage() {
     if (!targets.length) return toast.error("Guncellenecek kullanici secin");
     bulkUpdateMutation.mutate({
       ids: targets,
-      payload: { "subscription.plan": bulkPlan },
+      payload: { subscription: { plan: bulkPlan } },
     });
   }
 
@@ -478,10 +490,20 @@ export default function AdminUsersPage() {
             <Filter className="h-4 w-4 text-violet-500" />
             Filtreler ve Siralama
           </p>
-          <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
-            <ArrowUpDown className="mr-1 h-3 w-3" />
-            Dinamik
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
+              <ArrowUpDown className="mr-1 h-3 w-3" />
+              Dinamik
+            </Badge>
+            <Badge
+              variant={activeFilterCount > 0 ? "default" : "secondary"}
+              className="text-[10px] uppercase tracking-wide"
+            >
+              {activeFilterCount > 0
+                ? `${activeFilterCount} aktif filtre`
+                : "Varsayilan gorunum"}
+            </Badge>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-12">
@@ -802,9 +824,9 @@ export default function AdminUsersPage() {
           </SheetHeader>
           {detailUser && (
             <div className="flex flex-1 flex-col gap-4 px-4 pb-6">
-              <div className="rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 to-indigo-50 p-4">
+              <div className="rounded-3xl border border-violet-200/70 bg-gradient-to-br from-violet-50 via-fuchsia-50 to-indigo-50 p-4 shadow-sm">
                 <div className="flex items-start gap-3">
-                  <Avatar className="h-14 w-14 ring-4 ring-white shadow-sm">
+                  <Avatar className="h-16 w-16 ring-4 ring-white shadow-sm">
                     <AvatarImage src={detailUser.avatarUrl || ""} alt={detailUser.name} />
                     <AvatarFallback className="bg-violet-700 text-sm font-black text-white">
                       {initialsFromName(detailUser.name)}
@@ -816,6 +838,10 @@ export default function AdminUsersPage() {
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       <RoleBadge role={detailUser.role} />
                       <PlanBadge plan={detailUser.subscription?.plan || "free"} />
+                    </div>
+                    <div className="mt-3 inline-flex items-center gap-1 rounded-full border border-violet-200 bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-violet-700">
+                      <CalendarClock className="h-3 w-3" />
+                      Kayit: {formatDateShort(detailUser.createdAt)}
                     </div>
                   </div>
                 </div>
@@ -832,51 +858,74 @@ export default function AdminUsersPage() {
                 </div>
               </div>
 
-              <div className="space-y-2 rounded-xl border border-slate-200 bg-white p-3 text-sm">
-                <div className="flex justify-between gap-2"><span className="text-slate-500">Kayit</span><span className="font-medium text-slate-800">{formatDateTime(detailUser.createdAt)}</span></div>
-                <div className="flex justify-between gap-2"><span className="text-slate-500">Son guncelleme</span><span className="font-medium text-slate-800">{formatDateTime(detailUser.updatedAt)}</span></div>
-                <div className="flex justify-between gap-2"><span className="text-slate-500">Plan bitis</span><span className="font-medium text-slate-800">{detailUser.subscription?.expiresAt ? formatDateTime(detailUser.subscription.expiresAt) : "-"}</span></div>
+              <div className="space-y-2 rounded-xl border border-slate-200 bg-white p-3 text-sm shadow-sm">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-slate-500">Kayit</span>
+                  <span className="font-medium text-slate-800">
+                    {formatDateTime(detailUser.createdAt)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-slate-500">Son guncelleme</span>
+                  <span className="font-medium text-slate-800">
+                    {formatDateTime(detailUser.updatedAt)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-slate-500">Plan bitis</span>
+                  <span className="font-medium text-slate-800">
+                    {detailUser.subscription?.expiresAt
+                      ? formatDateTime(detailUser.subscription.expiresAt)
+                      : "-"}
+                  </span>
+                </div>
               </div>
 
               <Separator />
 
               <div className="space-y-3">
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Hizli islem</p>
-                <Select
-                  value={detailUser.role}
-                  onValueChange={(val) => handleRoleChange(detailUser._id, val)}
-                  disabled={updateMutation.isPending || isSelf(detailUser._id)}
-                >
-                  <SelectTrigger className="h-10 w-full"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="user">Uye</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+                  <p className="mb-2 text-xs font-semibold text-slate-500">Rol</p>
+                  <Select
+                    value={detailUser.role}
+                    onValueChange={(val) => handleRoleChange(detailUser._id, val)}
+                    disabled={updateMutation.isPending || isSelf(detailUser._id)}
+                  >
+                    <SelectTrigger className="h-10 w-full bg-white"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="user">Uye</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                <Select
-                  value={detailUser.subscription?.plan || "free"}
-                  onValueChange={(val) => handlePlanChange(detailUser._id, val)}
-                  disabled={updateMutation.isPending}
-                >
-                  <SelectTrigger className="h-10 w-full"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="free">Free</SelectItem>
-                    <SelectItem value="professional">Professional</SelectItem>
-                    <SelectItem value="corporate">Corporate</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+                  <p className="mb-2 text-xs font-semibold text-slate-500">Uyelik plani</p>
+                  <Select
+                    value={detailUser.subscription?.plan || "free"}
+                    onValueChange={(val) => handlePlanChange(detailUser._id, val)}
+                    disabled={updateMutation.isPending}
+                  >
+                    <SelectTrigger className="h-10 w-full bg-white"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="free">Free</SelectItem>
+                      <SelectItem value="professional">Professional</SelectItem>
+                      <SelectItem value="corporate">Corporate</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 <Button
                   variant="outline"
-                  className="w-full gap-2"
+                  className="w-full justify-start gap-2"
                   onClick={() => navigator.clipboard.writeText(detailUser.email).then(() => toast.success("E-posta kopyalandi"))}
                 >
                   <Copy className="h-4 w-4" />
                   E-posta kopyala
                 </Button>
 
-                <Button variant="outline" className="w-full gap-2" asChild>
+                <Button variant="outline" className="w-full justify-start gap-2" asChild>
                   <Link href={`/admin/listings?ownerId=${detailUser._id}`}>
                     <BadgeCheck className="h-4 w-4" />
                     Bu kullanicinin ilanlarini getir

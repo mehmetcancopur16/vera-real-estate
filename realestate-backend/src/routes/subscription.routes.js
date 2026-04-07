@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { protect } from '../middlewares/auth.middleware.js';
+import { validate } from '../middlewares/validate.middleware.js';
 import { getPlans, upgradePlan } from '../controllers/subscription.controller.js';
+import { upgradePlanBodySchema } from '../validations/subscription.validation.js';
 
 const router = Router();
 
@@ -88,6 +90,6 @@ router.get('/plans', getPlans);
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  */
-router.post('/upgrade', protect, upgradePlan);
+router.post('/upgrade', protect, validate(upgradePlanBodySchema), upgradePlan);
 
 export default router;

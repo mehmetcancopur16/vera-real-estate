@@ -162,10 +162,14 @@ export async function updateUser(req, res, next) {
     if (req.body.role !== undefined) {
       payload.role = req.body.role;
     }
-    if (req.body['subscription.plan'] !== undefined) {
-      payload['subscription.plan'] = req.body['subscription.plan'];
+    const nextPlan =
+      req.body.subscription?.plan !== undefined
+        ? req.body.subscription.plan
+        : req.body['subscription.plan'];
+    if (nextPlan !== undefined) {
+      payload['subscription.plan'] = nextPlan;
       payload['subscription.expiresAt'] =
-        ['professional', 'corporate'].includes(req.body['subscription.plan'])
+        ['professional', 'corporate'].includes(nextPlan)
           ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
           : null;
     }
