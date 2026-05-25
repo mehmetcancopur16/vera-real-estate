@@ -284,7 +284,7 @@ export async function deletePropertyImage(req, res, next) {
 
 export async function featuredProperties(req, res, next) {
   try {
-    const items = await Property.find({ isActive: true })
+    const items = await Property.find({ isActive: true, isFeatured: true })
       .sort({ viewCount: -1, createdAt: -1 })
       .limit(6)
       .populate('owner', 'name email')

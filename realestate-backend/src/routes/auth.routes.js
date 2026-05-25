@@ -183,9 +183,10 @@ router.patch('/password', protect, validate(changePasswordSchema), authControlle
  *     operationId: uploadAvatar
  *     tags:
  *       - Auth
- *     summary: Avatar yükle (Cloudinary)
+ *     summary: Avatar yükle (local disk)
  *     description: |
- *       Kullanıcı profil fotoğrafını Cloudinary'ye yükler.
+ *       Kullanıcı profil fotoğrafını sunucu diskine (Multer) yükler ve
+ *       `/uploads/avatars/` altında servis eder.
  *       Sadece JPEG, PNG ve WebP formatları kabul edilir (max 5 MB).
  *     security:
  *       - bearerAuth: []

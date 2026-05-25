@@ -11,6 +11,7 @@ export const UPLOAD_ROOT = path.resolve(__dirname, '../../uploads');
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp']);
+const ALLOWED_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp']);
 
 function ensureDir(dir) {
   mkdirSync(dir, { recursive: true });
@@ -25,14 +26,17 @@ function createStorage(subDir) {
     },
     filename(_req, file, cb) {
       const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
-      const unique = `${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`;
+      const safeExt = ALLOWED_EXT.has(ext) ? ext : '.jpg';
+      const unique = `${Date.now()}-${Math.round(Math.random() * 1e6)}${safeExt}`;
       cb(null, unique);
     }
   });
 }
 
+// MIME ve uzantı çift doğrulama: client'ın gönderdiği content-type tek başına güvenilir değil.
 function fileFilter(_req, file, cb) {
-  if (ALLOWED_MIME.has(file.mimetype)) {
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  if (ALLOWED_MIME.has(file.mimetype) && ALLOWED_EXT.has(ext)) {
     return cb(null, true);
   }
   cb(new ApiError(400, 'Sadece JPEG, PNG veya WebP yükleyebilirsiniz'));

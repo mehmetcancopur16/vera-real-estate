@@ -55,6 +55,8 @@ const propertySchema = new mongoose.Schema(
 );
 
 propertySchema.index({ 'location.city': 1, price: 1, listingType: 1 });
+propertySchema.index({ isFeatured: 1, isActive: 1, createdAt: -1 });
+propertySchema.index({ owner: 1, createdAt: -1 });
 propertySchema.index({ title: 'text', description: 'text' });
 
 const Property = mongoose.model('Property', propertySchema);

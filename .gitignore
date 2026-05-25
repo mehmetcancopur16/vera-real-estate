@@ -5,6 +5,8 @@ node_modules/
 .env
 .env.local
 .env.*.local
+.env.development.local
+.env.production.local
 
 # Logs
 logs/
@@ -26,6 +28,8 @@ dist/
 build/
 coverage/
 .nyc_output/
+.next/
+out/
 
 # Uploads (local dev)
 uploads/

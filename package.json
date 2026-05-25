@@ -1,8 +1,9 @@
 {
   "name": "vera-real-estate",
   "version": "1.0.0",
-  "description": "Modern, güvenli ve ölçeklenebilir bir full-stack emlak portalı.   Kullanıcılar ilan oluşturabilir, görsel yükleyebilir, filtreleyebilir, haritada keşfedebilir ve kendi dashboard alanından ilanlarını yönetebilir.",
-  "main": "index.js",
+  "description": "Full-stack emlak ilan portalı (Next.js 15 + Express 5).",
+  "private": true,
+  "type": "commonjs",
   "scripts": {
     "dev:backend": "npm run dev --prefix realestate-backend",
     "dev:frontend": "npm run dev --prefix realestate-frontend",
@@ -14,14 +15,7 @@
     "type": "git",
     "url": "git+https://github.com/mehmetcancopur16/vera-real-estate.git"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/mehmetcancopur16/vera-real-estate/issues"
-  },
-  "homepage": "https://github.com/mehmetcancopur16/vera-real-estate#readme",
   "devDependencies": {
     "concurrently": "^9.2.1"
   }

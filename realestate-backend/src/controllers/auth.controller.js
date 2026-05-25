@@ -7,7 +7,7 @@ import { ApiError } from '../utils/ApiError.js';
 import Property from '../models/Property.model.js';
 import { UPLOAD_ROOT } from '../middlewares/upload.middleware.js';
 
-function signToken(userId, expiresIn = process.env.JWT_EXPIRES_IN || '1d') {
+function signToken(userId, expiresIn = process.env.JWT_EXPIRES_IN || '7d') {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
     throw new ApiError(500, 'JWT_SECRET yapılandırılmamış');
@@ -15,16 +15,8 @@ function signToken(userId, expiresIn = process.env.JWT_EXPIRES_IN || '1d') {
   return jwt.sign({ id: userId.toString() }, secret, { expiresIn });
 }
 
-function assertBodyFields(body, fields) {
-  const missing = fields.filter((f) => body[f] === undefined || body[f] === null || body[f] === '');
-  if (missing.length) {
-    throw new ApiError(400, `Eksik alanlar: ${missing.join(', ')}`);
-  }
-}
-
 export async function register(req, res, next) {
   try {
-    assertBodyFields(req.body, ['name', 'email', 'password']);
     const { name, email, password } = req.body;
     const user = await User.create({ name, email, password, role: 'user' });
     const token = signToken(user._id);
@@ -43,13 +35,12 @@ export async function register(req, res, next) {
 
 export async function login(req, res, next) {
   try {
-    assertBodyFields(req.body, ['email', 'password']);
     const { email, password, rememberMe } = req.body;
     const user = await User.findOne({ email }).select('+password');
     if (!user) throw new ApiError(401, 'Geçersiz e-posta veya şifre');
     const ok = await user.matchPassword(password);
     if (!ok) throw new ApiError(401, 'Geçersiz e-posta veya şifre');
-    const expiresIn = rememberMe ? '30d' : '1d';
+    const expiresIn = rememberMe ? '30d' : process.env.JWT_EXPIRES_IN || '7d';
     const token = signToken(user._id, expiresIn);
     res.status(200).json({ success: true, user: user.toJSON(), token });
   } catch (err) {
